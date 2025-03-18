@@ -21,7 +21,8 @@ try {
     $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$recipe) {
-        header("Location: ../error.php?message=Recipe not found");
+        header("Location: ../error.php?message=Regit pull origin main --rebase
+cipe not found");
         exit();
     }
 } catch (PDOException $e) {
