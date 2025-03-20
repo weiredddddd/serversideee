@@ -1,13 +1,16 @@
 <?php
+error_reporting(E_ALL); // Report all PHP errors
+ini_set('display_errors', 1); // Display errors to the browser
+ini_set('display_startup_errors', 1); // Display startup errors
 session_start(); // Start session to check if user is logged in
-//require __DIR__.'/../config.php';
+
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../users/login.php"); // Adjust path to login.php
     exit();
 }
 
-include 'config/db.php'; // Include database connection
+include '../config/db.php'; // Include database connection (adjust path as needed)
 $errors = []; // Array to store errors
 
 // Handle form submission
@@ -32,19 +35,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $image_url = "";
     if (!empty($_FILES['image']['name'])) {
         $upload_dir = "../uploads/"; // Adjust path to uploads folder
-        $image_url = basename($_FILES["image"]["name"]);
-        $target_file = $upload_dir . $image_url;
-
-        // Validate file type
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!in_array($_FILES["image"]["type"], $allowed_types)) {
-            $errors[] = "Only JPG, PNG, and GIF files are allowed for the main image.";
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true); // Create the directory if it doesn't exist
         }
 
-        // Move uploaded file if no errors
-        if (empty($errors)) {
-            if (!move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-                $errors[] = "Failed to upload the main image.";
+        // Generate a unique filename
+        $image_url = uniqid() . "_" . basename($_FILES["image"]["name"]);
+        $target_file = $upload_dir . $image_url;
+
+        // Debugging: Check file upload errors
+        if ($_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+            $errors[] = "File upload error: " . $_FILES['image']['error'];
+        } else {
+            // Validate file type
+            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+            $file_type = mime_content_type($_FILES['image']['tmp_name']);
+            if (!in_array($file_type, $allowed_types)) {
+                $errors[] = "Only JPG, PNG, and GIF files are allowed for the main image.";
+            }
+
+            // Validate file extension
+            $file_extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+            if (!in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                $errors[] = "Only JPG, PNG, and GIF files are allowed for the main image.";
+            }
+
+            // Validate file size
+            $max_file_size = 10 * 1024 * 1024; // 10 MB
+            if ($_FILES['image']['size'] > $max_file_size) {
+                $errors[] = "File size exceeds the maximum allowed size of 10 MB.";
+            }
+
+            // Move uploaded file if no errors
+            if (empty($errors)) {
+                echo "Target file path: " . $target_file; // Debugging output
+                if (!move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+                    $errors[] = "Failed to upload the main image. Check file permissions or path.";
+                }
             }
         }
     } else {
@@ -65,12 +92,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $step_image_url = "";
                 if (!empty($_FILES['step_images']['name'][$index])) {
                     $upload_dir = "../uploads/"; // Adjust path to uploads folder
-                    $step_image_url = basename($_FILES["step_images"]["name"][$index]);
+                    $step_image_url = uniqid() . "_" . basename($_FILES["step_images"]["name"][$index]);
                     $target_file = $upload_dir . $step_image_url;
 
                     // Validate file type for step images
                     $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-                    if (!in_array($_FILES["step_images"]["type"][$index], $allowed_types)) {
+                    $file_type = mime_content_type($_FILES['step_images']['tmp_name'][$index]);
+                    if (!in_array($file_type, $allowed_types)) {
                         $errors[] = "Only JPG, PNG, and GIF files are allowed for step images.";
                     }
 
@@ -106,8 +134,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="../assets/style.css"> <!-- Adjust path to CSS file -->
 </head>
 <body>
-    <!-- Include Navigation Bar -->
-    <?php include '../navigation.php'; ?> <!-- Adjust path to navigation.php -->
+    <!-- Profile Dropdown Menu -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="../index.php">NoiceFoodie</a>
+            <div class="ms-auto">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <?= htmlspecialchars($_SESSION['username']) ?> <!-- Display username -->
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                        <li><a class="dropdown-item" href="../users/profile.php">My Profile</a></li>
+                        <li><a class="dropdown-item" href="../recipes/manage.php">Manage Recipes</a></li>
+                        <li><a class="dropdown-item" href="../users/logout.php">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <div class="container mt-4">
         <h1 class="text-center">Add a New Recipe</h1>

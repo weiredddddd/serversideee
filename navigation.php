@@ -30,15 +30,15 @@ $base_url = rtrim($base_url, '/\\'); // Remove trailing slashes
                     <a class="nav-link active" href="<?= $base_url ?>/index.php">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= $base_url ?>/recipes/view.php">Recipes</a>
+                    <a class="nav-link" href="<?= $base_url ?>/recipes/recipes.php">Recipes</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="mealPlanningDropdown" role="button" data-bs-toggle="dropdown">
                         Meal Planning
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?= $base_url ?>/meal-planning/plan.php">Plan a Meal</a></li>
-                        <li><a class="dropdown-item" href="<?= $base_url ?>/meal-planning/schedule.php">View Schedule</a></li>
+                        <li><a class="dropdown-item" href="<?= $base_url ?>/meal/planning.php">Plan a Meal</a></li>
+                        <li><a class="dropdown-item" href="<?= $base_url ?>/meal/schedule.php">View Schedule</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">

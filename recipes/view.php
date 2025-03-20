@@ -1,15 +1,24 @@
 <?php
-session_start(); // Start session (if needed for user-specific actions)
-include 'config/db.php'; // Adjust path if needed
-include 'navigation.php'; // Include navigation bar
+session_start(); // Start session for user authentication
+include '../config/db.php'; // Database connection
+include '../navigation.php'; // Include navigation bar
 
-// Validate recipe ID
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    header("Location: ../error.php?message=Recipe ID is missing");
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Validate `recipe_id` from GET request
+$recipe_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!$recipe_id) {
+    header("Location: ../error.php?message=Invalid Recipe ID");
     exit();
 }
 
-$recipe_id = $_GET['id'];
+// Check database connection
+if (!isset($pdo)) {
+    die("Database connection failed. Check config/db.php.");
+}
 
 // Fetch recipe details
 try {
@@ -21,8 +30,7 @@ try {
     $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$recipe) {
-        header("Location: ../error.php?message=Regit pull origin main --rebase
-cipe not found");
+        header("Location: ../error.php?message=Recipe not found");
         exit();
     }
 } catch (PDOException $e) {
@@ -30,7 +38,7 @@ cipe not found");
     exit();
 }
 
-// Fetch steps
+// Fetch recipe steps
 try {
     $step_stmt = $pdo->prepare("SELECT * FROM Steps WHERE recipe_id = ? ORDER BY step_no ASC");
     $step_stmt->execute([$recipe_id]);
@@ -44,9 +52,11 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($recipe['title']) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/style.css"> <!-- Adjust path to CSS file -->
+    <link rel="stylesheet" href="../assets/style.css"> <!-- Ensure this path is correct -->
 </head>
 <body>
     
@@ -54,7 +64,7 @@ try {
         <h1 class="text-center"><?= htmlspecialchars($recipe['title']) ?></h1>
         <p class="text-center"><strong>By:</strong> <?= htmlspecialchars($recipe['author']) ?></p>
         
-        <!-- Main Recipe Image -->
+        <!-- Recipe Image -->
         <div class="text-center">
             <?php if (!empty($recipe['image_url'])): ?>
                 <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" 
@@ -74,7 +84,7 @@ try {
         <ol class="list-group list-group-numbered">
             <?php foreach ($steps as $step): ?>
                 <li class="list-group-item">
-                    <p><strong>Step <?= $step['step_no'] ?>:</strong> <?= htmlspecialchars($step['description']) ?></p>
+                    <p><strong>Step <?= htmlspecialchars($step['step_no']) ?>:</strong> <?= nl2br(htmlspecialchars($step['description'])) ?></p>
                     <?php if (!empty($step['image_url'])): ?>
                         <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" 
                              class="img-fluid rounded" 

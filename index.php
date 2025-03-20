@@ -61,10 +61,10 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <img src="uploads/slideshow1.jpg" class="d-block w-100" alt="Slideshow 1">
             </div>
             <div class="carousel-item">
-                <img src="uploads/curry.jpg" class="d-block w-50" alt="Chicken Curry">
+                <img src="uploads/curry.jpg" class="d-block w-100" alt="Chicken Curry">
             </div>
             <div class="carousel-item">
-                <img src="uploads/cake.jpg" class="d-block w-50" alt="Chocolate Cake">
+                <img src="uploads/cake.jpg" class="d-block w-100" alt="Chocolate Cake">
             </div>
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev">
@@ -74,14 +74,10 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
         </button>
 
-        <!-- Overlay Text and Search Bar -->
+        <!-- Overlay Text -->
         <div class="carousel-caption">
             <h1 class="display-4">Explore Cuisine</h1>
             <p>Discover amazing recipes from around the world</p>
-            <form method="GET" class="d-flex justify-content-center">
-                <input type="text" name="search" class="form-control w-50" placeholder="Search recipes..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-                <button class="btn btn-danger ms-2">Search</button>
-            </form>
         </div>
     </div>
 
