@@ -37,7 +37,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <title>Explore Cuisine | NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/style.css"> <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/style.css"> <!-- Custom CSS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         /* Slideshow Custom Size */

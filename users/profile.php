@@ -31,7 +31,7 @@ if (!isset($_SESSION['user_id'])) {
                     <a class="nav-link" href="../recipes/add_recipe.php">Add Recipe</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="manage_recipes.php">Manage My Recipes</a>
+                    <a class="nav-link" href="../recipes/manage.php">Manage My Recipes</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link btn btn-danger text-white" href="logout.php">Logout</a>
@@ -74,7 +74,7 @@ if (!isset($_SESSION['user_id'])) {
             <div class="card p-3 shadow-sm">
                 <h5>My Recipes</h5>
                 <p class="text-muted">View and manage the recipes you've posted.</p>
-                <a href="manage_recipes.php" class="btn btn-primary w-100">Manage My Recipes</a>
+                <a href="../recipes/manage.php" class="btn btn-primary w-100">Manage My Recipes</a>
             </div>
 
             <div class="card p-3 shadow-sm mt-3">

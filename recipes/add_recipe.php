@@ -1,13 +1,13 @@
 <?php
 session_start(); // Start session to check if user is logged in
-
+//require __DIR__.'/../config.php';
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../users/login.php"); // Adjust path to login.php
     exit();
 }
 
-include '../config/db.php'; // Include database connection
+include 'config/db.php'; // Include database connection
 $errors = []; // Array to store errors
 
 // Handle form submission

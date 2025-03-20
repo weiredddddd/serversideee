@@ -1,7 +1,7 @@
 <?php
 session_start(); // Start session (if needed for user-specific actions)
-include '../config/db.php'; // Adjust path if needed
-include '../navigation.php'; // Include navigation bar
+include 'config/db.php'; // Adjust path if needed
+include 'navigation.php'; // Include navigation bar
 
 // Validate recipe ID
 if (!isset($_GET['id']) || empty($_GET['id'])) {
