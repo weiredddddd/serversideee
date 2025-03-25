@@ -6,6 +6,7 @@ include '../config/db.php'; // Ensure the correct path
 
 $success = "";
 $error = "";
+$show_redirect_button = false; // New flag for showing redirect button
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
@@ -23,8 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Insert user into database
             $stmt = $pdo->prepare("INSERT INTO Users (username, email, password) VALUES (?, ?, ?)");
             if ($stmt->execute([$username, $email, $hashedPassword])) {
-                $success = "Account successfully registered! Redirecting to login...";
-                header("refresh:3;url=login.php"); // Redirect after 3 seconds
+                $success = "Account successfully registered!";
+                $show_redirect_button = true; // Set flag to show button
             } else {
                 $error = "Error creating account!";
             }
@@ -51,7 +52,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <!-- Success message -->
         <?php if ($success): ?>
-            <div class="alert alert-success text-center"><?= $success ?></div>
+            <div class="alert alert-success text-center">
+                <?= $success ?>
+                <?php if ($show_redirect_button): ?>
+                    <div class="mt-3">
+                        <a href="login.php" class="btn btn-success">Proceed to Login</a>
+                    </div>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
 
         <!-- Error message -->
@@ -59,6 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="alert alert-danger text-center"><?= $error ?></div>
         <?php endif; ?>
 
+        <?php if (!$success): // Only show form if not successful ?>
         <form method="POST">
             <div class="mb-3">
                 <label class="form-label">Username</label>
@@ -78,6 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <p class="text-center mt-3">
             Already have an account? <a href="login.php">Login here</a>
         </p>
+        <?php endif; ?>
     </div>
 </div>
 

@@ -1,6 +1,6 @@
 <?php
 session_start();
-//
+
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -8,11 +8,19 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Include navigation bar
-include '../navigation.php'; // Adjust path if needed
+include '../navigation.php';
 
 // Fetch user's recipes
-require '../config/db.php'; // Include database connection
+require '../config/db.php';
 $user_id = $_SESSION['user_id'];
+
+// Fetch user's email
+$stmt = $pdo->prepare("SELECT email FROM Users WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+$user_email = $user['email'] ?? 'Not Available';
+
+// Fetch user's recipes
 $stmt = $pdo->prepare("SELECT * FROM Recipes WHERE user_id = ? ORDER BY created_at DESC");
 $stmt->execute([$user_id]);
 $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -25,6 +33,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <style>
         /* Floating "Add Recipe" button */
         .floating-btn {
@@ -32,12 +41,31 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             bottom: 20px;
             right: 20px;
             z-index: 1000;
+            padding: 12px 20px;
+            border-radius: 50px;
         }
+        /* Hover effect for cards */
         .recipe-card {
             transition: transform 0.2s;
         }
         .recipe-card:hover {
-            transform: scale(1.02);
+            transform: scale(1.03);
+        }
+        /* Profile Image */
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #ddd;
+        }
+        /* Sidebar Styling */
+        .sidebar-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -45,16 +73,10 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!-- Profile Header -->
 <div class="container mt-4">
-    <div class="card p-4 shadow-sm">
-        <div class="row align-items-center">
-            <div class="col-md-2 text-center">
-                <img src="https://via.placeholder.com/100" class="rounded-circle img-fluid" alt="Profile Picture">
-            </div>
-            <div class="col-md-10">
-                <h2><?= htmlspecialchars($_SESSION['username']) ?>'s Profile</h2>
-                <p class="text-muted">Welcome to your recipe dashboard.</p>
-            </div>
-        </div>
+    <div class="card p-4 shadow-sm text-center">
+        <img src="https://via.placeholder.com/120" class="profile-img" alt="Profile Picture">
+        <h2 class="mt-3"><?= htmlspecialchars($_SESSION['username']) ?>'s Profile</h2>
+        <p class="text-muted">Welcome to your recipe dashboard.</p>
     </div>
 </div>
 
@@ -62,64 +84,65 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="container mt-4">
     <div class="row">
         <!-- Left Sidebar (User Info) -->
-        <div class="col-md-3">
-            <div class="card p-3 shadow-sm">
+        <div class="col-lg-3">
+            <div class="sidebar-card">
                 <h5>Profile Info</h5>
                 <p><strong>Username:</strong> <?= htmlspecialchars($_SESSION['username']) ?></p>
-                <p><strong>Email:</strong> user@example.com</p>
+                <p><strong>Email:</strong> <?= htmlspecialchars($user_email) ?></p>
                 <p><strong>Member Since:</strong> January 2025</p>
+                <a href="../users/edit_profile.php" class="btn btn-outline-primary w-100 mt-2">Edit Profile</a>
+            </div>
+
+            <div class="sidebar-card">
+                <h5>Upcoming Features</h5>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-people"></i> Follow other users</li>
+                    <li><i class="bi bi-bookmark"></i> Bookmark favorite recipes</li>
+                    <li><i class="bi bi-trophy"></i> Participate in competitions</li>
+                </ul>
             </div>
         </div>
 
-        <!-- Middle Section (Posts) -->
-        <div class="col-md-6">
+        <!-- Middle Section (User Recipes) -->
+        <div class="col-lg-6">
             <div class="card p-3 shadow-sm">
-                <h5>My Recipes</h5>
-                <p class="text-muted">View and manage the recipes you've posted.</p>
+                <h5 class="mb-3">My Recipes</h5>
                 <a href="../recipes/manage.php" class="btn btn-primary w-100">Manage My Recipes</a>
 
                 <!-- Display User's Recipes -->
                 <?php if (empty($recipes)): ?>
                     <p class="text-muted mt-3">No recipes found.</p>
                 <?php else: ?>
-                    <div class="mt-3">
+                    <div class="row mt-3">
                         <?php foreach ($recipes as $recipe): ?>
-                            <div class="card recipe-card mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
-                                    <p class="card-text"><?= htmlspecialchars($recipe['description']) ?></p>
-                                    <p class="card-text"><small class="text-muted">Category: <?= htmlspecialchars($recipe['category']) ?></small></p>
-                                    <a href="../recipes/view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary">View Recipe</a>
+                            <div class="col-md-6 mb-3">
+                                <div class="card recipe-card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
+                                        <p class="card-text"><?= htmlspecialchars($recipe['description']) ?></p>
+                                        <p class="text-muted"><small>Category: <?= htmlspecialchars($recipe['category']) ?></small></p>
+                                        <a href="../recipes/view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-sm btn-primary">View Recipe</a>
+                                    </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
             </div>
-
-            <div class="card p-3 shadow-sm mt-3">
-                <h5>Rated Posts</h5>
-                <p class="text-muted">Recipes you have rated.</p>
-                <div class="border p-2 bg-white">[Rated Posts Section - Developer Module Placeholder]</div>
-            </div>
-
-            <div class="card p-3 shadow-sm mt-3">
-                <h5>Commented Posts</h5>
-                <p class="text-muted">Recipes you have commented on.</p>
-                <div class="border p-2 bg-white">[Commented Posts Section - Developer Module Placeholder]</div>
-            </div>
         </div>
 
-        <!-- Right Sidebar (Future Features) -->
-        <div class="col-md-3">
-            <div class="card p-3 shadow-sm">
-                <h5>Upcoming Features</h5>
-                <p class="text-muted">New features will be added soon.</p>
-                <ul>
-                    <li>Follow other users</li>
-                    <li>Bookmark favorite recipes</li>
-                    <li>Participate in competitions</li>
-                </ul>
+        <!-- Right Sidebar (Rated & Commented Posts) -->
+        <div class="col-lg-3">
+            <div class="sidebar-card">
+                <h5>Rated Recipes</h5>
+                <p class="text-muted">Recipes you have rated.</p>
+                <div class="border p-2 bg-white">[Rated Recipes Placeholder]</div>
+            </div>
+
+            <div class="sidebar-card">
+                <h5>Commented Recipes</h5>
+                <p class="text-muted">Recipes you have commented on.</p>
+                <div class="border p-2 bg-white">[Commented Recipes Placeholder]</div>
             </div>
         </div>
     </div>

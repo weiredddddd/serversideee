@@ -1,9 +1,13 @@
 <?php
-session_start(); // Start session to check if user is logged in
+session_start();
 
-// Dynamically determine the base URL
-$base_url = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
-$base_url = rtrim($base_url, '/\\'); // Remove trailing slashes
+// Define base URL (choose one method)
+// Method 1: Hardcoded (simple but less flexible)
+// define('BASE_URL', 'http://localhost/asm');
+
+// Method 2: Dynamic detection
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
 ?>
 
 <!DOCTYPE html>
@@ -19,7 +23,7 @@ $base_url = rtrim($base_url, '/\\'); // Remove trailing slashes
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="<?= $base_url ?>/index.php">NoiceFoodie</a>
+        <a class="navbar-brand" href="<?= BASE_URL ?>/index.php">NoiceFoodie</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -27,37 +31,37 @@ $base_url = rtrim($base_url, '/\\'); // Remove trailing slashes
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link active" href="<?= $base_url ?>/index.php">Home</a>
+                    <a class="nav-link active" href="<?= BASE_URL ?>/index.php">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= $base_url ?>/recipes/recipes.php">Recipes</a>
+                    <a class="nav-link" href="<?= BASE_URL ?>/recipes/recipes.php">Recipes</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="mealPlanningDropdown" role="button" data-bs-toggle="dropdown">
                         Meal Planning
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?= $base_url ?>/meal/planning.php">Plan a Meal</a></li>
-                        <li><a class="dropdown-item" href="<?= $base_url ?>/meal/schedule.php">View Schedule</a></li>
+                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/meal/planning.php">Plan a Meal</a></li>
+                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/meal/schedule.php">View Schedule</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= $base_url ?>/community.php">Community</a>
+                    <a class="nav-link" href="<?= BASE_URL ?>/community.php">Community</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= $base_url ?>/competitions.php">Competitions</a>
+                    <a class="nav-link" href="<?= BASE_URL ?>/competitions.php">Competitions</a>
                 </li>
 
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= $base_url ?>/users/profile.php">My Profile</a>
+                        <a class="nav-link" href="<?= BASE_URL ?>/users/profile.php">My Profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= $base_url ?>/users/logout.php">Logout</a>
+                        <a class="nav-link" href="<?= BASE_URL ?>/users/logout.php">Logout</a>
                     </li>
                 <?php else: ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= $base_url ?>/users/login.php">Login</a>
+                        <a class="nav-link" href="<?= BASE_URL ?>/users/login.php">Login</a>
                     </li>
                 <?php endif; ?>
             </ul>
