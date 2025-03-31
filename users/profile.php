@@ -14,11 +14,25 @@ include '../navigation.php';
 require '../config/db.php';
 $user_id = $_SESSION['user_id'];
 
-// Fetch user's email
-$stmt = $pdo->prepare("SELECT email FROM Users WHERE user_id = ?");
+// Fetch user's email and avatar
+$stmt = $pdo->prepare("SELECT email, avatar FROM Users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $user_email = $user['email'] ?? 'Not Available';
+$avatar_id = $user['avatar'] ?? 0; // Default to 0 if not set
+
+// Preset avatars (should match the ones in edit_profile.php)
+$preset_avatars = [
+    'avatar1.png',
+    'avatar2.png',
+    'avatar3.png',
+    'avatar4.png',
+    'avatar5.png',
+    'avatar6.png'
+];
+
+// Get the current avatar image
+$current_avatar = $preset_avatars[$avatar_id] ?? $preset_avatars[0];
 
 // Fetch user's recipes
 $stmt = $pdo->prepare("SELECT * FROM Recipes WHERE user_id = ? ORDER BY created_at DESC");
@@ -52,12 +66,21 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             transform: scale(1.03);
         }
         /* Profile Image */
+        .profile-img-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
         .profile-img {
             width: 120px;
             height: 120px;
             object-fit: cover;
             border-radius: 50%;
             border: 3px solid #ddd;
+        }
+        /* Profile Header */
+        .profile-header {
+            text-align: center;
         }
         /* Sidebar Styling */
         .sidebar-card {
@@ -67,16 +90,33 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+        /* Success message */
+        .alert-success {
+            margin: 20px auto;
+            max-width: 800px;
+        }
     </style>
 </head>
 <body class="bg-light">
 
+<!-- Display success message if set -->
+<?php if (isset($_SESSION['success_message'])): ?>
+    <div class="alert alert-success text-center">
+        <?= htmlspecialchars($_SESSION['success_message']) ?>
+    </div>
+    <?php unset($_SESSION['success_message']); ?>
+<?php endif; ?>
+
 <!-- Profile Header -->
 <div class="container mt-4">
-    <div class="card p-4 shadow-sm text-center">
-        <img src="https://via.placeholder.com/120" class="profile-img" alt="Profile Picture">
-        <h2 class="mt-3"><?= htmlspecialchars($_SESSION['username']) ?>'s Profile</h2>
-        <p class="text-muted">Welcome to your recipe dashboard.</p>
+    <div class="card p-4 shadow-sm">
+        <div class="profile-img-container">
+            <img src="../assets/avatars/<?= $current_avatar ?>" class="profile-img" alt="Profile Picture">
+        </div>
+        <div class="profile-header">
+            <h2><?= htmlspecialchars($_SESSION['username']) ?>'s Profile</h2>
+            <p class="text-muted">Welcome to your recipe dashboard.</p>
+        </div>
     </div>
 </div>
 

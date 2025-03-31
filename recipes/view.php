@@ -1,26 +1,22 @@
 <?php
-session_start(); // Start session for user authentication
-include '../config/db.php'; // Database connection
-include '../navigation.php'; // Include navigation bar
+session_start();
+include '../config/db.php';
+include '../navigation.php';
 
-// Enable error reporting for debugging
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Validate `recipe_id` from GET request
 $recipe_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$recipe_id) {
     header("Location: ../error.php?message=Invalid Recipe ID");
     exit();
 }
 
-// Check database connection
 if (!isset($pdo)) {
     die("Database connection failed. Check config/db.php.");
 }
 
-// Fetch recipe details
 try {
     $stmt = $pdo->prepare("SELECT r.*, u.username AS author 
                            FROM Recipes r 
@@ -38,7 +34,6 @@ try {
     exit();
 }
 
-// Fetch recipe steps
 try {
     $step_stmt = $pdo->prepare("SELECT * FROM Steps WHERE recipe_id = ? ORDER BY step_no ASC");
     $step_stmt->execute([$recipe_id]);
@@ -56,45 +51,117 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($recipe['title']) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/style.css"> <!-- Ensure this path is correct -->
+    <link rel="stylesheet" href="../assets/style.css">
+    <style>
+        .recipe-meta {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .meta-item {
+            margin-bottom: 8px;
+        }
+        .spice-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .spice-icon {
+            color: #dc3545;
+        }
+    </style>
 </head>
 <body>
     
     <div class="container mt-4">
         <h1 class="text-center"><?= htmlspecialchars($recipe['title']) ?></h1>
-        <p class="text-center"><strong>By:</strong> <?= htmlspecialchars($recipe['author']) ?></p>
+        <p class="text-center text-muted"><strong>By:</strong> <?= htmlspecialchars($recipe['author']) ?></p>
+        
+        <!-- Recipe Meta Information -->
+        <div class="recipe-meta">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="meta-item">
+                        <strong>Category:</strong> <?= htmlspecialchars($recipe['category']) ?>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="meta-item">
+                        <strong>Cuisine:</strong> <?= htmlspecialchars($recipe['cuisine_type']) ?>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="meta-item">
+                        <strong>Spice Level:</strong>
+                        <span class="spice-indicator">
+                            <?php 
+                            $spice_level = $recipe['spice_level'] ?? 0;
+                            echo str_repeat('<i class="bi bi-pepper-hot spice-icon"></i>', $spice_level);
+                            if ($spice_level == 0) echo 'None';
+                            ?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- Recipe Image -->
-        <div class="text-center">
+        <div class="text-center mb-4">
             <?php if (!empty($recipe['image_url'])): ?>
                 <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" 
                      alt="Recipe Image" 
-                     class="img-fluid rounded" 
-                     style="max-width: 100%; height: auto;">
+                     class="img-fluid rounded shadow" 
+                     style="max-height: 400px; width: auto;">
             <?php else: ?>
-                <p class="text-muted">No image available</p>
+                <div class="bg-light rounded p-5 text-muted">
+                    No image available
+                </div>
             <?php endif; ?>
         </div>
         
         <!-- Recipe Description -->
-        <p class="mt-3"><?= nl2br(htmlspecialchars($recipe['description'])) ?></p>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="card-title">About This Recipe</h3>
+                <p class="card-text"><?= nl2br(htmlspecialchars($recipe['description'])) ?></p>
+            </div>
+        </div>
 
         <!-- Steps -->
-        <h3 class="mt-4">Steps</h3>
-        <ol class="list-group list-group-numbered">
-            <?php foreach ($steps as $step): ?>
-                <li class="list-group-item">
-                    <p><strong>Step <?= htmlspecialchars($step['step_no']) ?>:</strong> <?= nl2br(htmlspecialchars($step['description'])) ?></p>
-                    <?php if (!empty($step['image_url'])): ?>
-                        <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" 
-                             class="img-fluid rounded" 
-                             style="max-width: 100%; height: auto;">
-                    <?php endif; ?>
-                </li>
-            <?php endforeach; ?>
-        </ol>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Cooking Steps</h3>
+            </div>
+            <div class="card-body">
+                <ol class="list-group list-group-numbered">
+                    <?php foreach ($steps as $step): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">Step <?= htmlspecialchars($step['step_no']) ?></div>
+                                <?= nl2br(htmlspecialchars($step['description'])) ?>
+                            </div>
+                            <?php if (!empty($step['image_url'])): ?>
+                                <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" 
+                                     class="img-thumbnail" 
+                                     style="max-width: 100px; height: auto;">
+                            <?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Edit Button (for recipe owner) -->
+        <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $recipe['user_id']): ?>
+            <div class="mt-4 text-center">
+                <a href="edit.php?id=<?= $recipe_id ?>" class="btn btn-primary">Edit Recipe</a>
+            </div>
+        <?php endif; ?>
     </div>
 
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
