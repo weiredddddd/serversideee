@@ -38,7 +38,6 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Explore Cuisine | NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/style.css"> <!-- Custom CSS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         /* Slideshow Custom Size */
         .carousel-inner img {
@@ -105,6 +104,6 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <footer class="bg-dark text-white text-center py-3 mt-5">
         <p>&copy; <?= date('Y') ?> NoiceFoodie. All Rights Reserved.</p>
     </footer>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

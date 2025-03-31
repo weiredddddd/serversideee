@@ -1,5 +1,6 @@
 <?php
 session_start();
+include '../navigation.php';
 require '../config/db.php';
 
 // Fetch filter parameters
@@ -7,13 +8,14 @@ $search = $_GET['search'] ?? '';
 $category = $_GET['category'] ?? '';
 $cuisine = $_GET['cuisine'] ?? '';
 $spice_level = $_GET['spice_level'] ?? '';
+$letter = $_GET['letter'] ?? '';
 
 // Build query
 $query = "SELECT * FROM Recipes WHERE 1=1";
 $params = [];
 
 if (!empty($search)) {
-    $query .= " AND title LIKE :search";
+    $query .= " AND (title LIKE :search OR description LIKE :search OR ingredients LIKE :search)";
     $params[':search'] = "%$search%";
 }
 
@@ -32,6 +34,11 @@ if (!empty($spice_level)) {
     $params[':spice_level'] = $spice_level;
 }
 
+if (!empty($letter)) {
+    $query .= " AND title LIKE :letter";
+    $params[':letter'] = "$letter%";
+}
+
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -47,6 +54,7 @@ $cuisines = $pdo->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recipes - NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .recipe-card {
             transition: transform 0.2s;
@@ -67,100 +75,149 @@ $cuisines = $pdo->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine
             font-size: 0.8rem;
         }
         .filter-section {
-            background: #f8f9fa;
+            background:rgba(248, 250, 250, 0);
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
         }
+        .alphabet-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .alphabet-nav a {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            background:rgba(240, 240, 240, 0.05);
+            color: #333;
+            text-decoration: none;
+        }
+        .alphabet-nav a:hover, .alphabet-nav a.active {
+            background:rgba(13, 109, 253, 0.27);
+            color: white;
+        }
+        .navbar-nav .dropdown-menu {
+            max-height: 400px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
-    <?php include '../navigation.php'; ?>
+    
 
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Explore Recipes</h1>
-
-        <!-- Enhanced Filter Section -->
-        <div class="filter-section mb-4">
-            <form method="GET" action="">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <input type="text" name="search" class="form-control" placeholder="Search recipes..." value="<?= htmlspecialchars($search) ?>">
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <!-- Sidebar Filters -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Filter Recipes</h5>
                     </div>
-                    <div class="col-md-2">
-                        <select name="category" class="form-control">
-                            <option value="">All Categories</option>
-                            <?php foreach ($categories as $cat): ?>
-                                <option value="<?= htmlspecialchars($cat) ?>" <?= $category === $cat ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($cat) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select name="cuisine" class="form-control">
-                            <option value="">All Cuisines</option>
-                            <?php foreach ($cuisines as $cus): ?>
-                                <option value="<?= htmlspecialchars($cus) ?>" <?= $cuisine === $cus ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($cus) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select name="spice_level" class="form-control">
-                            <option value="">Any Spice Level</option>
-                            <option value="1" <?= $spice_level === '1' ? 'selected' : '' ?>>Mild</option>
-                            <option value="2" <?= $spice_level === '2' ? 'selected' : '' ?>>Medium</option>
-                            <option value="3" <?= $spice_level === '3' ? 'selected' : '' ?>>Spicy</option>
-                            <option value="4" <?= $spice_level === '4' ? 'selected' : '' ?>>Very Spicy</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Filter</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Recipe Cards -->
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            <?php if (empty($recipes)): ?>
-                <div class="col-12 text-center">
-                    <div class="alert alert-info">No recipes match your filters. Try different criteria.</div>
-                </div>
-            <?php else: ?>
-                <?php foreach ($recipes as $recipe): ?>
-                    <div class="col">
-                        <div class="card recipe-card">
-                            <?php if (!empty($recipe['image_url'])): ?>
-                                <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($recipe['title']) ?>">
-                            <?php else: ?>
-                                <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Placeholder">
-                            <?php endif; ?>
-                            
-                            <?php if ($recipe['spice_level'] >= 3): ?>
-                                <span class="spicy-indicator">Spicy!</span>
-                            <?php endif; ?>
-                            
-                            <div class="card-body">
-                                <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
-                                <p class="card-text text-muted">
-                                    <small>
-                                        <?= htmlspecialchars($recipe['category']) ?> • 
-                                        <?= htmlspecialchars($recipe['cuisine_type'] ?? 'International') ?>
-                                        <?php if ($recipe['spice_level'] > 0): ?>
-                                            • <?= str_repeat('🌶️', $recipe['spice_level']) ?>
-                                        <?php endif; ?>
-                                    </small>
-                                </p>
-                                <p class="card-text"><?= htmlspecialchars(substr($recipe['description'], 0, 100)) ?>...</p>
-                                <a href="view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary">View Recipe</a>
+                    <div class="card-body">
+                        <form method="GET" action="">
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <select name="category" class="form-select">
+                                    <option value="">All Categories</option>
+                                    <?php foreach ($categories as $cat): ?>
+                                        <option value="<?= htmlspecialchars($cat) ?>" <?= $category === $cat ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($cat) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
-                        </div>
+                            <div class="mb-3">
+                                <label class="form-label">Cuisine</label>
+                                <select name="cuisine" class="form-select">
+                                    <option value="">All Cuisines</option>
+                                    <?php foreach ($cuisines as $cus): ?>
+                                        <option value="<?= htmlspecialchars($cus) ?>" <?= $cuisine === $cus ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($cus) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Spice Level</label>
+                                <select name="spice_level" class="form-select">
+                                    <option value="">Any Level</option>
+                                    <option value="1" <?= $spice_level === '1' ? 'selected' : '' ?>>Mild</option>
+                                    <option value="2" <?= $spice_level === '2' ? 'selected' : '' ?>>Medium</option>
+                                    <option value="3" <?= $spice_level === '3' ? 'selected' : '' ?>>Spicy</option>
+                                    <option value="4" <?= $spice_level === '4' ? 'selected' : '' ?>>Very Spicy</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                            <a href="?" class="btn btn-outline-secondary w-100 mt-2">Reset Filters</a>
+                        </form>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <h1 class="mb-4">
+                    <?php 
+                    if (!empty($category)) echo htmlspecialchars($category) . " Recipes";
+                    elseif (!empty($cuisine)) echo htmlspecialchars($cuisine) . " Cuisine Recipes";
+                    elseif (!empty($letter)) echo "Recipes Starting With " . strtoupper($letter);
+                    else echo "All Recipes";
+                    ?>
+                </h1>
+
+                <!-- Alphabet Navigation -->
+                <div class="alphabet-nav mb-4">
+                    <?php foreach (range('A', 'Z') as $char): ?>
+                        <a href="?letter=<?= strtolower($char) ?>" class="<?= $letter === strtolower($char) ? 'active' : '' ?>"><?= $char ?></a>
+                    <?php endforeach; ?>
+                    <a href="?" class="<?= empty($letter) ? 'active' : '' ?>">All</a>
+                </div>
+
+                <!-- Recipe Cards -->
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <?php if (empty($recipes)): ?>
+                        <div class="col-12">
+                            <div class="alert alert-info">No recipes found matching your criteria. Try different filters.</div>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($recipes as $recipe): ?>
+                            <div class="col">
+                                <div class="card recipe-card h-100">
+                                    <?php if (!empty($recipe['image_url'])): ?>
+                                        <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($recipe['title']) ?>">
+                                    <?php else: ?>
+                                        <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Placeholder">
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($recipe['spice_level'] >= 3): ?>
+                                        <span class="spicy-indicator">Spicy!</span>
+                                    <?php endif; ?>
+                                    
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
+                                        <p class="card-text text-muted">
+                                            <small>
+                                                <?= htmlspecialchars($recipe['category']) ?> • 
+                                                <?= htmlspecialchars($recipe['cuisine_type'] ?? 'International') ?>
+                                                <?php if ($recipe['spice_level'] > 0): ?>
+                                                    • <?= str_repeat('🌶️', $recipe['spice_level']) ?>
+                                                <?php endif; ?>
+                                            </small>
+                                        </p>
+                                        <p class="card-text"><?= htmlspecialchars(substr($recipe['description'], 0, 100)) ?>...</p>
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <a href="view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary">View Recipe</a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </div>
 

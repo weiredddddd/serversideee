@@ -2,7 +2,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
-session_start();
+include '../navigation.php';
+
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -129,7 +130,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <style>
         .spice-level {
             display: flex;
-            gap: 10px;
+            gap: 20px;
             margin-top: 5px;
         }
         .spice-option {
@@ -139,23 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="../index.php">NoiceFoodie</a>
-            <div class="ms-auto">
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <?= htmlspecialchars($_SESSION['username']) ?>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                        <li><a class="dropdown-item" href="../users/profile.php">My Profile</a></li>
-                        <li><a class="dropdown-item" href="../recipes/manage.php">Manage Recipes</a></li>
-                        <li><a class="dropdown-item" href="../users/logout.php">Logout</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </nav>
+    
 
     <div class="container mt-4">
         <h1 class="text-center">Add a New Recipe</h1>
