@@ -1,17 +1,18 @@
 <?php
+ob_start(); // Prevent output issues
+session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-include '../navigation.php';
 
-
-// Redirect if not logged in
+// Redirect if not logged in (BEFORE any output)
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../users/login.php");
     exit();
 }
 
-include '../config/db.php';
+require '../config/db.php';
+include '../navigation.php';
+
 $errors = [];
 
 // Handle form submission
@@ -85,6 +86,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $recipe_id = $pdo->lastInsertId();
 
+       // Insert ingredients
+if (!empty($_POST['ingredients'])) {
+    foreach ($_POST['ingredients'] as $ingredient) {
+        if (!empty($ingredient['name']) && !empty($ingredient['quantity'])) {
+            try {
+                // Check if ingredient exists
+                $stmt = $pdo->prepare("SELECT ingredient_id FROM Ingredients WHERE ingredient_name = ?");
+                $stmt->execute([$ingredient['name']]);
+                $existing = $stmt->fetch();
+                
+                if ($existing) {
+                    $ingredient_id = $existing['ingredient_id'];
+                } else {
+                    // Insert new ingredient
+                    $stmt = $pdo->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
+                    $stmt->execute([$ingredient['name']]);
+                    $ingredient_id = $pdo->lastInsertId();
+                }
+                
+                // Link to recipe
+                $stmt = $pdo->prepare("INSERT INTO Recipe_Ingredient 
+                                     (recipe_id, ingredient_id, quantity, unit) 
+                                     VALUES (?, ?, ?, ?)");
+                $stmt->execute([
+                    $recipe_id,
+                    $ingredient_id,
+                    $ingredient['quantity'],
+                    $ingredient['unit'] ?? 'g' // Default to grams
+                ]);
+            } catch (PDOException $e) {
+                $errors[] = "Error processing ingredient: " . $ingredient['name'] . ". " . $e->getMessage();
+                error_log("Ingredient processing error: " . $e->getMessage());
+                continue;
+            }
+        }
+    }
+}
+
         // Insert steps with images
         foreach ($_POST['steps'] as $index => $step_desc) {
             if (!empty($step_desc)) {
@@ -114,11 +153,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if (empty($errors)) {
-            header("Location: view.php?id=" . $recipe_id);
+            $_SESSION['success_message'] = "Recipe posted successfully!";
+            header("Location: ../recipes/view.php?id=" . $recipe_id);
             exit();
         }
     }
 }
+ob_end_flush(); // Flush output buffer to prevent header issues
 ?>
 
 <!DOCTYPE html>
@@ -137,11 +178,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: flex;
             align-items: center;
         }
+        .ingredient-group {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .remove-btn {
+            cursor: pointer;
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
-    
-
     <div class="container mt-4">
         <h1 class="text-center">Add a New Recipe</h1>
 
@@ -222,6 +271,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="file" name="image" class="form-control" required>
             </div>
 
+            <h4>Ingredients</h4>
+            <div id="ingredients-container">
+                <div class="mb-3 ingredient-group row">
+                    <div class="col-md-5">
+                        <label class="form-label">Ingredient Name</label>
+                        <input type="text" name="ingredients[0][name]" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Quantity</label>
+                        <input type="text" name="ingredients[0][quantity]" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Unit</label>
+                        <select name="ingredients[0][unit]" class="form-control">
+                            <option value="g">g</option>
+                            <option value="kg">kg</option>
+                            <option value="ml">ml</option>
+                            <option value="L">L</option>
+                            <option value="tsp">tsp</option>
+                            <option value="tbsp">tbsp</option>
+                            <option value="cup">cup</option>
+                            <option value="pinch">pinch</option>
+                            <option value="piece">piece</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="add-ingredient" class="btn btn-secondary mb-3">Add Ingredient</button>
+
             <h4>Steps</h4>
             <div id="steps-container">
                 <div class="mb-3 step-group">
@@ -240,6 +321,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <script>
+        // Ingredients functionality
+        let ingredientCount = 0;
+        document.getElementById("add-ingredient").addEventListener("click", function() {
+            ingredientCount++;
+            let ingredientDiv = document.createElement("div");
+            ingredientDiv.classList.add("mb-3", "ingredient-group", "row");
+            ingredientDiv.innerHTML = `
+                <div class="col-md-5">
+                    <label class="form-label">Ingredient Name</label>
+                    <input type="text" name="ingredients[${ingredientCount}][name]" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Quantity</label>
+                    <input type="text" name="ingredients[${ingredientCount}][quantity]" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Unit</label>
+                    <select name="ingredients[${ingredientCount}][unit]" class="form-control">
+                        <option value="g">g</option>
+                        <option value="kg">kg</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L</option>
+                        <option value="tsp">tsp</option>
+                        <option value="tbsp">tbsp</option>
+                        <option value="cup">cup</option>
+                        <option value="pinch">pinch</option>
+                        <option value="piece">piece</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                </div>
+            `;
+            document.getElementById("ingredients-container").appendChild(ingredientDiv);
+        });
+
+        function removeIngredient(element) {
+            element.closest('.ingredient-group').remove();
+        }
+
+        // Steps functionality
         let stepCount = 1;
         document.getElementById("add-step").addEventListener("click", function() {
             stepCount++;

@@ -3,6 +3,10 @@ session_start();
 include '../config/db.php';
 include '../navigation.php';
 
+if (isset($_SESSION['success_message'])) {
+    echo '<div class="alert alert-success">' . $_SESSION['success_message'] . '</div>';
+    unset($_SESSION['success_message']); // Clear message after displaying
+}
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -35,9 +39,20 @@ try {
 }
 
 try {
+    // Get steps
     $step_stmt = $pdo->prepare("SELECT * FROM Steps WHERE recipe_id = ? ORDER BY step_no ASC");
     $step_stmt->execute([$recipe_id]);
     $steps = $step_stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get ingredients
+    $ingredient_stmt = $pdo->prepare("SELECT i.ingredient_name AS name, ri.quantity, ri.unit 
+    FROM Recipe_Ingredient ri
+    JOIN Ingredients i ON ri.ingredient_id = i.ingredient_id
+    WHERE ri.recipe_id = ?
+    ORDER BY ri.recipe_id, ri.ingredient_id");
+
+    $ingredient_stmt->execute([$recipe_id]);
+    $ingredients = $ingredient_stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     header("Location: ../error.php?message=Database error: " . urlencode($e->getMessage()));
     exit();
@@ -69,6 +84,18 @@ try {
         }
         .spice-icon {
             color: #dc3545;
+        }
+        .ingredient-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .ingredient-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .ingredient-quantity {
+            font-weight: bold;
+            color: #0d6efd;
         }
     </style>
 </head>
@@ -128,27 +155,58 @@ try {
             </div>
         </div>
 
-        <!-- Steps -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="mb-0">Cooking Steps</h3>
+        <!-- Ingredients and Steps in Two Columns -->
+        <div class="row">
+            <!-- Ingredients Column -->
+            <div class="col-md-5 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h3 class="mb-0">Ingredients</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="ingredient-list">
+                        <?php if (!empty($ingredients)): ?>
+    <?php foreach ($ingredients as $ingredient): ?>
+        <li class="ingredient-item">
+            <span class="ingredient-quantity">
+                <?= htmlspecialchars($ingredient['quantity']) ?>
+                <?= htmlspecialchars($ingredient['unit']) ?>
+            </span>
+            <?= htmlspecialchars($ingredient['name']) ?> <!-- This should now work -->
+        </li>
+    <?php endforeach; ?>
+<?php else: ?>
+    <li class="text-muted">No ingredients listed</li>
+<?php endif; ?>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <ol class="list-group list-group-numbered">
-                    <?php foreach ($steps as $step): ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-start">
-                            <div class="ms-2 me-auto">
-                                <div class="fw-bold">Step <?= htmlspecialchars($step['step_no']) ?></div>
-                                <?= nl2br(htmlspecialchars($step['description'])) ?>
-                            </div>
-                            <?php if (!empty($step['image_url'])): ?>
-                                <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" 
-                                     class="img-thumbnail" 
-                                     style="max-width: 100px; height: auto;">
-                            <?php endif; ?>
-                        </li>
-                    <?php endforeach; ?>
-                </ol>
+
+            <!-- Steps Column -->
+            <div class="col-md-7 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h3 class="mb-0">Cooking Steps</h3>
+                    </div>
+                    <div class="card-body">
+                        <ol class="list-group list-group-numbered">
+                            <?php foreach ($steps as $step): ?>
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold">Step <?= htmlspecialchars($step['step_no']) ?></div>
+                                        <?= nl2br(htmlspecialchars($step['description'])) ?>
+                                    </div>
+                                    <?php if (!empty($step['image_url'])): ?>
+                                        <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" 
+                                             class="img-thumbnail" 
+                                             style="max-width: 100px; height: auto;">
+                                    <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ol>
+                    </div>
+                </div>
             </div>
         </div>
 

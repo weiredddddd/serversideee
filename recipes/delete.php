@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Check if recipe ID is provided
 if (!isset($_GET['id']) || empty($_GET['id'])) {
-    header("Location: manage_recipes.php");
+    header("Location: manage.php");
     exit();
 }
 
@@ -24,7 +24,7 @@ $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // If recipe doesn't exist or doesn't belong to the user, redirect
 if (!$recipe) {
-    header("Location: manage_recipes.php");
+    header("Location: manage.php");
     exit();
 }
 
