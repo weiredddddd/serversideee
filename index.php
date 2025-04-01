@@ -14,18 +14,6 @@ $query = "SELECT r.recipe_id, r.title, r.description, r.image_url, r.category, u
 
 $params = [];
 
-// Search by title
-if (!empty($_GET['search'])) {
-    $query .= " AND r.title LIKE ?";
-    $params[] = '%' . $_GET['search'] . '%';
-}
-
-// Filter by category
-if (!empty($_GET['category'])) {
-    $query .= " AND r.category = ?";
-    $params[] = $_GET['category'];
-}
-
 // Prepare & execute query
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
@@ -52,7 +40,14 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 <body>
-
+<div class="container mt-4">
+    <?php if (isset($_SESSION['message'])): ?>
+        <div class="alert alert-success text-center">
+            <?= $_SESSION['message']; ?>
+        </div>
+        <?php unset($_SESSION['message']); // Remove message after displaying ?>
+    <?php endif; ?>
+</div>
     <!-- Slideshow Section -->
     <div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
@@ -60,10 +55,10 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <img src="uploads/slideshow1.jpg" class="d-block w-100" alt="Slideshow 1">
             </div>
             <div class="carousel-item">
-                <img src="uploads/curry.jpg" class="d-block w-100" alt="Chicken Curry">
+                <img src="uploads/slideshow2.jpg" class="d-block w-100" alt="Slideshow 2">
             </div>
             <div class="carousel-item">
-                <img src="uploads/cake.jpg" class="d-block w-100" alt="Chocolate Cake">
+                <img src="uploads/slideshow3.jpg" class="d-block w-100" alt="Slideshow 3">
             </div>
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev">
@@ -99,6 +94,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php endforeach; ?>
         </div>
     </div>
+    
 
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-5">

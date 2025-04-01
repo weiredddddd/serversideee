@@ -1,12 +1,17 @@
 <?php
 session_start();
 include '../config/db.php'; // Ensure correct database connection
-include 'navigation.php';
+
+
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
 
+    // Fetch user data
     $stmt = $pdo->prepare("SELECT * FROM Users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -14,6 +19,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['username'] = $user['username'];
+
+        // Debugging: Check if session data is set
+        // var_dump($_SESSION); die;
+
+        // Make sure no output has been sent before redirect
+        ob_clean();
         header("Location: ../index.php");
         exit();
     } else {
@@ -37,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <h2 class="text-center mb-4">Login to NoiceFoodie</h2>
 
         <?php if (isset($error)): ?>
-            <div class="alert alert-danger text-center"><?php echo $error; ?></div>
+            <div class="alert alert-danger text-center"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
 
         <form method="POST">

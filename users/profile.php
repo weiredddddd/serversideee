@@ -6,6 +6,10 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+// Prevent browser from caching logged-in state
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
 
 // Include navigation bar
 include '../navigation.php';
@@ -131,6 +135,8 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <p><strong>Email:</strong> <?= htmlspecialchars($user_email) ?></p>
                 <p><strong>Member Since:</strong> January 2025</p>
                 <a href="../users/edit_profile.php" class="btn btn-outline-primary w-100 mt-2">Edit Profile</a>
+                <!-- Delete Account Button -->
+    <button class="btn btn-danger w-100 mt-2" onclick="confirmDelete()">Delete Account</button>
             </div>
 
             <div class="sidebar-card">
@@ -195,6 +201,12 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+<script>
+function confirmDelete() {
+    if (confirm("Are you sure you want to delete your account? This action cannot be undone!")) {
+        window.location.href = '../users/delete_account.php';
+    }
+}
+</script>
 </body>
 </html>

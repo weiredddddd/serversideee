@@ -112,7 +112,7 @@ try {
                 <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" 
                      alt="Recipe Image" 
                      class="img-fluid rounded shadow" 
-                     style="max-height: 400px; width: auto;">
+                     style="max-height: 300px; width: auto;">
             <?php else: ?>
                 <div class="bg-light rounded p-5 text-muted">
                     No image available

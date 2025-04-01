@@ -31,31 +31,32 @@ define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
 
         <!-- Search Bar -->
         <form class="d-flex mx-auto" action="<?= BASE_URL ?>/recipes/recipes.php" method="GET">
-            <input class="form-control me-2" type="search" name="search" placeholder="Search recipes or ingredients..." aria-label="Search">
+            <input class="form-control me-2" type="search" name="search" placeholder="Search recipes..." aria-label="Search">
             <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
         </form>
 
         <!-- User Account Section -->
         <ul class="navbar-nav">
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-user-circle me-1"></i> My Account
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/profile.php">Profile</a></li>
-                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/logout.php">Logout</a></li>
-                    </ul>
-                </li>
-            <?php else: ?>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= BASE_URL ?>/users/login.php">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= BASE_URL ?>/users/register.php">Register</a>
-                </li>
-            <?php endif; ?>
-        </ul>
+    <?php if (isset($_SESSION['user_id']) && isset($_SESSION['username'])): ?>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($_SESSION['username']) ?>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/profile.php">Profile</a></li>
+                <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/logout.php">Logout</a></li>
+            </ul>
+        </li>
+    <?php else: ?>
+        <li class="nav-item">
+            <a class="nav-link" href="<?= BASE_URL ?>/users/login.php">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="<?= BASE_URL ?>/users/register.php">Register</a>
+        </li>
+    <?php endif; ?>
+</ul>
+
     </div>
 </nav>
 
