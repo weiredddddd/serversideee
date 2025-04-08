@@ -52,13 +52,13 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="uploads/slideshow1.jpg" class="d-block w-100" alt="Slideshow 1">
+                <img src="assets/bg/slideshow1.jpg" class="d-block w-100" alt="Slideshow 1">
             </div>
             <div class="carousel-item">
-                <img src="uploads/slideshow2.jpg" class="d-block w-100" alt="Slideshow 2">
+                <img src="assets/bg/slideshow2.jpg" class="d-block w-100" alt="Slideshow 2">
             </div>
             <div class="carousel-item">
-                <img src="uploads/slideshow3.jpg" class="d-block w-100" alt="Slideshow 3">
+                <img src="assets/bg/slideshow3.jpg" class="d-block w-100" alt="Slideshow 3">
             </div>
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev">

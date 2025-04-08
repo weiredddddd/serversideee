@@ -90,51 +90,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Reset | NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-        }
-        .reset-card {
-            max-width: 450px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
-    </style>
+   
+    
 </head>
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="reset-card card p-4">
-                    <h2 class="text-center mb-4">Reset Your Password</h2>
-                    
-                    <?php if ($message): ?>
-                        <div class="alert alert-<?= ($message_type == 'success') ? 'success' : 'danger' ?>">
-                            <?= $message ?>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <form method="POST" class="mb-3">
-                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="email" name="email" 
-                                   placeholder="Enter your registered email" required maxlength="100">
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Send Reset Link</button>
-                    </form>
-                    
-                    <div class="text-center">
-                        <a href="login.php" class="text-decoration-none">Back to Login</a>
-                    </div>
+    <div class="container min-vh-100 d-flex justify-content-center align-items-center">
+        <div class="reset-card card p-4 w-100" style="max-width: 450px;">
+            <h2 class="text-center mb-4">Reset Your Password</h2>
+            
+            <?php if ($message): ?>
+                <div class="alert alert-<?= ($message_type == 'success') ? 'success' : 'danger' ?>">
+                    <?= $message ?>
                 </div>
+            <?php endif; ?>
+            
+            <form method="POST" class="mb-3">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" name="email" 
+                           placeholder="Enter your registered email" required maxlength="100">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Send Reset Link</button>
+            </form>
+            
+            <div class="text-center">
+                <a href="login.php" class="text-decoration-none">Back to Login</a>
             </div>
         </div>
     </div>
 
+    <style>
+        body {
+            background: url('../assets/bg/login-bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

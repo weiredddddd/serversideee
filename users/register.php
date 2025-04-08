@@ -90,6 +90,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php endif; ?>
     </div>
 </div>
+<style>
+    body {
+        background: url('../assets/bg/login-bg.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+    </style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

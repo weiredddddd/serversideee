@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../config/db.php'; // Ensure correct database connection
-
+include '../navigation.php'; // Include navigation bar
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -74,7 +74,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
 </div>
-
+<style>
+    body {
+        background: url('../assets/bg/login-bg.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+    </style>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
