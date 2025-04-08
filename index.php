@@ -25,55 +25,102 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <title>Explore Cuisine | NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/style.css"> <!-- Custom CSS -->
+    
     <style>
-        /* Slideshow Custom Size */
-        .carousel-inner img {
-            height: 50vh; /* Half of the viewport height */
-            object-fit: cover; /* Ensures the image fits properly */
+    /* Slideshow container */
+    .carousel-item {
+        height: 80vh;
+        min-height: 400px;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        position: relative;
+    }
+
+    /* Dark overlay on each slide */
+    .carousel-item::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1;
+    }
+
+    /* Caption styling */
+    .carousel-caption {
+        z-index: 2;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #fff;
+        text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+    }
+
+    .carousel-caption h1 {
+        font-size: 3rem;
+        font-weight: bold;
+    }
+
+    .carousel-caption p {
+        font-size: 1.25rem;
+    }
+
+    @media (max-width: 768px) {
+        .carousel-caption h1 {
+            font-size: 2rem;
         }
-        .carousel-caption {
-            top: 50%; /* Center text vertically */
-            transform: translateY(-50%);
+        .carousel-caption p {
+            font-size: 1rem;
         }
-    </style>
+    }
+    
+
+</style>
+
 </head>
 
 <body>
-<div class="container mt-4">
-    <?php if (isset($_SESSION['message'])): ?>
+<?php if (isset($_SESSION['message'])): ?>
+    <div class="container mt-4">
         <div class="alert alert-success text-center">
             <?= $_SESSION['message']; ?>
         </div>
-        <?php unset($_SESSION['message']); // Remove message after displaying ?>
-    <?php endif; ?>
-</div>
+    </div>
+    <?php unset($_SESSION['message']); ?>
+<?php endif; ?>
+
     <!-- Slideshow Section -->
-    <div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="assets/bg/slideshow1.jpg" class="d-block w-100" alt="Slideshow 1">
-            </div>
-            <div class="carousel-item">
-                <img src="assets/bg/slideshow2.jpg" class="d-block w-100" alt="Slideshow 2">
-            </div>
-            <div class="carousel-item">
-                <img src="assets/bg/slideshow3.jpg" class="d-block w-100" alt="Slideshow 3">
+<div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        <div class="carousel-item active" style="background-image: url('assets/bg/slideshow1.jpg');">
+            <div class="carousel-caption">
+                <h1>Explore Cuisine</h1>
+                <p>Discover amazing recipes from around the world</p>
             </div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#recipeCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        </button>
-
-        <!-- Overlay Text -->
-        <div class="carousel-caption">
-            <h1 class="display-4">Explore Cuisine</h1>
-            <p>Discover amazing recipes from around the world</p>
+        <div class="carousel-item" style="background-image: url('assets/bg/slideshow2.jpg');">
+            <div class="carousel-caption">
+                <h1>Delicious Dishes</h1>
+                <p>Handpicked meals for every craving</p>
+            </div>
+        </div>
+        <div class="carousel-item" style="background-image: url('assets/bg/slideshow3.jpg');">
+            <div class="carousel-caption">
+                <h1>Cook with Passion</h1>
+                <p>Turn everyday meals into masterpieces</p>
+            </div>
         </div>
     </div>
+
+    <!-- Controls -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#recipeCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    </button>
+</div>
 
     <!-- Recipe Grid Section -->
     <div class="container mt-5">
