@@ -149,33 +149,35 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
-        <!-- Middle Section (User Recipes) -->
-        <div class="col-lg-6">
-            <div class="card p-3 shadow-sm">
-                <h5 class="mb-3">My Recipes</h5>
-                <a href="../recipes/manage.php" class="btn btn-primary w-100">Manage My Recipes</a>
+       <!-- Middle Section (Activity Log) -->
+<div class="col-lg-6">
+    <div class="card p-3 shadow-sm">
+        <h5 class="mb-3">Activity Log</h5>
+        <a href="../recipes/manage.php" class="btn btn-primary w-100 mb-3">Manage My Recipes</a>
 
-                <!-- Display User's Recipes -->
-                <?php if (empty($recipes)): ?>
-                    <p class="text-muted mt-3">No recipes found.</p>
-                <?php else: ?>
-                    <div class="row mt-3">
-                        <?php foreach ($recipes as $recipe): ?>
-                            <div class="col-md-6 mb-3">
-                                <div class="card recipe-card h-100">
-                                    <div class="card-body">
-                                        <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
-                                        <p class="card-text"><?= htmlspecialchars($recipe['description']) ?></p>
-                                        <p class="text-muted"><small>Category: <?= htmlspecialchars($recipe['category']) ?></small></p>
-                                        <a href="../recipes/view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-sm btn-primary">View Recipe</a>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
+        <?php if (empty($recipes)): ?>
+            <p class="text-muted">You haven't added any recipes yet.</p>
+        <?php else: ?>
+            <ul class="list-group">
+                <?php foreach ($recipes as $recipe): ?>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div>
+                            <div><strong><?= htmlspecialchars($recipe['title']) ?></strong></div>
+                            <small class="text-muted">
+                                Added on <?= date('F j, Y', strtotime($recipe['created_at'])) ?>
+                                <?php if (!empty($recipe['updated_at']) && $recipe['updated_at'] !== $recipe['created_at']): ?>
+                                    • Edited on <?= date('F j, Y', strtotime($recipe['updated_at'])) ?>
+                                <?php endif; ?>
+                            </small>
+                        </div>
+                        <a href="../recipes/view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
+</div>
+
 
         <!-- Right Sidebar (Rated & Commented Posts) -->
         <div class="col-lg-3">

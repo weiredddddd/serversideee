@@ -35,35 +35,28 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="container mt-5">
         <h2>Manage My Recipes</h2>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Created At</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($recipes)): ?>
-                    <tr>
-                        <td colspan="4" class="text-center">No recipes found.</td>
-                    </tr>
-                <?php else: ?>
-                    <?php foreach ($recipes as $recipe): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($recipe['title']) ?></td>
-                            <td><?= htmlspecialchars($recipe['category']) ?></td>
-                            <td><?= htmlspecialchars($recipe['created_at']) ?></td>
-                            <td>
-                                <a href="edit.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-warning btn-sm">Edit</a>
-                                <a href="delete.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+        <div class="row mt-4">
+    <?php if (empty($recipes)): ?>
+        <p class="text-muted">You haven't added any recipes yet.</p>
+    <?php else: ?>
+        <?php foreach ($recipes as $recipe): ?>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
+                        <p class="card-text">
+                            <strong>Category:</strong> <?= htmlspecialchars($recipe['category']) ?><br>
+                            <small class="text-muted">Posted on <?= date('F j, Y', strtotime($recipe['created_at'])) ?></small>
+                        </p>
+                        <a href="edit.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-warning btn-sm me-2">Edit</a>
+                        <a href="delete.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
