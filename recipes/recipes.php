@@ -49,6 +49,7 @@ $cuisines = $pdo->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,10 +61,12 @@ $cuisines = $pdo->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine
             transition: transform 0.2s;
             height: 100%;
         }
+
         .recipe-card:hover {
             transform: scale(1.02);
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
+
         .spicy-indicator {
             position: absolute;
             top: 10px;
@@ -74,18 +77,21 @@ $cuisines = $pdo->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine
             border-radius: 10px;
             font-size: 0.8rem;
         }
+
         .filter-section {
-            background:rgba(248, 250, 250, 0);
+            background: rgba(248, 250, 250, 0);
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
         }
+
         .alphabet-nav {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
             margin-bottom: 20px;
         }
+
         .alphabet-nav a {
             display: inline-block;
             width: 30px;
@@ -93,22 +99,26 @@ $cuisines = $pdo->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine
             text-align: center;
             line-height: 30px;
             border-radius: 50%;
-            background:rgba(240, 240, 240, 0.05);
+            background: rgba(240, 240, 240, 0.05);
             color: #333;
             text-decoration: none;
         }
-        .alphabet-nav a:hover, .alphabet-nav a.active {
-            background:rgba(13, 109, 253, 0.27);
+
+        .alphabet-nav a:hover,
+        .alphabet-nav a.active {
+            background: rgba(13, 109, 253, 0.27);
             color: white;
         }
+
         .navbar-nav .dropdown-menu {
             max-height: 400px;
             overflow-y: auto;
         }
     </style>
 </head>
+
 <body>
-    
+
 
     <div class="container mt-4">
         <div class="row">
@@ -158,69 +168,80 @@ $cuisines = $pdo->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine
                     </div>
                 </div>
             </div>
-            <div class="col-md-9">
-                <h1 class="mb-4">
-                    <?php 
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">
+                    <?php
                     if (!empty($category)) echo htmlspecialchars($category) . " Recipes";
                     elseif (!empty($cuisine)) echo htmlspecialchars($cuisine) . " Cuisine Recipes";
                     elseif (!empty($letter)) echo "Recipes Starting With " . strtoupper($letter);
                     else echo "All Recipes";
                     ?>
                 </h1>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="add_recipe.php" class="btn btn-success">
+                        <i class="fas fa-plus"></i> New Recipe
+                    </a>
+                <?php else: ?>
+                    <a href="../users/login.php?redirect=add_recipe.php" class="btn btn-success">
+                        <i class="fas fa-plus"></i> New Recipe
+                    </a>
+                <?php endif; ?>
+            </div>
+            <!-- Alphabet Navigation -->
+            <div class="alphabet-nav mb-4">
+                <?php foreach (range('A', 'Z') as $char): ?>
+                    <a href="?letter=<?= strtolower($char) ?>" class="<?= $letter === strtolower($char) ? 'active' : '' ?>"><?= $char ?></a>
+                <?php endforeach; ?>
+                <a href="?" class="<?= empty($letter) ? 'active' : '' ?>">All</a>
+            </div>
 
-                <!-- Alphabet Navigation -->
-                <div class="alphabet-nav mb-4">
-                    <?php foreach (range('A', 'Z') as $char): ?>
-                        <a href="?letter=<?= strtolower($char) ?>" class="<?= $letter === strtolower($char) ? 'active' : '' ?>"><?= $char ?></a>
-                    <?php endforeach; ?>
-                    <a href="?" class="<?= empty($letter) ? 'active' : '' ?>">All</a>
-                </div>
+            <!-- Recipe Cards -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <?php if (empty($recipes)): ?>
+                    <div class="col-12">
+                        <div class="alert alert-info">No recipes found matching your criteria. Try different filters.</div>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($recipes as $recipe): ?>
+                        <div class="col">
+                            <div class="card recipe-card h-100">
+                                <?php if (!empty($recipe['image_url'])): ?>
+                                    <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($recipe['title']) ?>">
+                                <?php else: ?>
+                                    <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Placeholder">
+                                <?php endif; ?>
 
-                <!-- Recipe Cards -->
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    <?php if (empty($recipes)): ?>
-                        <div class="col-12">
-                            <div class="alert alert-info">No recipes found matching your criteria. Try different filters.</div>
-                        </div>
-                    <?php else: ?>
-                        <?php foreach ($recipes as $recipe): ?>
-                            <div class="col">
-                                <div class="card recipe-card h-100">
-                                    <?php if (!empty($recipe['image_url'])): ?>
-                                        <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($recipe['title']) ?>">
-                                    <?php else: ?>
-                                        <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Placeholder">
-                                    <?php endif; ?>
-                                    
-                                    <?php if ($recipe['spice_level'] >= 3): ?>
-                                        <span class="spicy-indicator">Spicy!</span>
-                                    <?php endif; ?>
-                                    
-                                    <div class="card-body">
-                                        <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
-                                        <p class="card-text text-muted">
-                                            <small>
-                                                <?= htmlspecialchars($recipe['category']) ?> • 
-                                                <?= htmlspecialchars($recipe['cuisine_type'] ?? 'International') ?>
-                                                <?php if ($recipe['spice_level'] > 0): ?>
-                                                    • <?= str_repeat('🌶️', $recipe['spice_level']) ?>
-                                                <?php endif; ?>
-                                            </small>
-                                        </p>
-                                        <p class="card-text"><?= htmlspecialchars(substr($recipe['description'], 0, 100)) ?>...</p>
-                                    </div>
-                                    <div class="card-footer bg-transparent">
-                                        <a href="view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary">View Recipe</a>
-                                    </div>
+                                <?php if ($recipe['spice_level'] >= 3): ?>
+                                    <span class="spicy-indicator">Spicy!</span>
+                                <?php endif; ?>
+
+                                <div class="card-body">
+                                    <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
+                                    <p class="card-text text-muted">
+                                        <small>
+                                            <?= htmlspecialchars($recipe['category']) ?> •
+                                            <?= htmlspecialchars($recipe['cuisine_type'] ?? 'International') ?>
+                                            <?php if ($recipe['spice_level'] > 0): ?>
+                                                • <?= str_repeat('🌶️', $recipe['spice_level']) ?>
+                                            <?php endif; ?>
+                                        </small>
+                                    </p>
+                                    <p class="card-text"><?= htmlspecialchars(substr($recipe['description'], 0, 100)) ?>...</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary">View Recipe</a>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
+    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

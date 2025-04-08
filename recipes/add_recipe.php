@@ -1,8 +1,7 @@
 <?php
 ob_start(); // Prevent output issues
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+
 
 // Redirect if not logged in (BEFORE any output)
 if (!isset($_SESSION['user_id'])) {

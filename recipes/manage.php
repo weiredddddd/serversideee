@@ -1,6 +1,6 @@
 <?php
 session_start();
-require '../config/db.php'; // Adjust path to db.php
+require '../config/db.php'; 
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
