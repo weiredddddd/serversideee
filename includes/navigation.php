@@ -1,5 +1,6 @@
 <?php
-session_start();
+// Include session config instead of calling session_start directly
+require_once __DIR__ . '/config/session_config.php';
 
 // Define base URL dynamically
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
@@ -85,7 +86,7 @@ define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= BASE_URL ?>/community.php">Community</a>
+                    <a class="nav-link" href="<?= BASE_URL ?>/community/community.php">Community</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= BASE_URL ?>/competitions.php">Competitions</a>
