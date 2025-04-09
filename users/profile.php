@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../config/session_config.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -12,7 +12,7 @@ header("Pragma: no-cache");
 header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
 
 // Include navigation bar
-include '../navigation.php';
+include '../includes/navigation.php';
 
 // Fetch user's recipes
 require '../config/db.php';
