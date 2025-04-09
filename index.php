@@ -1,6 +1,6 @@
 <?php
 require_once 'config/session_config.php';
-include 'navigation.php';
+include 'includes/navigation.php';
 include 'config/db.php';
 
 // Fetch categories & ingredients for filters
@@ -144,7 +144,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
 
     <!-- Footer -->
-    <?php include_once 'footer.php'; ?>
+    <?php include_once 'includes/footer.php'; ?>
 
 </body>
 </html>
