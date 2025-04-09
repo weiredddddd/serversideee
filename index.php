@@ -1,7 +1,7 @@
 <?php
+require_once 'config/session_config.php';
 include 'navigation.php';
 include 'config/db.php';
-session_start();
 
 // Fetch categories & ingredients for filters
 $categories = $pdo->query("SELECT DISTINCT category FROM Recipes")->fetchAll(PDO::FETCH_ASSOC);
@@ -144,9 +144,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
 
     <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-3 mt-5">
-        <p>&copy; <?= date('Y') ?> NoiceFoodie. All Rights Reserved.</p>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include_once 'footer.php'; ?>
+
 </body>
 </html>
