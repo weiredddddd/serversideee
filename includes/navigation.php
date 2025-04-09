@@ -1,6 +1,6 @@
 <?php
 // Include session config instead of calling session_start directly
-require_once __DIR__ . '/config/session_config.php';
+require_once __DIR__ . '/../config/session_config.php';
 
 // Define base URL dynamically
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";

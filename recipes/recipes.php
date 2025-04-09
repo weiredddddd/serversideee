@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../navigation.php';
+include '../includes/navigation.php';
 require '../config/db.php';
 
 // Fetch filter parameters
