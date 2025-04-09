@@ -1,7 +1,6 @@
 <?php
-session_start();
+require_once '../config/session_config.php';
 include '../config/db.php'; // Ensure correct database connection
-include '../navigation.php'; // Include navigation bar
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -20,17 +19,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['username'] = $user['username'];
 
-        // Debugging: Check if session data is set
-        // var_dump($_SESSION); die;
-
-        // Make sure no output has been sent before redirect
-        ob_clean();
+        // Redirect to homepage
         header("Location: ../index.php");
         exit();
     } else {
         $error = "Invalid email or password!";
     }
 }
+
+// Only include navigation AFTER all potential redirects
+include '../navigation.php'; // Include navigation bar
 ?>
 
 <!DOCTYPE html>
@@ -79,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         background: url('../assets/bg/login-bg.jpg') no-repeat center center fixed;
         background-size: cover;
     }
-    </style>
+</style>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
