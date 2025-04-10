@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include '../config/db.php'; // Ensure the correct path
-include '../navigation.php'; // Include navigation
+include '../includes/navigation.php'; // Include navigation
 $success = "";
 $error = "";
 $show_redirect_button = false; // New flag for showing redirect button

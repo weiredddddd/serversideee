@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Only include navigation AFTER all potential redirects
-include '../navigation.php'; // Include navigation bar
+include '../includes/navigation.php'; // Include navigation bar
 ?>
 
 <!DOCTYPE html>
@@ -79,5 +79,9 @@ include '../navigation.php'; // Include navigation bar
     }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Footer -->
+<?php include_once '../includes/footer.php'; ?>
+
 </body>
 </html>

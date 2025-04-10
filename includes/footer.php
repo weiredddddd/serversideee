@@ -16,9 +16,9 @@
             <div class="col-md-4 mb-3">
                 <h5>Quick Links</h5>
                 <ul class="list-unstyled">
-                    <li><a href="<?php echo isset($base_url) ? $base_url : ''; ?>/index.php" class="text-white text-decoration-none">Home</a></li>
-                    <li><a href="<?php echo isset($base_url) ? $base_url : ''; ?>/recipes/index.php" class="text-white text-decoration-none">Recipes</a></li>
-                    <li><a href="<?php echo isset($base_url) ? $base_url : ''; ?>/community/community.php" class="text-white text-decoration-none">Community</a></li>
+                    <li><a href="<?php echo isset($base_url) ? $base_url : ''; ?>/asm/index.php" class="text-white text-decoration-none">Home</a></li>
+                    <li><a href="<?php echo isset($base_url) ? $base_url : ''; ?>/asm/recipes/recipes.php" class="text-white text-decoration-none">Recipes</a></li>
+                    <li><a href="<?php echo isset($base_url) ? $base_url : ''; ?>/asm/community/community.php" class="text-white text-decoration-none">Community</a></li>
                     <li><a href="<?php echo isset($base_url) ? $base_url : ''; ?>/contact.php" class="text-white text-decoration-none">Contact</a></li>
                 </ul>
             </div>
