@@ -79,11 +79,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Insert recipe into database if no errors
     if (empty($errors)) {
-        $stmt = $pdo->prepare("INSERT INTO Recipes (title, description, category, cuisine_type, spice_level, image_url, user_id) 
+        $stmt = $RecipeDB->prepare("INSERT INTO Recipes (title, description, category, cuisine_type, spice_level, image_url, user_id) 
                                VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$title, $description, $category, $cuisine_type, $spice_level, $image_url, $user_id]);
 
-        $recipe_id = $pdo->lastInsertId();
+        $recipe_id = $RecipeDB->lastInsertId();
 
        // Insert ingredients
 if (!empty($_POST['ingredients'])) {
@@ -91,7 +91,7 @@ if (!empty($_POST['ingredients'])) {
         if (!empty($ingredient['name']) && !empty($ingredient['quantity'])) {
             try {
                 // Check if ingredient exists
-                $stmt = $pdo->prepare("SELECT ingredient_id FROM Ingredients WHERE ingredient_name = ?");
+                $stmt = $RecipeDB->prepare("SELECT ingredient_id FROM Ingredients WHERE ingredient_name = ?");
                 $stmt->execute([$ingredient['name']]);
                 $existing = $stmt->fetch();
                 
@@ -99,13 +99,13 @@ if (!empty($_POST['ingredients'])) {
                     $ingredient_id = $existing['ingredient_id'];
                 } else {
                     // Insert new ingredient
-                    $stmt = $pdo->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
+                    $stmt = $RecipeDB->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
                     $stmt->execute([$ingredient['name']]);
-                    $ingredient_id = $pdo->lastInsertId();
+                    $ingredient_id = $RecipeDB->lastInsertId();
                 }
                 
                 // Link to recipe
-                $stmt = $pdo->prepare("INSERT INTO Recipe_Ingredient 
+                $stmt = $RecipeDB->prepare("INSERT INTO Recipe_Ingredient 
                                      (recipe_id, ingredient_id, quantity, unit) 
                                      VALUES (?, ?, ?, ?)");
                 $stmt->execute([
@@ -145,7 +145,7 @@ if (!empty($_POST['ingredients'])) {
                     }
                 }
 
-                $step_stmt = $pdo->prepare("INSERT INTO Steps (recipe_id, step_no, description, image_url) 
+                $step_stmt = $RecipeDB->prepare("INSERT INTO Steps (recipe_id, step_no, description, image_url) 
                                             VALUES (?, ?, ?, ?)");
                 $step_stmt->execute([$recipe_id, $index + 1, $step_desc, $step_image_url]);
             }

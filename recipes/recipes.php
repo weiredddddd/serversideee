@@ -45,13 +45,13 @@ if (!empty($my_recipes) && isset($_SESSION['user_id'])) {
     $params[':user_id'] = $_SESSION['user_id'];
 }
 
-$stmt = $pdo->prepare($query);
+$stmt = $RecipeDB->prepare($query);
 $stmt->execute($params);
 $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get unique categories for filter dropdown
-$categories = $pdo->query("SELECT DISTINCT category FROM Recipes")->fetchAll(PDO::FETCH_COLUMN);
-$cuisines = $pdo->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine_type IS NOT NULL")->fetchAll(PDO::FETCH_COLUMN);
+$categories = $RecipeDB->query("SELECT DISTINCT category FROM Recipes")->fetchAll(RecipeDB::FETCH_COLUMN);
+$cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine_type IS NOT NULL")->fetchAll(PDO::FETCH_COLUMN);
 ?>
 <!DOCTYPE html>
 <html lang="en">
