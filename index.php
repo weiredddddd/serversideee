@@ -113,6 +113,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?= htmlspecialchars($message) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+    </div>
     <?php endif; ?>
 
     <!-- Slideshow Section -->
