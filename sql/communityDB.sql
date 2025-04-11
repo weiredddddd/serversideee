@@ -1,3 +1,8 @@
+--Create Database
+DROP DATABASE IF EXISTS communityDB;
+CREATE DATABASE communityDB;
+USE communityDB;
+
 -- Table for discussion posts
 CREATE TABLE IF NOT EXISTS discussion_posts (
     post_id INT AUTO_INCREMENT PRIMARY KEY,
