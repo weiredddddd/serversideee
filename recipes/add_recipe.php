@@ -85,43 +85,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $recipe_id = $RecipeDB->lastInsertId();
 
-       // Insert ingredients
-if (!empty($_POST['ingredients'])) {
-    foreach ($_POST['ingredients'] as $ingredient) {
-        if (!empty($ingredient['name']) && !empty($ingredient['quantity'])) {
-            try {
-                // Check if ingredient exists
-                $stmt = $RecipeDB->prepare("SELECT ingredient_id FROM Ingredients WHERE ingredient_name = ?");
-                $stmt->execute([$ingredient['name']]);
-                $existing = $stmt->fetch();
-                
-                if ($existing) {
-                    $ingredient_id = $existing['ingredient_id'];
-                } else {
-                    // Insert new ingredient
-                    $stmt = $RecipeDB->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
-                    $stmt->execute([$ingredient['name']]);
-                    $ingredient_id = $RecipeDB->lastInsertId();
-                }
-                
-                // Link to recipe
-                $stmt = $RecipeDB->prepare("INSERT INTO Recipe_Ingredient 
+        // Insert ingredients
+        if (!empty($_POST['ingredients'])) {
+            foreach ($_POST['ingredients'] as $ingredient) {
+                if (!empty($ingredient['name']) && !empty($ingredient['quantity'])) {
+                    try {
+                        // Check if ingredient exists
+                        $stmt = $RecipeDB->prepare("SELECT ingredient_id FROM Ingredients WHERE ingredient_name = ?");
+                        $stmt->execute([$ingredient['name']]);
+                        $existing = $stmt->fetch();
+
+                        if ($existing) {
+                            $ingredient_id = $existing['ingredient_id'];
+                        } else {
+                            // Insert new ingredient
+                            $stmt = $RecipeDB->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
+                            $stmt->execute([$ingredient['name']]);
+                            $ingredient_id = $RecipeDB->lastInsertId();
+                        }
+
+                        // Link to recipe
+                        $stmt = $RecipeDB->prepare("INSERT INTO Recipe_Ingredient 
                                      (recipe_id, ingredient_id, quantity, unit) 
                                      VALUES (?, ?, ?, ?)");
-                $stmt->execute([
-                    $recipe_id,
-                    $ingredient_id,
-                    $ingredient['quantity'],
-                    $ingredient['unit'] ?? 'g' // Default to grams
-                ]);
-            } catch (PDOException $e) {
-                $errors[] = "Error processing ingredient: " . $ingredient['name'] . ". " . $e->getMessage();
-                error_log("Ingredient processing error: " . $e->getMessage());
-                continue;
+                        $stmt->execute([
+                            $recipe_id,
+                            $ingredient_id,
+                            $ingredient['quantity'],
+                            $ingredient['unit'] ?? 'g' // Default to grams
+                        ]);
+                    } catch (PDOException $e) {
+                        $errors[] = "Error processing ingredient: " . $ingredient['name'] . ". " . $e->getMessage();
+                        error_log("Ingredient processing error: " . $e->getMessage());
+                        continue;
+                    }
+                }
             }
         }
-    }
-}
 
         // Insert steps with images
         foreach ($_POST['steps'] as $index => $step_desc) {
@@ -163,6 +163,7 @@ ob_end_flush(); // Flush output buffer to prevent header issues
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Add Recipe</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -173,22 +174,26 @@ ob_end_flush(); // Flush output buffer to prevent header issues
             gap: 20px;
             margin-top: 5px;
         }
+
         .spice-option {
             display: flex;
             align-items: center;
         }
+
         .ingredient-group {
             margin-bottom: 15px;
             padding: 10px;
             background-color: #f8f9fa;
             border-radius: 5px;
         }
+
         .remove-btn {
             cursor: pointer;
             color: #dc3545;
         }
     </style>
 </head>
+
 <body>
     <div class="container mt-4">
         <h1 class="text-center">Add a New Recipe</h1>
@@ -304,11 +309,18 @@ ob_end_flush(); // Flush output buffer to prevent header issues
 
             <h4>Steps</h4>
             <div id="steps-container">
-                <div class="mb-3 step-group">
-                    <label class="form-label">Step 1</label>
-                    <textarea name="steps[]" class="form-control" rows="2" required></textarea>
-                    <label class="form-label">Step 1 Image</label>
-                    <input type="file" name="step_images[]" class="form-control">
+                <div class="mb-3 step-group row">
+                    <div class="col-md-11">
+                        <label class="form-label">Step 1</label>
+                        <textarea name="steps[]" class="form-control" rows="2" required></textarea>
+                        <label class="form-label mt-2">Step 1 Image</label>
+                        <input type="file" name="step_images[]" class="form-control">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeStep(this)">
+                            <i class="bi bi-trash"></i>
+                        </span>
+                    </div>
                 </div>
             </div>
             <button type="button" id="add-step" class="btn btn-secondary">Add Step</button>
@@ -365,19 +377,32 @@ ob_end_flush(); // Flush output buffer to prevent header issues
         document.getElementById("add-step").addEventListener("click", function() {
             stepCount++;
             let stepDiv = document.createElement("div");
-            stepDiv.classList.add("mb-3", "step-group");
+            stepDiv.classList.add("mb-3", "step-group", "row");
             stepDiv.innerHTML = `
-                <label class="form-label">Step ${stepCount}</label>
-                <textarea name="steps[]" class="form-control" rows="2" required></textarea>
-                <label class="form-label">Step ${stepCount} Image</label>
-                <input type="file" name="step_images[]" class="form-control">
-            `;
+        <div class="col-md-11">
+            <label class="form-label">Step ${stepCount}</label>
+            <textarea name="steps[]" class="form-control" rows="2" required></textarea>
+            <label class="form-label mt-2">Step ${stepCount} Image</label>
+            <input type="file" name="step_images[]" class="form-control">
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+            <span class="remove-btn text-danger" onclick="removeStep(this)" style="cursor: pointer;">
+                <i class="bi bi-trash"></i>
+            </span>
+        </div>
+    `;
             document.getElementById("steps-container").appendChild(stepDiv);
         });
+
+        // Function to remove a step
+        function removeStep(element) {
+            element.closest('.step-group').remove();
+        }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <?php include_once '../includes/footer.php'; ?>
 </body>
+
 </html>
