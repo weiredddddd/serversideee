@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../config/db.php';
-include '../navigation.php';
+include '../includes/navigation.php';
 
 if (isset($_SESSION['success_message'])) {
     echo '<div class="alert alert-success">' . $_SESSION['success_message'] . '</div>';

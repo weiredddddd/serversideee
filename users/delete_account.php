@@ -15,7 +15,7 @@ try {
     $pdo->beginTransaction();
 
     // Delete user from database
-    $stmt = $pdo->prepare("DELETE FROM Users WHERE user_id = ?");
+    $stmt = $RecipeDB->prepare("DELETE FROM Users WHERE user_id = ?");
     $stmt->execute([$user_id]);
 
     if ($stmt->rowCount() === 0) {
@@ -53,7 +53,7 @@ try {
 
     exit();
 } catch (Exception $e) {
-    $pdo->rollBack();
+    $RecipeDB->rollBack();
     $_SESSION['error_message'] = "Failed to delete account. Error: " . $e->getMessage();
     header("Location: ../users/profile.php");
     exit();

@@ -16,7 +16,7 @@ $message_type = '';
 
 // Verify required database columns exist
 try {
-    $stmt = $pdo->prepare("SHOW COLUMNS FROM Users LIKE 'reset_token'");
+    $stmt = $RecipeDB->prepare("SHOW COLUMNS FROM Users LIKE 'reset_token'");
     $stmt->execute();
     if ($stmt->rowCount() == 0) {
         die("System configuration error. Please contact administrator.");
@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $message_type = 'error';
         } else {
             try {
-                $stmt = $pdo->prepare("SELECT user_id FROM Users WHERE email = ?");
+                $stmt = $RecipeDB->prepare("SELECT user_id FROM Users WHERE email = ?");
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $reset_token = bin2hex(random_bytes(32));
                     $expiry_time = date('Y-m-d H:i:s', strtotime('+1 hour'));
                     
-                    $stmt = $pdo->prepare("UPDATE Users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?");
+                    $stmt = $RecipeDB->prepare("UPDATE Users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?");
                     if ($stmt->execute([$reset_token, $expiry_time, $email])) {
                         $_SESSION['reset_attempts']++;
                         header("Location: reset_password.php?token=" . $reset_token);

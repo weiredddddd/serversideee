@@ -13,7 +13,7 @@ $errors = [];
 $success = false;
 
 // Fetch current user data
-$stmt = $pdo->prepare("SELECT username, email FROM Users WHERE user_id = ?");
+$stmt = $RecipeDB->prepare("SELECT username, email FROM Users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -55,23 +55,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If no errors, update profile
     if (empty($errors)) {
         try {
-            $pdo->beginTransaction();
+            $RecipeDB->beginTransaction();
             
             // Update username
-            $stmt = $pdo->prepare("UPDATE Users SET username = ? WHERE user_id = ?");
+            $stmt = $RecipeDB->prepare("UPDATE Users SET username = ? WHERE user_id = ?");
             $stmt->execute([$new_username, $user_id]);
             
             // Update avatar in session (we'll use the index to remember)
             $_SESSION['avatar'] = $avatar_choice;
             $_SESSION['username'] = $new_username;
             
-            $pdo->commit();
+            $RecipeDB->commit();
             $success = true;
             $_SESSION['success_message'] = "Profile updated successfully!";
             header("Location: profile.php");
             exit();
         } catch (PDOException $e) {
-            $pdo->rollBack();
+            $RecipeDB->rollBack();
             $errors[] = "Database error: " . $e->getMessage();
         }
     }
