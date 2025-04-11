@@ -11,19 +11,20 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
 
-// Include navigation bar
-include '../includes/navigation.php';
-
 // Fetch user's recipes
-require '../config/db.php';
+require_once '../config/db.php';
 $user_id = $_SESSION['user_id'];
 
-// Fetch user's email and avatar
-$stmt = $usersDB->prepare("SELECT email, avatar FROM Users WHERE user_id = ?");
+// Modify the user fetch query to include registration_date
+$stmt = $usersDB->prepare("SELECT email, avatar, registration_date FROM users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $user_email = $user['email'] ?? 'Not Available';
-$avatar_id = $user['avatar'] ?? 0; // Default to 0 if not set
+$avatar_id = $user['avatar'] ?? 0;
+$registration_date = $user['registration_date'] ?? null;
+
+// Format the registration date nicely
+$member_since = $registration_date ? date('F Y', strtotime($registration_date)) : 'Unknown';
 
 // Preset avatars (should match the ones in edit_profile.php)
 $preset_avatars = [
@@ -102,113 +103,121 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body class="bg-light">
-
-<!-- Display success message if set -->
-<?php if (isset($_SESSION['success_message'])): ?>
-    <div class="alert alert-success text-center">
-        <?= htmlspecialchars($_SESSION['success_message']) ?>
-    </div>
-    <?php unset($_SESSION['success_message']); ?>
-<?php endif; ?>
-
-<!-- Profile Header -->
-<div class="container mt-4">
-    <div class="card p-4 shadow-sm">
-        <div class="profile-img-container">
-            <img src="../assets/avatars/<?= $current_avatar ?>" class="profile-img" alt="Profile Picture">
+    <?php include_once '../includes/navigation.php'; ?>
+    <!-- Display success message if set -->
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div class="alert alert-success alert-dismissible fade show">
+            <?= htmlspecialchars($_SESSION['success_message']) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-        <div class="profile-header">
-            <h2><?= htmlspecialchars($_SESSION['username']) ?>'s Profile</h2>
-            <p class="text-muted">Welcome to your recipe dashboard.</p>
+        <?php unset($_SESSION['success_message']); ?>
+    <?php endif; ?>
+
+    <!-- Profile Header -->
+    <div class="container mt-4">
+        <div class="card p-4 shadow-sm">
+            <div class="profile-img-container">
+                <img src="../assets/avatars/<?= $current_avatar ?>" class="profile-img" alt="Profile Picture">
+            </div>
+            <div class="profile-header">
+                <h2><?= htmlspecialchars($_SESSION['username']) ?>'s Profile</h2>
+                <p class="text-muted">Welcome to your recipe dashboard.</p>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Main Content Section -->
-<div class="container mt-4">
-    <div class="row">
-        <!-- Left Sidebar (User Info) -->
-        <div class="col-lg-3">
-            <div class="sidebar-card">
-                <h5>Profile Info</h5>
-                <p><strong>Username:</strong> <?= htmlspecialchars($_SESSION['username']) ?></p>
-                <p><strong>Email:</strong> <?= htmlspecialchars($user_email) ?></p>
-                <p><strong>Member Since:</strong> January 2025</p>
-                <a href="../users/edit_profile.php" class="btn btn-outline-primary w-100 mt-2">Edit Profile</a>
-                <!-- Delete Account Button -->
-    <button class="btn btn-danger w-100 mt-2" onclick="confirmDelete()">Delete Account</button>
+    <!-- Main Content Section -->
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Left Sidebar (User Info) -->
+            <div class="col-lg-3">
+                <div class="sidebar-card">
+                    <h5>Profile Info</h5>
+                    <p><strong>Username:</strong> <?= htmlspecialchars($_SESSION['username']) ?></p>
+                    <p><strong>Email:</strong> <?= htmlspecialchars($user_email) ?></p>
+                    <p><strong>Member Since:</strong> <?= htmlspecialchars($member_since) ?></p>
+                    <!-- Delete Account Button -->
+                    <button class="btn btn-danger w-100 mt-2" onclick="confirmDelete()">Delete Account</button>
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="edit_profile.php" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Edit Profile
+                        </a>
+                        <a href="change_password.php" class="btn btn-outline-secondary mt-2">
+                            <i class="bi bi-key"></i> Change Password
+                        </a>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h5>Upcoming Features</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-people"></i> Follow other users</li>
+                        <li><i class="bi bi-bookmark"></i> Bookmark favorite recipes</li>
+                        <li><i class="bi bi-trophy"></i> Participate in competitions</li>
+                    </ul>
+                </div>
             </div>
 
-            <div class="sidebar-card">
-                <h5>Upcoming Features</h5>
-                <ul class="list-unstyled">
-                    <li><i class="bi bi-people"></i> Follow other users</li>
-                    <li><i class="bi bi-bookmark"></i> Bookmark favorite recipes</li>
-                    <li><i class="bi bi-trophy"></i> Participate in competitions</li>
+        <!-- Middle Section (Activity Log) -->
+    <div class="col-lg-6">
+        <div class="card p-3 shadow-sm">
+            <h5 class="mb-3">Activity Log</h5>
+            <a href="../recipes/manage.php" class="btn btn-primary w-100 mb-3">Manage My Recipes</a>
+
+            <?php if (empty($recipes)): ?>
+                <p class="text-muted">You haven't added any recipes yet.</p>
+            <?php else: ?>
+                <ul class="list-group">
+                    <?php foreach ($recipes as $recipe): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                            <div>
+                                <div><strong><?= htmlspecialchars($recipe['title']) ?></strong></div>
+                                <small class="text-muted">
+                                    Added on <?= date('F j, Y', strtotime($recipe['created_at'])) ?>
+                                    <?php if (!empty($recipe['updated_at']) && $recipe['updated_at'] !== $recipe['created_at']): ?>
+                                        • Edited on <?= date('F j, Y', strtotime($recipe['updated_at'])) ?>
+                                    <?php endif; ?>
+                                </small>
+                            </div>
+                            <a href="../recipes/view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
+                        </li>
+                    <?php endforeach; ?>
                 </ul>
-            </div>
+            <?php endif; ?>
         </div>
-
-       <!-- Middle Section (Activity Log) -->
-<div class="col-lg-6">
-    <div class="card p-3 shadow-sm">
-        <h5 class="mb-3">Activity Log</h5>
-        <a href="../recipes/manage.php" class="btn btn-primary w-100 mb-3">Manage My Recipes</a>
-
-        <?php if (empty($recipes)): ?>
-            <p class="text-muted">You haven't added any recipes yet.</p>
-        <?php else: ?>
-            <ul class="list-group">
-                <?php foreach ($recipes as $recipe): ?>
-                    <li class="list-group-item d-flex justify-content-between align-items-start">
-                        <div>
-                            <div><strong><?= htmlspecialchars($recipe['title']) ?></strong></div>
-                            <small class="text-muted">
-                                Added on <?= date('F j, Y', strtotime($recipe['created_at'])) ?>
-                                <?php if (!empty($recipe['updated_at']) && $recipe['updated_at'] !== $recipe['created_at']): ?>
-                                    • Edited on <?= date('F j, Y', strtotime($recipe['updated_at'])) ?>
-                                <?php endif; ?>
-                            </small>
-                        </div>
-                        <a href="../recipes/view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
     </div>
-</div>
 
 
-        <!-- Right Sidebar (Rated & Commented Posts) -->
-        <div class="col-lg-3">
-            <div class="sidebar-card">
-                <h5>Rated Recipes</h5>
-                <p class="text-muted">Recipes you have rated.</p>
-                <div class="border p-2 bg-white">[Rated Recipes Placeholder]</div>
-            </div>
+            <!-- Right Sidebar (Rated & Commented Posts) -->
+            <div class="col-lg-3">
+                <div class="sidebar-card">
+                    <h5>Rated Recipes</h5>
+                    <p class="text-muted">Recipes you have rated.</p>
+                    <div class="border p-2 bg-white">[Rated Recipes Placeholder]</div>
+                </div>
 
-            <div class="sidebar-card">
-                <h5>Commented Recipes</h5>
-                <p class="text-muted">Recipes you have commented on.</p>
-                <div class="border p-2 bg-white">[Commented Recipes Placeholder]</div>
+                <div class="sidebar-card">
+                    <h5>Commented Recipes</h5>
+                    <p class="text-muted">Recipes you have commented on.</p>
+                    <div class="border p-2 bg-white">[Commented Recipes Placeholder]</div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Floating "Add Recipe" Button -->
-<a href="../recipes/add_recipe.php" class="btn btn-primary floating-btn">
-    <i class="bi bi-plus-lg"></i> Add Recipe
-</a>
+    <!-- Floating "Add Recipe" Button -->
+    <a href="../recipes/add_recipe.php" class="btn btn-primary floating-btn">
+        <i class="bi bi-plus-lg"></i> Add Recipe
+    </a>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-function confirmDelete() {
-    if (confirm("Are you sure you want to delete your account? This action cannot be undone!")) {
-        window.location.href = '../users/delete_account.php';
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function confirmDelete() {
+        if (confirm("Are you sure you want to delete your account? This action cannot be undone!")) {
+            window.location.href = '../users/delete_account.php';
+        }
     }
-}
-</script>
+    </script>
 </body>
 </html>

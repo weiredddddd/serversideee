@@ -1,60 +1,59 @@
 <?php
-ob_start(); // Prevent output issues
-session_start();
-require '../config/db.php';
+require_once '../config/session_config.php';
+require_once '../config/db.php';
 
 // Ensure user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
+    header("Location: login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
 
 try {
-    $usersDB->beginTransaction();
-
-    // Delete user from database
-    $stmt = $usersDB->prepare("DELETE FROM Users WHERE user_id = ?");
-    $stmt->execute([$user_id]);
-
-    if ($stmt->rowCount() === 0) {
-        throw new Exception("User not found or already deleted.");
+    // First, check if the user exists
+    $check = $usersDB->prepare("SELECT user_id FROM users WHERE user_id = ?");
+    $check->execute([$user_id]);
+    
+    if ($check->rowCount() === 0) {
+        throw new Exception("User account not found.");
     }
 
-    $usersDB->commit();
+    $usersDB->beginTransaction();
 
-    // Destroy session
+    // Delete user's related data first
+    $stmt = $RecipeDB->prepare("DELETE FROM Recipes WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    
+    // Delete the user from database
+    $stmt = $usersDB->prepare("DELETE FROM users WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+
+    $usersDB->commit();
+    
+    // Save message for after session destruction
+    $message = "Your account has been successfully deleted.";
+    
+    // Destroy the session
     session_unset();
     session_destroy();
-
-    // Show success message and redirect after 3 seconds
-    echo "
-    <html>
-    <head>
-        <meta charset='UTF-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-        <title>Account Deleted</title>
-        <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css' rel='stylesheet'>
-    </head>
-    <body class='bg-light d-flex justify-content-center align-items-center' style='height:100vh;'>
-        <div class='text-center'>
-            <h2 class='text-danger'>Your account has been deleted successfully.</h2>
-            <p class='text-muted'>Redirecting to homepage...</p>
-            <div class='spinner-border text-danger' role='status'></div>
-        </div>
-        <script>
-            setTimeout(function() {
-                window.location.href = '../index.php';
-            }, 3000); // Redirect after 3 seconds
-        </script>
-    </body>
-    </html>";
-
+    
+    // Start new session for flash message
+    session_start();
+    $_SESSION['message'] = $message;
+    $_SESSION['message_type'] = "success";
+    
+    // Redirect to homepage
+    header("Location: ../index.php");
     exit();
+    
 } catch (Exception $e) {
-    $usersDB->rollBack();
-    $_SESSION['error_message'] = "Failed to delete account. Error: " . $e->getMessage();
-    header("Location: ../users/profile.php");
+    if ($usersDB->inTransaction()) {
+        $usersDB->rollBack();
+    }
+    
+    $_SESSION['error_message'] = "Failed to delete account: " . $e->getMessage();
+    header("Location: profile.php");
     exit();
 }
+?>

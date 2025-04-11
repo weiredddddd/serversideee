@@ -1,20 +1,26 @@
 <?php
 require_once 'config/session_config.php';
 require_once 'config/db.php';
-include_once 'includes/navigation.php';
 
 // Simple message handling
 $message = '';
 $message_type = '';
 
-if (isset($_SESSION['logout_message']) && isset($_SESSION['message_expiry'])) {
-    // Check if message is still valid
-    if (time() < $_SESSION['message_expiry']) {
-        $message = $_SESSION['logout_message'];
-        $message_type = $_SESSION['message_type'] ?? 'success';
-    }
+// Check for messages (from logout or delete account)
+if (isset($_SESSION['message'])) {
+    $message = $_SESSION['message'];
+    $message_type = $_SESSION['message_type'] ?? 'success';
+    
+    // Clear message after retrieving it
+    unset($_SESSION['message']);
+    unset($_SESSION['message_type']);
+}
 
-    // Always clear message after checking to prevent showing on refresh
+// Also check for legacy logout_message
+if (isset($_SESSION['logout_message'])) {
+    $message = $_SESSION['logout_message'];
+    $message_type = $_SESSION['message_type'] ?? 'success';
+    
     unset($_SESSION['logout_message']);
     unset($_SESSION['message_type']);
     unset($_SESSION['message_expiry']);
@@ -99,15 +105,13 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     </style>
 </head>
-
 <body>
-    <!-- Display the message if exists -->
-    <?php if ($message): ?>
-        <div class="alert alert-<?= $message_type ?> alert-dismissible fade show m-0">
-            <div class="container">
-                <?= htmlspecialchars($message) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+    <?php include_once 'includes/navigation.php'; ?>    
+    <?php if (!empty($message)): ?>
+    <div class="alert alert-<?= $message_type ?> alert-dismissible fade show m-0">
+        <div class="container">
+            <?= htmlspecialchars($message) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
 

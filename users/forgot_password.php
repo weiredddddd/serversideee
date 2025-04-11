@@ -1,5 +1,5 @@
 <?php
-include '../config/db.php';
+require_once '../config/db.php'; 
 
 // Security headers
 header("X-Frame-Options: DENY");

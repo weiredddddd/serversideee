@@ -1,6 +1,6 @@
 <?php
-session_start();
-require '../config/db.php';
+require_once '../config/session_config.php';
+require_once '../config/db.php'; 
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -13,7 +13,7 @@ $errors = [];
 $success = false;
 
 // Fetch current user data
-$stmt = $usersDB->prepare("SELECT username, email FROM Users WHERE user_id = ?");
+$stmt = $usersDB->prepare("SELECT username, email FROM users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Username cannot exceed 30 characters";
     } else {
         // Check if username is already taken (excluding current user)
-        $stmt = $usersDB->prepare("SELECT user_id FROM Users WHERE username = ? AND user_id != ?");
+        $stmt = $usersDB->prepare("SELECT user_id FROM users WHERE username = ? AND user_id != ?");
         $stmt->execute([$new_username, $user_id]);
         if ($stmt->fetch()) {
             $errors[] = "Username is already taken";
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $usersDB->beginTransaction();
             
             // Update username
-            $stmt = $RecipeDB->prepare("UPDATE Users SET username = ? WHERE user_id = ?");
+            $stmt = $usersDB->prepare("UPDATE users SET username = ? WHERE user_id = ?");
             $stmt->execute([$new_username, $user_id]);
             
             // Update avatar in session (we'll use the index to remember)
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: profile.php");
             exit();
         } catch (PDOException $e) {
-            $RecipeDB->rollBack();
+            $usersDB->rollBack();
             $errors[] = "Database error: " . $e->getMessage();
         }
     }
@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body class="bg-light">
-    <?php include '../navigation.php'; ?>
+    <?php include '../includes/navigation.php'; ?>
 
     <div class="container py-5">
         <div class="row justify-content-center">
@@ -191,5 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('currentAvatarPreview').src = `../assets/avatars/${avatarPath}`;
         }
     </script>
+
+    <?php include_once '../includes/footer.php'; ?>
 </body>
 </html>
