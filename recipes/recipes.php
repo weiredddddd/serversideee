@@ -50,7 +50,7 @@ $stmt->execute($params);
 $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get unique categories for filter dropdown
-$categories = $RecipeDB->query("SELECT DISTINCT category FROM Recipes")->fetchAll(RecipeDB::FETCH_COLUMN);
+$categories = $RecipeDB->query("SELECT DISTINCT category FROM Recipes")->fetchAll(PDO::FETCH_COLUMN);
 $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cuisine_type IS NOT NULL")->fetchAll(PDO::FETCH_COLUMN);
 ?>
 <!DOCTYPE html>
