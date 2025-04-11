@@ -3,6 +3,7 @@ DROP DATABASE IF EXISTS communityDB;
 CREATE DATABASE communityDB;
 USE communityDB;
 
+-- Create some Tables
 -- Table for discussion posts
 CREATE TABLE IF NOT EXISTS discussion_posts (
     post_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -73,6 +74,7 @@ CREATE TABLE IF NOT EXISTS user_followers (
 );
 
 -- Insert some sample data
+-- Sample data for discussion_posts
 INSERT INTO discussion_posts (user_id, title, content, category) VALUES
 (1, 'Best Knife Sharpening Techniques', 'Here are my tips for keeping your knives razor sharp...', 'Cooking Tips'),
 (2, 'How to prevent pasta from sticking', 'Add a bit of olive oil to the water and stir occasionally...', 'Cooking Tips'),
