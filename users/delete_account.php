@@ -12,17 +12,17 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 try {
-    $pdo->beginTransaction();
+    $usersDB->beginTransaction();
 
     // Delete user from database
-    $stmt = $RecipeDB->prepare("DELETE FROM Users WHERE user_id = ?");
+    $stmt = $usersDB->prepare("DELETE FROM Users WHERE user_id = ?");
     $stmt->execute([$user_id]);
 
     if ($stmt->rowCount() === 0) {
         throw new Exception("User not found or already deleted.");
     }
 
-    $pdo->commit();
+    $usersDB->commit();
 
     // Destroy session
     session_unset();
@@ -53,7 +53,7 @@ try {
 
     exit();
 } catch (Exception $e) {
-    $RecipeDB->rollBack();
+    $usersDB->rollBack();
     $_SESSION['error_message'] = "Failed to delete account. Error: " . $e->getMessage();
     header("Location: ../users/profile.php");
     exit();

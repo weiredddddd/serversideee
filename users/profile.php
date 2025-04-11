@@ -19,7 +19,7 @@ require '../config/db.php';
 $user_id = $_SESSION['user_id'];
 
 // Fetch user's email and avatar
-$stmt = $pdo->prepare("SELECT email, avatar FROM Users WHERE user_id = ?");
+$stmt = $usersDB->prepare("SELECT email, avatar FROM Users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $user_email = $user['email'] ?? 'Not Available';

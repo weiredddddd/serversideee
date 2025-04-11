@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = trim($_POST['password']);
 
     // Fetch user data
-    $stmt = $RecipeDB->prepare("SELECT * FROM Users WHERE email = ?");
+    $stmt = $usersDB->prepare("SELECT * FROM Users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 

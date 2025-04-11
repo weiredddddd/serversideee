@@ -18,7 +18,7 @@ try {
     error_log("Verifying token: " . $token);
     
     // Changed 'id' to 'user_id' to match your table structure
-    $stmt = $pdo->prepare("SELECT user_id, reset_token_expiry FROM Users WHERE reset_token = ?");
+    $stmt = $usersDB->prepare("SELECT user_id, reset_token_expiry FROM Users WHERE reset_token = ?");
     $stmt->execute([$token]);
     $user = $stmt->fetch();
     
@@ -57,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
             // DEBUG: Log the update attempt
             error_log("Attempting to update password for token: " . $token);
             
-            $stmt = $pdo->prepare("UPDATE Users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE reset_token = ?");
+            $stmt = $usersDB->prepare("UPDATE Users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE reset_token = ?");
             
             if ($stmt->execute([$hashed_password, $token])) {
                 $success = "Password updated successfully! You can now <a href='login.php' class='alert-link'>login</a> with your new password.";

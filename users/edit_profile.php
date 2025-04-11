@@ -13,7 +13,7 @@ $errors = [];
 $success = false;
 
 // Fetch current user data
-$stmt = $RecipeDB->prepare("SELECT username, email FROM Users WHERE user_id = ?");
+$stmt = $usersDB->prepare("SELECT username, email FROM Users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Username cannot exceed 30 characters";
     } else {
         // Check if username is already taken (excluding current user)
-        $stmt = $pdo->prepare("SELECT user_id FROM Users WHERE username = ? AND user_id != ?");
+        $stmt = $usersDB->prepare("SELECT user_id FROM Users WHERE username = ? AND user_id != ?");
         $stmt->execute([$new_username, $user_id]);
         if ($stmt->fetch()) {
             $errors[] = "Username is already taken";
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If no errors, update profile
     if (empty($errors)) {
         try {
-            $RecipeDB->beginTransaction();
+            $usersDB->beginTransaction();
             
             // Update username
             $stmt = $RecipeDB->prepare("UPDATE Users SET username = ? WHERE user_id = ?");
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['avatar'] = $avatar_choice;
             $_SESSION['username'] = $new_username;
             
-            $RecipeDB->commit();
+            $usersDB->commit();
             $success = true;
             $_SESSION['success_message'] = "Profile updated successfully!";
             header("Location: profile.php");

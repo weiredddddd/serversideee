@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
             // Insert user into database
-            $stmt = $RecipeDB->prepare("INSERT INTO Users (username, email, password) VALUES (?, ?, ?)");
+            $stmt = $usersDB->prepare("INSERT INTO Users (username, email, password) VALUES (?, ?, ?)");
             if ($stmt->execute([$username, $email, $hashedPassword])) {
                 $success = "Account successfully registered!";
                 $show_redirect_button = true; // Set flag to show button
