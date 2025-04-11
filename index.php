@@ -4,8 +4,7 @@ include 'includes/navigation.php';
 include 'config/db.php';
 
 // Fetch categories & ingredients for filters
-$categories = $pdo->query("SELECT DISTINCT category FROM Recipes")->fetchAll(PDO::FETCH_ASSOC);
-
+$categories = $RecipeDB->query("SELECT DISTINCT category FROM Recipes")->fetchAll(PDO::FETCH_ASSOC);
 // Fetch recipes
 $query = "SELECT r.recipe_id, r.title, r.description, r.image_url, r.category, u.username AS author 
           FROM Recipes r 
@@ -15,7 +14,7 @@ $query = "SELECT r.recipe_id, r.title, r.description, r.image_url, r.category, u
 $params = [];
 
 // Prepare & execute query
-$stmt = $pdo->prepare($query);
+$stmt = $RecipeDB->prepare($query);
 $stmt->execute($params);
 $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
