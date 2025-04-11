@@ -1,7 +1,24 @@
 <?php
 require_once 'config/session_config.php';
-include 'includes/navigation.php';
-include 'config/db.php';
+require_once 'config/db.php';
+include_once 'includes/navigation.php';
+
+// Simple message handling
+$message = '';
+$message_type = '';
+
+if (isset($_SESSION['logout_message']) && isset($_SESSION['message_expiry'])) {
+    // Check if message is still valid
+    if (time() < $_SESSION['message_expiry']) {
+        $message = $_SESSION['logout_message'];
+        $message_type = $_SESSION['message_type'] ?? 'success';
+    }
+    
+    // Always clear message after checking to prevent showing on refresh
+    unset($_SESSION['logout_message']);
+    unset($_SESSION['message_type']);
+    unset($_SESSION['message_expiry']);
+}
 
 // Fetch categories & ingredients for filters
 $categories = $RecipeDB->query("SELECT DISTINCT category FROM Recipes")->fetchAll(PDO::FETCH_ASSOC);
@@ -21,9 +38,12 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explore Cuisine | NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
     /* Slideshow container */
@@ -73,21 +93,18 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 1rem;
         }
     }
-    
-
 </style>
-
 </head>
-
-<body>
-<?php if (isset($_SESSION['message'])): ?>
-    <div class="container mt-4">
-        <div class="alert alert-success text-center">
-            <?= $_SESSION['message']; ?>
+<body>    
+    <!-- Display the message if exists -->
+    <?php if ($message): ?>
+    <div class="alert alert-<?= $message_type ?> alert-dismissible fade show m-0">
+        <div class="container">
+            <?= htmlspecialchars($message) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </div>
-    <?php unset($_SESSION['message']); ?>
-<?php endif; ?>
+    <?php endif; ?>
 
     <!-- Slideshow Section -->
 <div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel">
@@ -140,10 +157,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php endforeach; ?>
         </div>
     </div>
-    
-
     <!-- Footer -->
     <?php include_once 'includes/footer.php'; ?>
-
 </body>
 </html>

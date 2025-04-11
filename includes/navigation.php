@@ -7,23 +7,6 @@ $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "
 define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NoiceFoodie</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* Ensure dropdown menus appear above other content */
-        .dropdown-menu {
-            z-index: 1100;
-        }
-    </style>
-</head>
-<body>
-
 <!-- Top Navbar (First Layer) -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container">
@@ -38,26 +21,25 @@ define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
 
         <!-- User Account Section -->
         <ul class="navbar-nav">
-    <?php if (isset($_SESSION['user_id']) && isset($_SESSION['username'])): ?>
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($_SESSION['username']) ?>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/profile.php">Profile</a></li>
-                <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/logout.php">Logout</a></li>
-            </ul>
-        </li>
-    <?php else: ?>
-        <li class="nav-item">
-            <a class="nav-link" href="<?= BASE_URL ?>/users/login.php">Login</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="<?= BASE_URL ?>/users/register.php">Register</a>
-        </li>
-    <?php endif; ?>
-</ul>
-
+            <?php if (isset($_SESSION['user_id']) && isset($_SESSION['username'])): ?>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
+                        <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($_SESSION['username']) ?>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/profile.php">Profile</a></li>
+                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/logout.php">Logout</a></li>
+                    </ul>
+                </li>
+            <?php else: ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= BASE_URL ?>/users/login.php">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= BASE_URL ?>/users/register.php">Register</a>
+                </li>
+            <?php endif; ?>
+        </ul>
     </div>
 </nav>
 
@@ -71,7 +53,7 @@ define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link active" href="<?= BASE_URL ?>/index.php">Home</a>
+                    <a class="nav-link" href="<?= BASE_URL ?>/index.php">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= BASE_URL ?>/recipes/recipes.php">Recipes</a>
@@ -95,35 +77,3 @@ define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
         </div>
     </div>
 </nav>
-
-<!-- Load Bootstrap JS bundle (includes Popper.js) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Initialize all dropdowns
-        var dropdowns = document.querySelectorAll('.dropdown-toggle');
-        dropdowns.forEach(function(dropdown) {
-            dropdown.addEventListener('click', function(e) {
-                e.preventDefault();
-                var dropdownMenu = this.nextElementSibling;
-                if (dropdownMenu.classList.contains('show')) {
-                    dropdownMenu.classList.remove('show');
-                } else {
-                    dropdownMenu.classList.add('show');
-                }
-            });
-        });
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.matches('.dropdown-toggle') && !e.target.closest('.dropdown-menu')) {
-                document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
-                    menu.classList.remove('show');
-                });
-            }
-        });
-    });
-</script>
-
-</body>
-</html>
