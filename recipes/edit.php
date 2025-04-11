@@ -18,7 +18,7 @@ $recipe_id = $_GET['id'];
 $user_id = $_SESSION['user_id'];
 
 // Fetch the recipe to edit
-$stmt = $pdo->prepare("SELECT * FROM Recipes WHERE recipe_id = ? AND user_id = ?");
+$stmt = $RecipeDB->prepare("SELECT * FROM Recipes WHERE recipe_id = ? AND user_id = ?");
 $stmt->execute([$recipe_id, $user_id]);
 $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -29,7 +29,7 @@ if (!$recipe) {
 }
 
 // Fetch existing ingredients
-$ingredient_stmt = $pdo->prepare("SELECT i.ingredient_id, i.ingredient_name, ri.quantity, ri.unit 
+$ingredient_stmt = $RecipeDB->prepare("SELECT i.ingredient_id, i.ingredient_name, ri.quantity, ri.unit 
                                 FROM Recipe_Ingredient ri
                                 JOIN Ingredients i ON ri.ingredient_id = i.ingredient_id
                                 WHERE ri.recipe_id = ?");
@@ -37,7 +37,7 @@ $ingredient_stmt->execute([$recipe_id]);
 $existing_ingredients = $ingredient_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch existing steps
-$step_stmt = $pdo->prepare("SELECT * FROM Steps WHERE recipe_id = ? ORDER BY step_no");
+$step_stmt = $RecipeDB->prepare("SELECT * FROM Steps WHERE recipe_id = ? ORDER BY step_no");
 $step_stmt->execute([$recipe_id]);
 $existing_steps = $step_stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -134,10 +134,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // If no errors, update everything
     if (empty($errors)) {
         try {
-            $pdo->beginTransaction();
+            $RecipeDB->beginTransaction();
 
             // Update recipe
-            $stmt = $pdo->prepare("UPDATE Recipes SET 
+            $stmt = $RecipeDB->prepare("UPDATE Recipes SET 
                                   title = ?, description = ?, category = ?, 
                                   cuisine_type = ?, spice_level = ?, image_url = ? 
                                   WHERE recipe_id = ? AND user_id = ?");
@@ -148,26 +148,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             ]);
 
             // Delete existing ingredients and steps
-            $pdo->prepare("DELETE FROM Recipe_Ingredient WHERE recipe_id = ?")->execute([$recipe_id]);
-            $pdo->prepare("DELETE FROM Steps WHERE recipe_id = ?")->execute([$recipe_id]);
+            $RecipeDB->prepare("DELETE FROM Recipe_Ingredient WHERE recipe_id = ?")->execute([$recipe_id]);
+            $RecipeDB->prepare("DELETE FROM Steps WHERE recipe_id = ?")->execute([$recipe_id]);
 
             // Insert ingredients
             foreach ($ingredients as $ingredient) {
                 // Check if ingredient exists
-                $stmt = $pdo->prepare("SELECT ingredient_id FROM Ingredients WHERE ingredient_name = ?");
+                $stmt = $RecipeDB->prepare("SELECT ingredient_id FROM Ingredients WHERE ingredient_name = ?");
                 $stmt->execute([$ingredient['name']]);
                 $existing = $stmt->fetch();
 
                 $ingredient_id = $existing ? $existing['ingredient_id'] : null;
                 
                 if (!$existing) {
-                    $stmt = $pdo->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
+                    $stmt = $RecipeDB->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
                     $stmt->execute([$ingredient['name']]);
-                    $ingredient_id = $pdo->lastInsertId();
+                    $ingredient_id = $RecipeDB->lastInsertId();
                 }
 
                 // Link to recipe
-                $stmt = $pdo->prepare("INSERT INTO Recipe_Ingredient 
+                $stmt = $RecipeDB->prepare("INSERT INTO Recipe_Ingredient 
                                       (recipe_id, ingredient_id, quantity, unit) 
                                       VALUES (?, ?, ?, ?)");
                 $stmt->execute([
@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Insert steps
             foreach ($steps as $step_no => $step) {
-                $stmt = $pdo->prepare("INSERT INTO Steps 
+                $stmt = $RecipeDB->prepare("INSERT INTO Steps 
                                       (recipe_id, step_no, description, image_url) 
                                       VALUES (?, ?, ?, ?)");
                 $stmt->execute([
@@ -191,13 +191,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 ]);
             }
 
-            $pdo->commit();
+            $RecipeDB->commit();
 
             $_SESSION['success_message'] = "Recipe updated successfully!";
             header("Location: manage.php");
             exit();
         } catch (Exception $e) {
-            $pdo->rollBack();
+            $RecipeDB->rollBack();
             $errors[] = "Error updating recipe: " . $e->getMessage();
         }
     }

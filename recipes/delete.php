@@ -18,7 +18,7 @@ $recipe_id = $_GET['id'];
 $user_id = $_SESSION['user_id'];
 
 // Fetch the recipe to ensure it belongs to the user
-$stmt = $pdo->prepare("SELECT * FROM Recipes WHERE recipe_id = ? AND user_id = ?");
+$stmt = $RecipeDB->prepare("SELECT * FROM Recipes WHERE recipe_id = ? AND user_id = ?");
 $stmt->execute([$recipe_id, $user_id]);
 $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -29,7 +29,7 @@ if (!$recipe) {
 }
 
 // Delete the recipe
-$stmt = $pdo->prepare("DELETE FROM Recipes WHERE recipe_id = ? AND user_id = ?");
+$stmt = $RecipeDB->prepare("DELETE FROM Recipes WHERE recipe_id = ? AND user_id = ?");
 $stmt->execute([$recipe_id, $user_id]);
 
 // Redirect to manage recipes page with success message

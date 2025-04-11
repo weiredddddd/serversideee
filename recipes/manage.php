@@ -17,7 +17,7 @@ if (isset($_SESSION['success_message'])) {
 $user_id = $_SESSION['user_id'];
 
 // Fetch user's recipes
-$stmt = $pdo->prepare("SELECT * FROM Recipes WHERE user_id = ? ORDER BY created_at DESC");
+$stmt = $RecipeDB->prepare("SELECT * FROM Recipes WHERE user_id = ? ORDER BY created_at DESC");
 $stmt->execute([$user_id]);
 $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>

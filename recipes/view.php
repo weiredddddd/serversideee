@@ -17,12 +17,12 @@ if (!$recipe_id) {
     exit();
 }
 
-if (!isset($pdo)) {
+if (!isset($RecipeDB)) {
     die("Database connection failed. Check config/db.php.");
 }
 
 try {
-    $stmt = $pdo->prepare("SELECT r.*, u.username AS author 
+    $stmt = $RecipeDB->prepare("SELECT r.*, u.username AS author 
                            FROM Recipes r 
                            JOIN Users u ON r.user_id = u.user_id 
                            WHERE r.recipe_id = ?");
@@ -40,12 +40,12 @@ try {
 
 try {
     // Get steps
-    $step_stmt = $pdo->prepare("SELECT * FROM Steps WHERE recipe_id = ? ORDER BY step_no ASC");
+    $step_stmt = $RecipeDB->prepare("SELECT * FROM Steps WHERE recipe_id = ? ORDER BY step_no ASC");
     $step_stmt->execute([$recipe_id]);
     $steps = $step_stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get ingredients
-    $ingredient_stmt = $pdo->prepare("SELECT i.ingredient_name AS name, ri.quantity, ri.unit 
+    $ingredient_stmt = $RecipeDB->prepare("SELECT i.ingredient_name AS name, ri.quantity, ri.unit 
     FROM Recipe_Ingredient ri
     JOIN Ingredients i ON ri.ingredient_id = i.ingredient_id
     WHERE ri.recipe_id = ?
