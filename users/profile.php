@@ -15,11 +15,12 @@ header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
 require_once '../config/db.php';
 $user_id = $_SESSION['user_id'];
 
-// Modify the user fetch query to include registration_date
-$stmt = $usersDB->prepare("SELECT email, avatar, registration_date FROM users WHERE user_id = ?");
+// Modify the user fetch query to include nickname
+$stmt = $usersDB->prepare("SELECT email, nickname, avatar, registration_date FROM users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $user_email = $user['email'] ?? 'Not Available';
+$nickname = $user['nickname'] ?? $_SESSION['username']; // Fall back to username if no nickname
 $avatar_id = $user['avatar'] ?? 0;
 $registration_date = $user['registration_date'] ?? null;
 
@@ -53,6 +54,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>My Profile - NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Floating "Add Recipe" button */
         .floating-btn {
@@ -120,7 +122,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <img src="../assets/avatars/<?= $current_avatar ?>" class="profile-img" alt="Profile Picture">
             </div>
             <div class="profile-header">
-                <h2><?= htmlspecialchars($_SESSION['username']) ?>'s Profile</h2>
+                <h2><?= htmlspecialchars($nickname) ?>'s Profile</h2>
                 <p class="text-muted">Welcome to your recipe dashboard.</p>
             </div>
         </div>
@@ -134,6 +136,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="sidebar-card">
                     <h5>Profile Info</h5>
                     <p><strong>Username:</strong> <?= htmlspecialchars($_SESSION['username']) ?></p>
+                    <p><strong>Nickname:</strong> <?= htmlspecialchars($nickname) ?></p>
                     <p><strong>Email:</strong> <?= htmlspecialchars($user_email) ?></p>
                     <p><strong>Member Since:</strong> <?= htmlspecialchars($member_since) ?></p>
                     <!-- Delete Account Button -->

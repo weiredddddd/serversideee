@@ -1,8 +1,8 @@
 <?php
 require_once '../config/session_config.php'; 
 
-// Save username for message (if available)
-$username = $_SESSION['username'] ?? 'User';
+// Save nickname for message (if available)
+$nickname = $_SESSION['nickname'] ?? 'User';
 
 // Clear all user data
 session_destroy();
@@ -13,7 +13,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 // CHANGE THIS LINE - use 'message' instead of 'logout_message'
-$_SESSION['message'] = "You have been logged out successfully. Come back soon, $username!";
+$_SESSION['message'] = "You have been logged out successfully. Come back soon, $nickname!";
 $_SESSION['message_type'] = "success";
 
 // Prevent back button from accessing the cached page
