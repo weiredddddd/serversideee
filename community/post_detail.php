@@ -21,7 +21,7 @@ $stmt->bindParam(':post_id', $post_id);
 $stmt->execute();
 
 // Fetch post details
-$sql = "SELECT dp.*, u.username FROM discussion_posts dp
+$sql = "SELECT dp.*, u.nickname FROM discussion_posts dp
         JOIN usersDB.users u ON dp.user_id = u.user_id  
         WHERE dp.post_id = :post_id";
 $stmt = $communityDB->prepare($sql);
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
 }
 
 // Fetch comments
-$comments_sql = "SELECT pc.*, u.username FROM post_comments pc
+$comments_sql = "SELECT pc.*, u.nickname FROM post_comments pc
                 JOIN usersDB.users u ON pc.user_id = u.user_id
                 WHERE pc.post_id = :post_id
                 ORDER BY pc.comment_date ASC";
@@ -123,7 +123,7 @@ $pageTitle = htmlspecialchars($post['title']) . " - Community Forum";
                     <small class="text-muted">
                         Posted by 
                         <a href="user_profile.php?id=<?php echo $post['user_id']; ?>">
-                            <?php echo htmlspecialchars($post['username']); ?>
+                            <?php echo htmlspecialchars($post['nickname']); ?>
                         </a> 
                         on <?php echo date('M d, Y g:i a', strtotime($post['post_date'])); ?>
                     </small>

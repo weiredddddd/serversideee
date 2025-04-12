@@ -15,7 +15,7 @@ if (!$recipe_id) {
 }
 
 // Fetch recipe details
-$recipe_sql = "SELECT r.*, u.username FROM RecipeDB.recipes r
+$recipe_sql = "SELECT r.*, u.nickname FROM RecipeDB.recipes r
               JOIN usersDB.users u ON r.user_id = u.user_id
               WHERE r.recipe_id = :recipe_id";
 $stmt = $communityDB->prepare($recipe_sql);
@@ -97,7 +97,7 @@ if (isset($_GET['success']) && $_GET['success'] == 1) {
 }
 
 // Fetch comments
-$comments_sql = "SELECT rc.*, u.username, rr.rating_value 
+$comments_sql = "SELECT rc.*, u.nickname, rr.rating_value 
                 FROM recipe_comments rc
                 JOIN usersDB.users u ON rc.user_id = u.user_id
                 LEFT JOIN recipe_ratings rr ON rc.recipe_id = rr.recipe_id AND rc.user_id = rr.user_id
@@ -181,7 +181,7 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
                         <div>
                             <h2 class="mb-0"><?php echo htmlspecialchars($recipe['title']); ?></h2>
                             <small class="text-muted">
-                                By <?php echo htmlspecialchars($recipe['username']); ?> on 
+                                By <?php echo htmlspecialchars($recipe['nickname']); ?> on 
                                 <?php echo date('M d, Y', strtotime($recipe['created_at'])); ?>
                             </small>
                         </div>
@@ -316,7 +316,7 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
                             <div class="card-header bg-light">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <span class="fw-bold"><?php echo htmlspecialchars($comment['username']); ?></span>
+                                        <span class="fw-bold"><?php echo htmlspecialchars($comment['nickname']); ?></span>
                                         <div class="recipe-rating">
                                             <?php 
                                                 for ($i = 1; $i <= 5; $i++) {
