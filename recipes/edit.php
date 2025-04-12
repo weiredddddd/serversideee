@@ -350,19 +350,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Steps -->
             <h4>Steps</h4>
             <div id="steps-container">
-                <?php foreach ($existing_steps as $index => $step): ?>
-                    <div class="step-group mb-3" data-index="<?= $index ?>">
-                        <label class="form-label">Step <?= $index + 1 ?></label>
-                        <textarea name="steps[<?= $index ?>]" class="form-control" rows="2" required><?= htmlspecialchars($step['description']) ?></textarea>
-                        <label class="form-label mt-2">Step Image</label>
-                        <input type="file" name="step_images[<?= $index ?>]" class="form-control mb-2">
-                        <?php if (!empty($step['image_url'])): ?>
-                            <p>Current Image: <a href="../uploads/<?= htmlspecialchars($step['image_url']) ?>" target="_blank"><?= htmlspecialchars($step['image_url']) ?></a></p>
-                            <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" class="img-thumbnail" style="max-height: 100px;">
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
+    <?php foreach ($existing_steps as $index => $step): ?>
+        <div class="step-group mb-3" data-index="<?= $index ?>">
+            <div class="row">
+                <div class="col-md-11">
+                    <label class="form-label">Step <?= $index + 1 ?></label>
+                    <textarea name="steps[<?= $index ?>]" class="form-control" rows="2" required><?= htmlspecialchars($step['description']) ?></textarea>
+                    <label class="form-label mt-2">Step Image</label>
+                    <input type="file" name="step_images[<?= $index ?>]" class="form-control mb-2">
+                    <?php if (!empty($step['image_url'])): ?>
+                        <p>Current Image: <a href="../uploads/<?= htmlspecialchars($step['image_url']) ?>" target="_blank"><?= htmlspecialchars($step['image_url']) ?></a></p>
+                        <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" class="img-thumbnail" style="max-height: 100px;">
+                    <?php endif; ?>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <span class="remove-btn" onclick="removeStep(this)"><i class="bi bi-trash"></i></span>
+                </div>
             </div>
+        </div>
+    <?php endforeach; ?>
+</div>
             <button type="button" id="add-step" class="btn btn-secondary mb-4">Add Step</button>
 
             <div class="mt-3">
@@ -422,11 +429,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input type="file" name="step_images[${stepCount}]" class="form-control mb-2">
             `;
             document.getElementById("steps-container").appendChild(stepDiv);
-        });
+            
+    });
+    
 
         function removeIngredient(element) {
             element.closest('.ingredient-group').remove();
         }
+        // Function to remove a step
+function removeStep(element) {
+    element.closest('.step-group').remove();
+}
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

@@ -97,6 +97,14 @@ try {
             font-weight: bold;
             color: #0d6efd;
         }
+        .step-image {
+        max-width: 300px;
+        height: auto;
+        transition: transform 0.3s ease;
+    }
+    .step-image:hover {
+        transform: scale(1.2); /* Enlarge the image on hover */
+    }
     </style>
 </head>
 <body>
@@ -199,8 +207,8 @@ try {
                                     </div>
                                     <?php if (!empty($step['image_url'])): ?>
                                         <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" 
-                                             class="img-thumbnail" 
-                                             style="max-width: 100px; height: auto;">
+                                             class="img-thumbnail step-image" 
+                                             style="max-width: 250px; height: auto;">
                                     <?php endif; ?>
                                 </li>
                             <?php endforeach; ?>
