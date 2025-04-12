@@ -4,7 +4,9 @@ require_once __DIR__ . '/../config/session_config.php';
 
 // Define base URL dynamically
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
+//define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
+define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']));
+
 
 // Get nickname if available
 if (isset($_SESSION['user_id']) && !isset($_SESSION['nickname'])) {
