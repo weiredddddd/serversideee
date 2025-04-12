@@ -10,7 +10,7 @@ $message_type = '';
 if (isset($_SESSION['message'])) {
     $message = $_SESSION['message'];
     $message_type = $_SESSION['message_type'] ?? 'success';
-    
+
     // Clear message after retrieving it
     unset($_SESSION['message']);
     unset($_SESSION['message_type']);
@@ -20,7 +20,7 @@ if (isset($_SESSION['message'])) {
 if (isset($_SESSION['logout_message'])) {
     $message = $_SESSION['logout_message'];
     $message_type = $_SESSION['message_type'] ?? 'success';
-    
+
     unset($_SESSION['logout_message']);
     unset($_SESSION['message_type']);
     unset($_SESSION['message_expiry']);
@@ -103,17 +103,23 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 font-size: 1rem;
             }
         }
+        .card-img-top {
+        height: 200px; /* Set a fixed height */
+        object-fit: cover; /* Crop the image to fit the container */
+        object-position: center; /* Center the cropped area */
+    }
     </style>
 </head>
+
 <body>
-    <?php include_once 'includes/navigation.php'; ?>    
+    <?php include_once 'includes/navigation.php'; ?>
     <?php if (!empty($message)): ?>
-    <div class="alert alert-<?= $message_type ?> alert-dismissible fade show m-0">
-        <div class="container">
-            <?= htmlspecialchars($message) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-<?= $message_type ?> alert-dismissible fade show m-0">
+            <div class="container">
+                <?= htmlspecialchars($message) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         </div>
-    </div>
     <?php endif; ?>
 
     <!-- Slideshow Section -->
@@ -158,7 +164,9 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <img src="uploads/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" alt="Recipe Image">
                         <div class="card-body">
                             <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
-                            <p class="card-text"><?= htmlspecialchars($recipe['description']) ?></p>
+                            <p class="card-text">
+                                <?= htmlspecialchars(mb_strimwidth($recipe['description'], 0, 100, '...')) ?>
+                            </p>
                             <p class="text-muted"><small>By <?= htmlspecialchars($recipe['author']) ?></small></p>
                             <a href="recipes/view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary">View Recipe</a>
                         </div>
