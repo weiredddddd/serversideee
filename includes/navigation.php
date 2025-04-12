@@ -5,6 +5,19 @@ require_once __DIR__ . '/../config/session_config.php';
 // Define base URL dynamically
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
+
+// Get nickname if available
+if (isset($_SESSION['user_id']) && !isset($_SESSION['nickname'])) {
+    // Fetch nickname on first page load after login
+    require_once __DIR__ . '/../config/db.php';
+    $stmt = $usersDB->prepare("SELECT nickname FROM users WHERE user_id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $_SESSION['nickname'] = $user['nickname'] ?? $_SESSION['username'];
+}
+
+// Use nickname for display, falling back to username if not available
+$display_name = $_SESSION['nickname'] ?? $_SESSION['username'] ?? '';
 ?>
 
 <!-- Top Navbar (First Layer) -->
@@ -24,7 +37,7 @@ define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
             <?php if (isset($_SESSION['user_id']) && isset($_SESSION['username'])): ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
-                        <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($_SESSION['username']) ?>
+                        <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($display_name) ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/profile.php">Profile</a></li>

@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['first_attempt'] = time();
     }
 
-    if ($_SESSION['reset_attempts'] > 3 && (time() - $_SESSION['first_attempt']) < 3600) {
+    if ($_SESSION['reset_attempts'] > 100 && (time() - $_SESSION['first_attempt']) < 3600) {
         $message = "Too many attempts. Please try again later.";
         $message_type = 'error';
     } else {
@@ -115,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </form>
             
             <div class="text-center">
-                <a href="login.php" class="text-decoration-none">Back to Login</a>
+                <a href="login.php" >Back to Login</a>
             </div>
         </div>
     </div>
