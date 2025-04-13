@@ -332,8 +332,11 @@ $pageTitle = "Community Forum";
                                         <div class="post-image">
                                         <?php
                                             // Check if it's a full path from uploads folder or just a filename for assets folder
-                                            if (strpos($row['image_url'], 'uploads/posts/') !== false) {
-                                                // It's a real uploaded image
+                                            if (strpos($row['image_url'], 'uploads/discussion_post_img/') !== false) {
+                                                // It's a real uploaded image in the new folder
+                                                $image_path = '../' . $row['image_url'];
+                                            } else if (strpos($row['image_url'], 'uploads/posts/') !== false) {
+                                                // It's a real uploaded image in the old folder
                                                 $image_path = '../' . $row['image_url'];
                                             } else {
                                                 // It's a dummy data filename
@@ -877,9 +880,14 @@ $pageTitle = "Community Forum";
                 // Handle image
                 if (image) {
                     var imagePath;
-                    if (image.includes('uploads/posts/')) {
+                    if (image.includes('uploads/discussion_post_img/')) {
+                        // New folder path
+                        imagePath = '../' + image;
+                    } else if (image.includes('uploads/posts/')) {
+                        // Old folder path
                         imagePath = '../' + image;
                     } else {
+                        // Dummy images path
                         imagePath = '../assets/community/discussion_posts_img/' + image.split('/').pop();
                     }
                     modal.find('#modal-post-image').removeClass('d-none');

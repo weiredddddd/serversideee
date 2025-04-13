@@ -62,9 +62,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Hash password
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-            // Insert user into database (lowercase 'users')
-            $stmt = $usersDB->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-            if ($stmt->execute([$username, $email, $hashedPassword])) {
+            // Insert user into database with nickname set to username
+            $stmt = $usersDB->prepare("INSERT INTO users (username, email, password, nickname) VALUES (?, ?, ?, ?)");
+            if ($stmt->execute([$username, $email, $hashedPassword, $username])) {
                 $success = "Account successfully registered!";
                 $show_redirect_button = true; // Set flag to show button
             } else {

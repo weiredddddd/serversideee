@@ -163,9 +163,14 @@ $pageTitle = "Manage My Posts";
                                 <?php if (!empty($post['image_url'])): ?>
                                     <div class="post-image mb-3">
                                         <?php
-                                            if (strpos($post['image_url'], 'uploads/posts/') !== false) {
+                                            if (strpos($post['image_url'], 'uploads/discussion_post_img/') !== false) {
+                                                // Image from new folder structure
+                                                $image_path = '../' . $post['image_url'];
+                                            } else if (strpos($post['image_url'], 'uploads/posts/') !== false) {
+                                                // Image from old folder structure
                                                 $image_path = '../' . $post['image_url'];
                                             } else {
+                                                // Dummy/sample image
                                                 $image_path = '../assets/community/discussion_posts_img/' . basename($post['image_url']);
                                             }
                                         ?>

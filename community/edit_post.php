@@ -103,6 +103,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $image_url = null;
         }
         
+        // Handle file upload if present
+        if (isset($_FILES['post_image']) && $_FILES['post_image']['error'] == 0) {
+            $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+            $filename = $_FILES['post_image']['name'];
+            $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+            // Check if extension is allowed
+            if (in_array($file_ext, $allowed)) {
+                // Create a unique filename with underscore between ID and filename
+                $new_filename = uniqid() . '_' . basename($filename);
+                
+                // Update path to the new folder
+                $upload_path = '../uploads/discussion_post_img/' . $new_filename;
+                $db_image_path = 'uploads/discussion_post_img/' . $new_filename;
+                
+                if (move_uploaded_file($_FILES['post_image']['tmp_name'], $upload_path)) {
+                    // If there was a previous image, try to delete it (only if it's in the uploads folder)
+                    if (!empty($post['image_url']) && strpos($post['image_url'], 'uploads/') === 0) {
+                        $old_file = '../' . $post['image_url'];
+                        if (file_exists($old_file)) {
+                            @unlink($old_file);
+                        }
+                    }
+                    
+                    $image_url = $db_image_path;
+                } else {
+                    $form_errors['image'] = "Failed to upload image. Please try again.";
+                    $image_url = $post['image_url']; // Keep old image on error
+                }
+            } else {
+                $form_errors['image'] = "Invalid file type. Allowed types: JPG, JPEG, PNG, GIF";
+                $image_url = $post['image_url']; // Keep old image on error
+            }
+        } else {
+            // No new image uploaded, keep the existing one or set to null if remove checkbox is checked
+            $image_url = (isset($_POST['remove_image']) && $_POST['remove_image'] == '1') ? null : $post['image_url'];
+            
+            // If asked to remove image and it's in the uploads folder, try to delete the file
+            if (isset($_POST['remove_image']) && $_POST['remove_image'] == '1' && !empty($post['image_url']) && strpos($post['image_url'], 'uploads/') === 0) {
+                $old_file = '../' . $post['image_url'];
+                if (file_exists($old_file)) {
+                    @unlink($old_file);
+                }
+            }
+        }
+        
         // If no errors, update the post
         if (empty($error_message)) {
             $update_stmt = $communityDB->prepare("
@@ -235,12 +281,13 @@ $pageTitle = "Edit Post";
                             </div>
                             
                             <div class="mb-3">
-                                <label for="image" class="form-label">Image (Optional)</label>
+                                <label for="post_image" class="form-label">Image (Optional)</label>
                                 
                                 <?php if (!empty($post['image_url'])): ?>
                                     <div class="image-preview-container">
                                         <?php
-                                        if (strpos($post['image_url'], 'uploads/posts/') !== false) {
+                                        if (strpos($post['image_url'], 'uploads/discussion_post_img/') !== false || 
+                                           strpos($post['image_url'], 'uploads/posts/') !== false) {
                                             $image_path = '../' . $post['image_url'];
                                         } else {
                                             $image_path = '../assets/community/discussion_posts_img/' . basename($post['image_url']);
@@ -254,7 +301,7 @@ $pageTitle = "Edit Post";
                                     <input type="hidden" id="removeImage" name="remove_image" value="0">
                                 <?php endif; ?>
                                 
-                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                <input type="file" class="form-control" id="post_image" name="post_image" accept="image/*">
                                 <small class="text-muted">Maximum file size: 5MB. Supported formats: JPG, JPEG, PNG, GIF.</small>
                                 <img id="imagePreview" src="#" alt="Image Preview">
                             </div>
@@ -274,7 +321,7 @@ $pageTitle = "Edit Post";
     <script>
         $(document).ready(function() {
             // Image preview functionality
-            $('#image').change(function() {
+            $('#post_image').change(function() {
                 const file = this.files[0];
                 if (file) {
                     const reader = new FileReader();
@@ -294,7 +341,7 @@ $pageTitle = "Edit Post";
             $('#removeImageBtn').click(function() {
                 $('.image-preview-container').hide();
                 $('#removeImage').val('1');
-                $('#image').val(''); // Clear file input
+                $('#post_image').val(''); // Clear file input
                 $('#imagePreview').hide();
             });
         });
