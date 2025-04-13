@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 try {
     $db = $mealplansDB;
 
-    $query = "SELECT mp.*, r.title AS recipe_title 
+    $query = "SELECT mp.*, r.title AS recipe_title, r.image_url 
               FROM MealPlans mp 
               LEFT JOIN RecipeDB.Recipes r ON mp.recipe_id = r.recipe_id 
               WHERE mp.user_id = :user_id";
@@ -30,10 +30,16 @@ try {
     $stmt = $db->prepare($query);
     $stmt->execute(array_merge([':user_id' => $_SESSION['user_id']], $params));
 
-    $meals = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    echo json_encode($meals);
+    if (isset($_GET['meal_id'])) {
+        $meal = $stmt->fetch(PDO::FETCH_ASSOC);
+        echo json_encode($meal);
+    } else {
+        $meals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($meals);
+    }
 
 } catch (PDOException $e) {
     http_response_code(500);
     die(json_encode(['error' => 'Database error: ' . $e->getMessage()]));
 }
+?>
