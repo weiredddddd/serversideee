@@ -94,7 +94,7 @@ $display_name = $_SESSION['nickname'] ?? $_SESSION['username'] ?? '';
                     <a class="nav-link" href="<?= BASE_URL ?>/community/community.php">Community</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= BASE_URL ?>/competitions.php">Competitions</a>
+                    <a class="nav-link" href="<?= BASE_URL ?>/competition/competitions.php">Competitions</a>
                 </li>
             </ul>
         </div>
