@@ -28,7 +28,6 @@ CREATE TABLE competition_entries (
     recipe_id INT NOT NULL,
     user_id INT NOT NULL,
     submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
     notes TEXT,
     FOREIGN KEY (competition_id) REFERENCES competitions(competition_id),
     FOREIGN KEY (recipe_id) REFERENCES RecipeDB.Recipes(recipe_id),
@@ -64,6 +63,17 @@ VALUES
     1
 ),
 (
+    'Extreme Cooking Contest',
+    'Demonstrate your most extreme food to be savoured!',
+    '2024-07-01 00:00:00',
+    '2024-07-15 23:59:59',
+    '2024-07-18 23:59:59',
+    'Let your imaginary run wild.',
+    '1st Prize: $50 worth of cooking utensils',
+    'completed',
+    6
+),
+(
     'Vegetarian Delight',
     'Submit your best vegetarian meals.',
     '2025-05-01 00:00:00',
@@ -76,16 +86,26 @@ VALUES
 );
 
 INSERT INTO competition_entries (
-    competition_id, recipe_id, user_id, status, notes
+    competition_id, recipe_id, user_id, notes
 )
 VALUES 
-(1, 1, 1, 'approved', 'Great presentation.'),
-(1, 2, 2, 'approved', 'Tasty and healthy.'),
-(1, 3, 3, 'pending', 'Crunchy cookies for snacks.');
+(1, 1, 1, 'Great presentation.'),
+(1, 2, 2, 'Tasty and healthy.'),
+(1, 3, 3, 'Crunchy cookies for snacks.'),
+(2, 1, 1, 'Extreme!'),
+(2, 2, 2, 'Cool & Tasty.'),
+(2, 3, 3, 'Nom Nom Nom!');
 
 INSERT INTO votes (
     entry_id, user_id
 )
 VALUES 
 (1, 2), -- Bob votes for Alice
-(2, 3); -- Charlie votes for Bob
+(2, 3), -- Charlie votes for Bob
+(2, 1), -- Alice votes for Bob
+(4, 2), -- Bob votes for Alice
+(4, 3), -- Charlie votes for Alice
+(4, 4), -- Weiyu votes for Alice
+(5, 5), -- Weihong votes for Bob
+(5, 6), -- Desmond votes for Bob
+(6, 7); -- Yisheng votes for Charlie
