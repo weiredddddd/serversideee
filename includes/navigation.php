@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/session_config.php';
 
 // Define base URL dynamically
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
+define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/ServerSide/serversideee');
 ?>
 
 <!-- Top Navbar (First Layer) -->
@@ -58,14 +58,8 @@ define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
                 <li class="nav-item">
                     <a class="nav-link" href="<?= BASE_URL ?>/recipes/recipes.php">Recipes</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="mealPlanningDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Meal Planning
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="mealPlanningDropdown">
-                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/meal/planning.php">Plan a Meal</a></li>
-                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/meal/schedule.php">View Schedule</a></li>
-                    </ul>
+                <li class="nav-item">
+    <a class="nav-link" href="<?= BASE_URL ?>/meal/schedule.php">Meal Planning</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= BASE_URL ?>/community/community.php">Community</a>

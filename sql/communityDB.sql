@@ -1,4 +1,4 @@
---Create Database
+-- Create Database
 DROP DATABASE IF EXISTS communityDB;
 CREATE DATABASE communityDB;
 USE communityDB;
