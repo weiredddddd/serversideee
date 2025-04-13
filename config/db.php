@@ -5,15 +5,15 @@ $password = "";
 
 try {
     // Connect to usersDB
-    $usersDB = new PDO("mysql:host=$host;dbname=usersDB;charset=utf8", $username, $password);
+    $usersDB = new PDO("mysql:host=$host;dbname=usersdb;charset=utf8", $username, $password);
     $usersDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Connect to RecipeDB
-    $RecipeDB = new PDO("mysql:host=$host;dbname=RecipeDB;charset=utf8", $username, $password);
+    $RecipeDB = new PDO("mysql:host=$host;dbname=recipedb;charset=utf8", $username, $password);
     $RecipeDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Connect to communityDB
-    $communityDB = new PDO("mysql:host=$host;dbname=communityDB;charset=utf8", $username, $password);
+    $communityDB = new PDO("mysql:host=$host;dbname=communitydb;charset=utf8", $username, $password);
     $communityDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 } catch (PDOException $e) {

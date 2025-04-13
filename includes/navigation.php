@@ -4,7 +4,17 @@ require_once __DIR__ . '/../config/session_config.php';
 
 // Define base URL dynamically
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
+//define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
+// Use this better for more dynamic
+// Get current script path, e.g., /serversideee/recipes/recipes.php
+$scriptPath = $_SERVER['SCRIPT_NAME'];
+
+// Remove the filename (e.g., recipes.php), leave the base folder
+$projectFolder = explode('/', trim($scriptPath, '/'))[0];
+
+// Define BASE_URL
+define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/' . $projectFolder);
+
 
 // Get nickname if available
 if (isset($_SESSION['user_id']) && !isset($_SESSION['nickname'])) {
