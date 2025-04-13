@@ -65,84 +65,8 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
     <title>Recipes - NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .recipe-card {
-            transition: transform 0.2s;
-            height: 100%;
-        }
-
-        .recipe-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-
-        .spicy-indicator {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255, 0, 0, 0.7);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-        }
-
-        .filter-section {
-            background: rgba(248, 250, 250, 0);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .alphabet-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-bottom: 20px;
-        }
-
-        .alphabet-nav a {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            text-align: center;
-            line-height: 30px;
-            border-radius: 50%;
-            background: rgba(240, 240, 240, 0.05);
-            color: #333;
-            text-decoration: none;
-        }
-
-        .alphabet-nav a:hover,
-        .alphabet-nav a.active {
-            background: rgba(13, 109, 253, 0.27);
-            color: white;
-        }
-
-        .navbar-nav .dropdown-menu {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .header-container {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .header-container .btn {
-                margin-top: 10px;
-                align-self: flex-end;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../recipes/recipe.css">
+        
 </head>
 
 <body>
