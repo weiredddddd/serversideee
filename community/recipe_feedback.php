@@ -28,6 +28,11 @@ if (!$recipe) {
     exit;
 }
 
+// If view_count column doesn't exist in the result, initialize it
+if (!isset($recipe['view_count'])) {
+    $recipe['view_count'] = 0;
+}
+
 // Fetch recipe ingredients
 $ingredients_sql = "SELECT i.ingredient_name, ri.quantity, ri.unit
                    FROM RecipeDB.recipe_ingredient ri
@@ -236,6 +241,14 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
                                     </div>
                                 </div>
                             <?php endif; ?>
+
+                            <div>
+                                <h5>Views</h5>
+                                <div class="view-count">
+                                    <i class="fas fa-eye text-info"></i>
+                                    <span id="view-count-display"><?php echo isset($recipe['view_count']) ? intval($recipe['view_count']) : 0; ?></span>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="row">
@@ -415,7 +428,33 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
             </div>
         </div>
     </div>
+    
     <!-- Footer -->
     <?php include_once '../includes/footer.php'; ?>
+
+    <!-- jQuery (required for AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Track recipe view when page loads (only for logged-in users)
+            <?php if ($user_id): ?>
+            $.ajax({
+                type: "POST",
+                url: "ajax/track_recipe_view.php",
+                data: { recipe_id: <?php echo $recipe_id; ?> },
+                dataType: "json",
+                success: function(response) {
+                    if (response.success) {
+                        // Update the view count if it was incremented
+                        $("#view-count-display").text(response.view_count);
+                    }
+                },
+                error: function() {
+                    console.log("Error tracking recipe view");
+                }
+            });
+            <?php endif; ?>
+        });
+    </script>
 </body>
 </html>
