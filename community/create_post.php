@@ -34,11 +34,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_post'])) {
     // Handle image upload if present
     if (isset($_FILES['post_image']) && $_FILES['post_image']['error'] == 0) {
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        $max_size = 2 * 1024 * 1024; // 2MB
+        $max_size = 4 * 1024 * 1024; // 4MB
         
         if (in_array($_FILES['post_image']['type'], $allowed_types) && $_FILES['post_image']['size'] <= $max_size) {
             // Create uploads directory if it doesn't exist
-            $upload_dir = '../uploads/posts/';
+            $upload_dir = '../uploads/discussion_post_img/';
             if (!file_exists($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_post'])) {
             $upload_path = $upload_dir . $filename;
             
             if (move_uploaded_file($_FILES['post_image']['tmp_name'], $upload_path)) {
-                $image_url = 'uploads/posts/' . $filename; // Store relative path
+                $image_url = 'uploads/discussion_post_img/' . $filename; // Store relative path
             } else {
                 $message = "Error uploading image.";
             }
