@@ -310,7 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input type="file" name="image" class="form-control">
                 <?php if (!empty($recipe['image_url'])): ?>
                     <p class="mt-2">Current Image: <a href="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" target="_blank"><?= htmlspecialchars($recipe['image_url']) ?></a></p>
-                    <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" class="img-thumbnail" style="max-height: 150px;">
+                    <img src="../uploads/recipe_img/<?= htmlspecialchars($recipe['image_url']) ?>" class="img-thumbnail" style="max-height: 150px;">
                 <?php endif; ?>
             </div>
 
@@ -359,7 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label class="form-label mt-2">Step Image</label>
                     <input type="file" name="step_images[<?= $index ?>]" class="form-control mb-2">
                     <?php if (!empty($step['image_url'])): ?>
-                        <p>Current Image: <a href="../uploads/<?= htmlspecialchars($step['image_url']) ?>" target="_blank"><?= htmlspecialchars($step['image_url']) ?></a></p>
+                        <p>Current Image: <a href="../uploads/recipe_img/?= htmlspecialchars($step['image_url']) ?>" target="_blank"><?= htmlspecialchars($step['image_url']) ?></a></p>
                         <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" class="img-thumbnail" style="max-height: 100px;">
                     <?php endif; ?>
                 </div>

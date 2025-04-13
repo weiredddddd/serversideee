@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Handle main recipe image upload
     $image_url = "";
     if (!empty($_FILES['image']['name'])) {
-        $upload_dir = "../uploads/";
+        $upload_dir = "../uploads/recipe_img/";
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0755, true);
         }
@@ -128,7 +128,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (!empty($step_desc)) {
                 $step_image_url = "";
                 if (!empty($_FILES['step_images']['name'][$index])) {
-                    $upload_dir = "../uploads/";
+                    $upload_dir = "../uploads/recipe_img/";
                     $step_image_url = uniqid() . "_" . basename($_FILES["step_images"]["name"][$index]);
                     $target_file = $upload_dir . $step_image_url;
 

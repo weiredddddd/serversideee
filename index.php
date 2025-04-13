@@ -29,7 +29,7 @@ if (isset($_SESSION['logout_message'])) {
 // Fetch categories & ingredients for filters
 $categories = $RecipeDB->query("SELECT DISTINCT category FROM Recipes")->fetchAll(PDO::FETCH_ASSOC);
 // Fetch recipes
-$query = "SELECT r.recipe_id, r.title, r.description, r.image_url, r.category, u.username AS author 
+$query = "SELECT r.recipe_id, r.title, r.description, r.image_url, r.category, u.nickname AS author 
           FROM RecipeDB.Recipes r 
           JOIN usersDB.users u ON r.user_id = u.user_id 
           WHERE 1=1";

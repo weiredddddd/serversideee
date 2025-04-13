@@ -22,7 +22,7 @@ if (!isset($RecipeDB)) {
 }
 
 try {
-    $stmt = $RecipeDB->prepare("SELECT r.*, u.username AS author 
+    $stmt = $RecipeDB->prepare("SELECT r.*, u.nickname AS author 
                            FROM RecipeDB.Recipes r 
                            JOIN usersDB.users u ON r.user_id = u.user_id 
                            WHERE r.recipe_id = ?");

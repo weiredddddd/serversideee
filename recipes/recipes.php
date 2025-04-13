@@ -12,7 +12,10 @@ $letter = $_GET['letter'] ?? '';
 $my_recipes = $_GET['my_recipes'] ?? '';
 
 // Build query
-$query = "SELECT * FROM Recipes WHERE 1=1";
+$query = "SELECT r.*, u.nickname AS author 
+          FROM Recipes r 
+          JOIN usersDB.users u ON r.user_id = u.user_id 
+          WHERE 1=1";
 $params = [];
 
 if (!empty($search)) {
@@ -55,6 +58,7 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -66,10 +70,12 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
             transition: transform 0.2s;
             height: 100%;
         }
+
         .recipe-card:hover {
             transform: scale(1.02);
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
+
         .spicy-indicator {
             position: absolute;
             top: 10px;
@@ -80,18 +86,21 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
             border-radius: 10px;
             font-size: 0.8rem;
         }
+
         .filter-section {
-            background:rgba(248, 250, 250, 0);
+            background: rgba(248, 250, 250, 0);
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
         }
+
         .alphabet-nav {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
             margin-bottom: 20px;
         }
+
         .alphabet-nav a {
             display: inline-block;
             width: 30px;
@@ -99,29 +108,35 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
             text-align: center;
             line-height: 30px;
             border-radius: 50%;
-            background:rgba(240, 240, 240, 0.05);
+            background: rgba(240, 240, 240, 0.05);
             color: #333;
             text-decoration: none;
         }
-        .alphabet-nav a:hover, .alphabet-nav a.active {
-            background:rgba(13, 109, 253, 0.27);
+
+        .alphabet-nav a:hover,
+        .alphabet-nav a.active {
+            background: rgba(13, 109, 253, 0.27);
             color: white;
         }
+
         .navbar-nav .dropdown-menu {
             max-height: 400px;
             overflow-y: auto;
         }
+
         .header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
+
         @media (max-width: 768px) {
             .header-container {
                 flex-direction: column;
                 align-items: flex-start;
             }
+
             .header-container .btn {
                 margin-top: 10px;
                 align-self: flex-end;
@@ -129,6 +144,7 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
         }
     </style>
 </head>
+
 <body>
     <div class="container mt-4">
         <div class="row">
@@ -187,7 +203,7 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
             <div class="col-md-9">
                 <div class="header-container">
                     <h1>
-                        <?php 
+                        <?php
                         if (!empty($category)) echo htmlspecialchars($category) . " Recipes";
                         elseif (!empty($cuisine)) echo htmlspecialchars($cuisine) . " Cuisine Recipes";
                         elseif (!empty($letter)) echo "Recipes Starting With " . strtoupper($letter);
@@ -209,14 +225,14 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
                 <!-- Alphabet Navigation -->
                 <div class="alphabet-nav mb-4">
                     <?php foreach (range('A', 'Z') as $char): ?>
-                        <a href="?<?= http_build_query(array_merge($_GET, ['letter' => strtolower($char), 'my_recipes' => ''])) ?>" 
-                           class="<?= $letter === strtolower($char) ? 'active' : '' ?>">
-                           <?= $char ?>
+                        <a href="?<?= http_build_query(array_merge($_GET, ['letter' => strtolower($char), 'my_recipes' => ''])) ?>"
+                            class="<?= $letter === strtolower($char) ? 'active' : '' ?>">
+                            <?= $char ?>
                         </a>
                     <?php endforeach; ?>
-                    <a href="?<?= http_build_query(array_merge($_GET, ['letter' => '', 'my_recipes' => ''])) ?>" 
-                       class="<?= empty($letter) ? 'active' : '' ?>">
-                       All
+                    <a href="?<?= http_build_query(array_merge($_GET, ['letter' => '', 'my_recipes' => ''])) ?>"
+                        class="<?= empty($letter) ? 'active' : '' ?>">
+                        All
                     </a>
                 </div>
 
@@ -231,20 +247,20 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
                             <div class="col">
                                 <div class="card recipe-card h-100">
                                     <?php if (!empty($recipe['image_url'])): ?>
-                                        <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($recipe['title']) ?>">
+                                        <img src="../uploads/recipe_img/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($recipe['title']) ?>">
                                     <?php else: ?>
                                         <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Placeholder">
                                     <?php endif; ?>
-                                    
+
                                     <?php if ($recipe['spice_level'] >= 3): ?>
                                         <span class="spicy-indicator">Spicy!</span>
                                     <?php endif; ?>
-                                    
+
                                     <div class="card-body">
                                         <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
                                         <p class="card-text text-muted">
                                             <small>
-                                                <?= htmlspecialchars($recipe['category']) ?> • 
+                                                <?= htmlspecialchars($recipe['category']) ?> •
                                                 <?= htmlspecialchars($recipe['cuisine_type'] ?? 'International') ?>
                                                 <?php if ($recipe['spice_level'] > 0): ?>
                                                     • <?= str_repeat('🌶️', $recipe['spice_level']) ?>
@@ -252,6 +268,7 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
                                             </small>
                                         </p>
                                         <p class="card-text"><?= htmlspecialchars(substr($recipe['description'], 0, 100)) ?>...</p>
+                                        <p class="text-muted"><small>By <?= htmlspecialchars($recipe['author']) ?></small></p>
                                     </div>
                                     <div class="card-footer bg-transparent">
                                         <a href="view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary">View Recipe</a>
@@ -267,4 +284,5 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
