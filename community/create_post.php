@@ -12,6 +12,16 @@ if (!$user_id) {
     exit;
 }
 
+// Get the user's current avatar
+$avatar_stmt = $communityDB->prepare("SELECT avatar FROM usersDB.users WHERE user_id = ?");
+$avatar_stmt->execute([$user_id]);
+$user_avatar = $avatar_stmt->fetch(PDO::FETCH_ASSOC);
+
+// Convert avatar value (0-5) to the correct avatar filename (avatar1.png - avatar6.png)
+$avatar_num = isset($user_avatar['avatar']) ? (int)$user_avatar['avatar'] : 0;
+$avatar_file = 'avatar' . ($avatar_num + 1) . '.png';
+$avatar_path = '../assets/avatars/' . $avatar_file;
+
 $message = '';
 
 // Handle form submission
