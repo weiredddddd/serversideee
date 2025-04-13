@@ -67,45 +67,8 @@ try {
     <title><?= htmlspecialchars($recipe['title']) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/style.css">
-    <style>
-        .recipe-meta {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        .meta-item {
-            margin-bottom: 8px;
-        }
-        .spice-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .spice-icon {
-            color: #dc3545;
-        }
-        .ingredient-list {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        .ingredient-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .ingredient-quantity {
-            font-weight: bold;
-            color: #0d6efd;
-        }
-        .step-image {
-        max-width: 300px;
-        height: auto;
-        transition: transform 0.3s ease;
-    }
-    .step-image:hover {
-        transform: scale(1.2); /* Enlarge the image on hover */
-    }
-    </style>
+    
+        
 </head>
 <body>
     

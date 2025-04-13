@@ -213,27 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Edit Recipe</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        .ingredient-group, .step-group {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-        .remove-btn {
-            color: #dc3545;
-            cursor: pointer;
-        }
-        .spice-level {
-            display: flex;
-            gap: 15px;
-            margin-top: 5px;
-        }
-        .spice-option {
-            display: flex;
-            align-items: center;
-        }
-    </style>
+    <link rel="stylesheet" href="../recipes/recipe.css">
 </head>
 <body>
     <?php include '../navigation.php'; ?>

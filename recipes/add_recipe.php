@@ -167,31 +167,8 @@ ob_end_flush(); // Flush output buffer to prevent header issues
 <head>
     <title>Add Recipe</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/style.css">
-    <style>
-        .spice-level {
-            display: flex;
-            gap: 20px;
-            margin-top: 5px;
-        }
-
-        .spice-option {
-            display: flex;
-            align-items: center;
-        }
-
-        .ingredient-group {
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-
-        .remove-btn {
-            cursor: pointer;
-            color: #dc3545;
-        }
-    </style>
+    <link rel="stylesheet" href="../recipes/recipe.css">
+    
 </head>
 
 <body>
