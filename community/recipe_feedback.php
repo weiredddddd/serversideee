@@ -28,11 +28,6 @@ if (!$recipe) {
     exit;
 }
 
-// If view_count column doesn't exist in the result, initialize it
-if (!isset($recipe['view_count'])) {
-    $recipe['view_count'] = 0;
-}
-
 // Fetch recipe ingredients
 $ingredients_sql = "SELECT i.ingredient_name, ri.quantity, ri.unit
                    FROM RecipeDB.recipe_ingredient ri
@@ -164,6 +159,14 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Include the community CSS file -->
     <link rel="stylesheet" href="css/community.css">
+    <style>
+        .recipe-detail-img {
+            height: 400px;
+            object-fit: cover;
+            width: 100%;
+        }
+        /* Removing custom styling for similar recipes to keep their original appearance */
+    </style>
 </head>
 <body>
 <?php include_once '../includes/navigation.php'; ?>
@@ -199,7 +202,26 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
                     </div>
                     
                     <?php if (!empty($recipe['image_url'])): ?>
-                        <img src="<?php echo htmlspecialchars($recipe['image_url']); ?>" class="card-img-top recipe-detail-img" alt="<?php echo htmlspecialchars($recipe['title']); ?>">
+                        <?php
+                        // Check if it's a full path or just a filename
+                        if (strpos($recipe['image_url'], 'uploads/recipe/') !== false) {
+                            // It's a real uploaded image in the recipes folder
+                            $image_path = '../' . $recipe['image_url'];
+                        } else if (strpos($recipe['image_url'], 'http') === 0) {
+                            // It's an external URL
+                            $image_path = $recipe['image_url'];
+                        } else {
+                            // If it's just a filename without path, construct proper path
+                            // First check if it might be in uploads/recipe folder without the prefix
+                            if (file_exists('../uploads/recipe/' . $recipe['image_url'])) {
+                                $image_path = '../uploads/recipe/' . $recipe['image_url'];
+                            } else {
+                                // Fallback to assets folder
+                                $image_path = '../assets/recipe/' . basename($recipe['image_url']);
+                            }
+                        }
+                        ?>
+                        <img src="<?php echo htmlspecialchars($image_path); ?>" class="card-img-top recipe-detail-img" alt="<?php echo htmlspecialchars($recipe['title']); ?>">
                     <?php endif; ?>
                     
                     <div class="card-body">
@@ -241,14 +263,6 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
                                     </div>
                                 </div>
                             <?php endif; ?>
-
-                            <div>
-                                <h5>Views</h5>
-                                <div class="view-count">
-                                    <i class="fas fa-eye text-info"></i>
-                                    <span id="view-count-display"><?php echo isset($recipe['view_count']) ? intval($recipe['view_count']) : 0; ?></span>
-                                </div>
-                            </div>
                         </div>
                         
                         <div class="row">
@@ -378,9 +392,29 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
                                 echo '<div class="featured-recipe">';
                                 echo '<div>';
                                 if (!empty($similar['image_url'])) {
-                                    echo '<img src="' . htmlspecialchars($similar['image_url']) . '" class="featured-recipe-img" alt="Recipe Image">';
+                                    // Check if it's a full path or just a filename
+                                    if (strpos($similar['image_url'], 'uploads/recipe/') !== false) {
+                                        // It's a real uploaded image in the recipes folder
+                                        $image_path = '../' . $similar['image_url'];
+                                    } else if (strpos($similar['image_url'], 'http') === 0) {
+                                        // It's an external URL
+                                        $image_path = $similar['image_url'];
+                                    } else {
+                                        // If it's just a filename without path, construct proper path
+                                        if (file_exists('../uploads/recipe/' . $similar['image_url'])) {
+                                            $image_path = '../uploads/recipe/' . $similar['image_url'];
+                                        } else {
+                                            // Fallback to assets folder
+                                            $image_path = '../assets/recipe/' . basename($similar['image_url']);
+                                        }
+                                    }
+                                    echo '<a href="recipe_feedback.php?id=' . $similar['recipe_id'] . '">';
+                                    echo '<img src="' . htmlspecialchars($image_path) . '" class="featured-recipe-img" alt="' . htmlspecialchars($similar['title']) . '">';
+                                    echo '</a>';
                                 } else {
+                                    echo '<a href="recipe_feedback.php?id=' . $similar['recipe_id'] . '">';
                                     echo '<div class="featured-recipe-img-placeholder"><i class="fas fa-utensils text-muted"></i></div>';
+                                    echo '</a>';
                                 }
                                 echo '</div>';
                                 echo '<div>';
@@ -411,7 +445,8 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
                             
                             if (!empty($cooking_tips)) {
                                 foreach($cooking_tips as $tip) {
-                                    echo '<a href="post_detail.php?id=' . $tip['post_id'] . '" class="list-group-item list-group-item-action">';
+                                    // Direct link to the community page with discussion posts filtered by Cooking Tips category
+                                    echo '<a href="community.php?tab=discussions&category=Cooking+Tips" class="list-group-item list-group-item-action">';
                                     echo '<i class="fas fa-lightbulb text-warning me-2"></i> ' . htmlspecialchars($tip['title']);
                                     echo '</a>';
                                 }
@@ -434,27 +469,5 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
 
     <!-- jQuery (required for AJAX) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Track recipe view when page loads (only for logged-in users)
-            <?php if ($user_id): ?>
-            $.ajax({
-                type: "POST",
-                url: "ajax/track_recipe_view.php",
-                data: { recipe_id: <?php echo $recipe_id; ?> },
-                dataType: "json",
-                success: function(response) {
-                    if (response.success) {
-                        // Update the view count if it was incremented
-                        $("#view-count-display").text(response.view_count);
-                    }
-                },
-                error: function() {
-                    console.log("Error tracking recipe view");
-                }
-            });
-            <?php endif; ?>
-        });
-    </script>
 </body>
 </html>

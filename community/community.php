@@ -84,8 +84,7 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
 $recipes_sql = "SELECT r.*, u.nickname,
                (SELECT COUNT(*) FROM recipe_comments WHERE recipe_id = r.recipe_id) AS comment_count,
                (SELECT AVG(rating_value) FROM recipe_ratings WHERE recipe_id = r.recipe_id) AS avg_rating,
-               (SELECT COUNT(*) FROM recipe_ratings WHERE recipe_id = r.recipe_id) AS rating_count,
-               COALESCE(r.view_count, 0) AS view_count
+               (SELECT COUNT(*) FROM recipe_ratings WHERE recipe_id = r.recipe_id) AS rating_count
                FROM RecipeDB.recipes r
                JOIN usersDB.users u ON r.user_id = u.user_id";
 
@@ -113,9 +112,6 @@ switch ($recipe_sort) {
     case 'most_ratings':
         // Changed to sort by the actual average rating value first, not the count of ratings
         $recipes_sql .= " ORDER BY avg_rating DESC, rating_count DESC, r.created_at DESC";
-        break;
-    case 'most_views':
-        $recipes_sql .= " ORDER BY r.view_count DESC, r.created_at DESC";
         break;
     case 'most_comments':
         $recipes_sql .= " ORDER BY comment_count DESC, r.created_at DESC";
@@ -433,10 +429,6 @@ $pageTitle = "Community Forum";
                                     class="list-group-item <?= ($recipe_sort == 'most_ratings') ? 'active' : '' ?>">
                                         <i class="fas fa-star me-2"></i> Highest Rated
                                     </a>
-                                    <a href="?tab=recipes<?= !empty($recipe_category) ? '&recipe_category='.urlencode($recipe_category) : '' ?><?= !empty($search_query) ? '&search='.urlencode($search_query) : '' ?>&recipe_sort=most_views" 
-                                    class="list-group-item <?= ($recipe_sort == 'most_views') ? 'active' : '' ?>">
-                                        <i class="fas fa-eye me-2"></i> Most Views
-                                    </a>
                                     <a href="?tab=recipes<?= !empty($recipe_category) ? '&recipe_category='.urlencode($recipe_category) : '' ?><?= !empty($search_query) ? '&search='.urlencode($search_query) : '' ?>&recipe_sort=most_comments" 
                                     class="list-group-item <?= ($recipe_sort == 'most_comments') ? 'active' : '' ?>">
                                         <i class="fas fa-comments me-2"></i> Most Comments
@@ -481,7 +473,26 @@ $pageTitle = "Community Forum";
                                         <div class="card h-100 recipe-card">
                                             <div class="card-img-top">
                                                 <?php if (!empty($recipe['image_url'])): ?>
-                                                    <img src="<?php echo htmlspecialchars($recipe['image_url']); ?>" alt="<?php echo htmlspecialchars($recipe['title']); ?>" class="img-fluid recipe-img">
+                                                    <?php
+                                                    // Check if it's a full path or just a filename
+                                                    if (strpos($recipe['image_url'], 'uploads/recipe/') !== false) {
+                                                        // It's a real uploaded image in the recipes folder
+                                                        $image_path = '../' . $recipe['image_url'];
+                                                    } else if (strpos($recipe['image_url'], 'http') === 0) {
+                                                        // It's an external URL
+                                                        $image_path = $recipe['image_url'];
+                                                    } else {
+                                                        // If it's just a filename without path, construct proper path
+                                                        // First check if it might be in uploads/recipe folder without the prefix
+                                                        if (file_exists('../uploads/recipe/' . $recipe['image_url'])) {
+                                                            $image_path = '../uploads/recipe/' . $recipe['image_url'];
+                                                        } else {
+                                                            // Fallback to assets folder
+                                                            $image_path = '../assets/recipe/' . basename($recipe['image_url']);
+                                                        }
+                                                    }
+                                                    ?>
+                                                    <img src="<?php echo htmlspecialchars($image_path); ?>" alt="<?php echo htmlspecialchars($recipe['title']); ?>" class="img-fluid recipe-img">
                                                 <?php else: ?>
                                                     <div class="recipe-img-placeholder">
                                                         <i class="fas fa-utensils fa-3x"></i>
@@ -512,7 +523,6 @@ $pageTitle = "Community Forum";
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <div>
                                                         <span class="text-muted me-3"><i class="fas fa-comment"></i> <?php echo $recipe['comment_count']; ?></span>
-                                                        <span class="text-muted"><i class="fas fa-eye"></i> <?php echo isset($recipe['view_count']) ? intval($recipe['view_count']) : 0; ?></span>
                                                     </div>
                                                     <a href="recipe_feedback.php?id=<?php echo $recipe['recipe_id']; ?>" class="btn btn-sm btn-outline-primary">View Recipe</a>
                                                 </div>
