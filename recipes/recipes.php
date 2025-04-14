@@ -130,7 +130,7 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
                 </div>
             </div>
             <div class="col-md-9">
-                <div class="header-container">
+                                <div class="header-container d-flex justify-content-between align-items-center mb-4">
                     <h1>
                         <?php
                         if (!empty($category)) echo htmlspecialchars($category) . " Recipes";
@@ -140,17 +140,24 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
                         else echo "All Recipes";
                         ?>
                     </h1>
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="add_recipe.php" class="btn btn-success">
-                            <i class="fas fa-plus"></i> New Recipe
-                        </a>
-                    <?php else: ?>
-                        <a href="../users/login.php?redirect=add_recipe.php" class="btn btn-success">
-                            <i class="fas fa-plus"></i> New Recipe
-                        </a>
-                    <?php endif; ?>
+                    <div>
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            <a href="add_recipe.php" class="btn btn-success me-2">
+                                <i class="fas fa-plus"></i> Add Post
+                            </a>
+                            <a href="manage.php" class="btn btn-secondary">
+                                <i class="fas fa-cog"></i> Manage My Posts
+                            </a>
+                        <?php else: ?>
+                            <a href="../users/login.php?redirect=add_recipe.php" class="btn btn-success me-2">
+                                <i class="fas fa-plus"></i> Add Post
+                            </a>
+                            <a href="../users/login.php?redirect=manage.php" class="btn btn-secondary">
+                                <i class="fas fa-cog"></i> Manage My Posts
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
-
                 <!-- Alphabet Navigation -->
                 <div class="alphabet-nav mb-4">
                     <?php foreach (range('A', 'Z') as $char): ?>
