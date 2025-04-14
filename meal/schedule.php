@@ -1,6 +1,5 @@
 <?php
 session_start();
-include '../includes/navigation.php';
 require '../config/db.php';
 ?>
 
@@ -21,6 +20,7 @@ require '../config/db.php';
     <script src="components/nutrition-meter.js"></script>
 </head>
 <body>
+    <?php include '../includes/navigation.php'; ?>
     <div class="container py-4">
         <div class="page-header px-4">
             <div class="d-flex justify-content-between align-items-center">
