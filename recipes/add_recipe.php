@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require '../config/db.php';
-include '../includes/navigation.php';
+
 
 $errors = [];
 
@@ -179,11 +179,11 @@ ob_end_flush(); // Flush output buffer to prevent header issues
 <head>
     <title>Add Recipe</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../recipes/recipe.css">
-
+    <link rel="stylesheet" href="../recipes/css/recipe.css">
 </head>
 
 <body>
+    <?php include_once '../includes/navigation.php'; ?> <!-- Include navigation bar -->
     <div class="container mt-4">
         <h1 class="text-center">Add a New Recipe</h1>
 

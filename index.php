@@ -29,10 +29,12 @@ if (isset($_SESSION['logout_message'])) {
 // Fetch categories & ingredients for filters
 $categories = $RecipeDB->query("SELECT DISTINCT category FROM Recipes")->fetchAll(PDO::FETCH_ASSOC);
 // Fetch recipes
-$query = "SELECT r.recipe_id, r.title, r.description, r.image_url, r.category, u.nickname AS author 
+
+$query = "SELECT r.recipe_id, r.title, r.description, r.image_url, r.category, u.nickname AS author, r.view_count 
           FROM RecipeDB.Recipes r 
           JOIN usersDB.users u ON r.user_id = u.user_id 
-          WHERE 1=1";
+          ORDER BY r.view_count DESC 
+          LIMIT 3";
 
 $params = [];
 
@@ -108,6 +110,25 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         object-fit: cover; /* Crop the image to fit the container */
         object-position: center; /* Center the cropped area */
     }
+        .card {
+        height: 100%; /* Ensure the card takes up the full height of its container */
+        display: flex;
+        flex-direction: column; /* Stack card elements vertically */
+    }
+    
+    .card-body {
+        flex-grow: 1; /* Make the body take up available space */
+    }
+    
+    .card-img-top {
+        height: 200px; /* Set a fixed height for the image */
+        object-fit: cover; /* Crop the image to fit the container */
+        object-position: center; /* Center the cropped area */
+    }
+    
+    .card-footer {
+        margin-top: auto; /* Push the footer to the bottom of the card */
+    }
     </style>
 </head>
 
@@ -155,7 +176,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <!-- Recipe Grid Section -->
-    <div class="container mt-5">
+        <div class="container mt-5">
         <h2 class="text-center mb-4">Trending Recipes</h2>
         <div class="row">
             <?php foreach ($recipes as $recipe): ?>
@@ -168,6 +189,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <?= htmlspecialchars(mb_strimwidth($recipe['description'], 0, 100, '...')) ?>
                             </p>
                             <p class="text-muted"><small>By <?= htmlspecialchars($recipe['author']) ?></small></p>
+                            <p class="text-muted"><small><i class="bi bi-eye"></i> <?= htmlspecialchars($recipe['view_count'] ?? 0) ?> views</small></p>
                             <a href="recipes/view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary">View Recipe</a>
                         </div>
                     </div>

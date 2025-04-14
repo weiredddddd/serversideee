@@ -40,9 +40,8 @@ try {
     $del_comments = $communityDB->prepare("DELETE FROM post_comments WHERE post_id = ?");
     $del_comments->execute([$post_id]);
     
-    // Delete likes
-    $del_likes = $communityDB->prepare("DELETE FROM post_likes WHERE post_id = ?");
-    $del_likes->execute([$post_id]);
+    // Note: We no longer need to delete from post_likes table since it has been removed
+    // like_count is now a column in the discussion_posts table
     
     // Delete the post
     $del_post = $communityDB->prepare("DELETE FROM discussion_posts WHERE post_id = ?");
@@ -50,10 +49,14 @@ try {
     
     if ($success) {
         // Delete the associated image file if it exists and is an uploaded file (not a default)
-        if (!empty($post['image_url']) && strpos($post['image_url'], 'uploads/posts/') !== false) {
-            $image_path = '../../' . $post['image_url'];
-            if (file_exists($image_path)) {
-                unlink($image_path);
+        if (!empty($post['image_url'])) {
+            // Check both possible image path formats
+            if (strpos($post['image_url'], 'uploads/posts/') !== false || 
+                strpos($post['image_url'], 'uploads/discussion_post_img/') !== false) {
+                $image_path = '../../' . $post['image_url'];
+                if (file_exists($image_path)) {
+                    unlink($image_path);
+                }
             }
         }
         

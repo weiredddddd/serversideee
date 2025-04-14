@@ -24,10 +24,6 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
         $del_comments = $communityDB->prepare("DELETE FROM post_comments WHERE post_id = ?");
         $del_comments->execute([$post_id]);
         
-        // Delete likes
-        $del_likes = $communityDB->prepare("DELETE FROM post_likes WHERE post_id = ?");
-        $del_likes->execute([$post_id]);
-        
         // Delete the post
         $del_post = $communityDB->prepare("DELETE FROM discussion_posts WHERE post_id = ?");
         $del_post->execute([$post_id]);
@@ -41,8 +37,7 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 // Fetch all posts by the current user
 $posts_stmt = $communityDB->prepare("
     SELECT dp.*, 
-           (SELECT COUNT(*) FROM post_comments WHERE post_id = dp.post_id) AS comment_count,
-           (SELECT COUNT(*) FROM post_likes WHERE post_id = dp.post_id) AS like_count
+           (SELECT COUNT(*) FROM post_comments WHERE post_id = dp.post_id) AS comment_count
     FROM discussion_posts dp
     WHERE dp.user_id = ?
     ORDER BY dp.post_date DESC
@@ -86,7 +81,12 @@ $pageTitle = "Manage My Posts";
         
         .empty-posts {
             text-align: center;
-            padding: 50px 0;
+            padding: 100px 0;  /* Increased padding for more space */
+            min-height: 400px; /* Add minimum height to maintain page structure */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
         .empty-posts i {
@@ -223,6 +223,21 @@ $pageTitle = "Manage My Posts";
     <script>
         $(document).ready(function() {
             let postToDelete = null;
+
+            // Add minimum height to container based on post count
+            function adjustContainerHeight() {
+                // If there's only one post or the page just loaded with one post
+                if ($('.card').length === 1) {
+                    // Set an even smaller minimum height to move footer higher up
+                    $('.container.mt-4').css('min-height', '52vh');  // Reduced from 60vh to 50vh
+                    
+                    // Add smaller margin-bottom to bring footer closer
+                    $('body').css('margin-bottom', '50px'); // Reduced from 80px to 50px
+                }
+            }
+            
+            // Call on page load
+            adjustContainerHeight();
             
             // Show confirmation dialog when delete button is clicked
             $('.delete-post').on('click', function() {
@@ -257,9 +272,22 @@ $pageTitle = "Manage My Posts";
                                 $('#post-container-' + postToDelete).fadeOut(500, function() {
                                     $(this).remove();
                                     
-                                    // If no posts left, show empty state
+                                    // Check if there are any cards left
                                     if ($('.card').length === 0) {
-                                        $('.row').html(`
+                                        // Replace entire container content with empty state message
+                                        $('.container.mt-4').html(`
+                                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                                <h1>Manage My Posts</h1>
+                                                <div>
+                                                    <a href="community.php" class="btn btn-outline-primary me-2">
+                                                        <i class="fas fa-arrow-left"></i> Return to Community
+                                                    </a>
+                                                    <a href="create_post.php" class="btn btn-success">
+                                                        <i class="fas fa-plus"></i> Create New Post
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="alert alert-success">Post deleted successfully!</div>
                                             <div class="empty-posts">
                                                 <i class="fas fa-comments"></i>
                                                 <h3>You haven't created any posts yet</h3>
@@ -267,16 +295,37 @@ $pageTitle = "Manage My Posts";
                                                 <a href="create_post.php" class="btn btn-primary mt-2">Create Your First Post</a>
                                             </div>
                                         `);
+                                        
+                                        // Add smaller margin and minimum height to push footer higher
+                                        $('.container.mt-4').css({
+                                            'margin-bottom': '40px',  // Reduced from 60px to 40px
+                                            'min-height': '40vh'      // Reduced from 50vh to 40vh
+                                        });
+                                        
+                                        // Add less padding to bottom of body
+                                        $('body').css('padding-bottom', '30px'); // Reduced from 60px to 30px
+                                    } else if ($('.card').length === 1) {
+                                        // If only one post remains, adjust height to move footer higher
+                                        $('.container.mt-4').css('min-height', '50vh');  // Reduced from 60vh to 50vh
+                                        $('body').css('margin-bottom', '50px'); // Reduced from 80px to 50px
+                                        
+                                        // Show success message if there are still posts
+                                        $('<div class="alert alert-success">Post deleted successfully!</div>')
+                                            .insertAfter('.d-flex.justify-content-between.align-items-center.mb-4')
+                                            .delay(3000)
+                                            .fadeOut(500, function() {
+                                                $(this).remove();
+                                            });
+                                    } else {
+                                        // Show success message if there are still multiple posts
+                                        $('<div class="alert alert-success">Post deleted successfully!</div>')
+                                            .insertAfter('.d-flex.justify-content-between.align-items-center.mb-4')
+                                            .delay(3000)
+                                            .fadeOut(500, function() {
+                                                $(this).remove();
+                                            });
                                     }
                                 });
-                                
-                                // Show success message
-                                $('<div class="alert alert-success">Post deleted successfully!</div>')
-                                    .insertAfter('.d-flex.justify-content-between.align-items-center.mb-4')
-                                    .delay(3000)
-                                    .fadeOut(500, function() {
-                                        $(this).remove();
-                                    });
                             } else {
                                 // Show error message
                                 alert('Error: ' + response.error);
@@ -297,6 +346,7 @@ $pageTitle = "Manage My Posts";
                 }
             });
         });
+        
     </script>
     
     <?php include_once '../includes/footer.php'; ?>

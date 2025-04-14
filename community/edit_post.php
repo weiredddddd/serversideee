@@ -111,16 +111,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Check if extension is allowed
             if (in_array($file_ext, $allowed)) {
-                // Create a unique filename with underscore between ID and filename
+                // Create a unique filename
                 $new_filename = uniqid() . '_' . basename($filename);
                 
-                // Update path to the new folder
-                $upload_path = '../uploads/discussion_post_img/' . $new_filename;
+                // Create directory if it doesn't exist
+                $upload_dir = '../uploads/discussion_post_img/';
+                if (!file_exists($upload_dir)) {
+                    mkdir($upload_dir, 0755, true);
+                }
+                
+                $upload_path = $upload_dir . $new_filename;
                 $db_image_path = 'uploads/discussion_post_img/' . $new_filename;
                 
                 if (move_uploaded_file($_FILES['post_image']['tmp_name'], $upload_path)) {
                     // If there was a previous image, try to delete it (only if it's in the uploads folder)
-                    if (!empty($post['image_url']) && strpos($post['image_url'], 'uploads/') === 0) {
+                    if (!empty($post['image_url']) && 
+                        (strpos($post['image_url'], 'uploads/discussion_post_img/') === 0 ||
+                         strpos($post['image_url'], 'uploads/posts/') === 0)) {
                         $old_file = '../' . $post['image_url'];
                         if (file_exists($old_file)) {
                             @unlink($old_file);
@@ -141,7 +148,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $image_url = (isset($_POST['remove_image']) && $_POST['remove_image'] == '1') ? null : $post['image_url'];
             
             // If asked to remove image and it's in the uploads folder, try to delete the file
-            if (isset($_POST['remove_image']) && $_POST['remove_image'] == '1' && !empty($post['image_url']) && strpos($post['image_url'], 'uploads/') === 0) {
+            if (isset($_POST['remove_image']) && $_POST['remove_image'] == '1' && 
+                !empty($post['image_url']) && 
+                (strpos($post['image_url'], 'uploads/discussion_post_img/') === 0 ||
+                 strpos($post['image_url'], 'uploads/posts/') === 0)) {
                 $old_file = '../' . $post['image_url'];
                 if (file_exists($old_file)) {
                     @unlink($old_file);
@@ -167,11 +177,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             
             if ($result) {
-                $success_message = 'Post updated successfully!';
-                
-                // Refresh post data
-                $post_stmt->execute([$post_id, $user_id]);
-                $post = $post_stmt->fetch(PDO::FETCH_ASSOC);
+                // Set success message in session
+                $_SESSION['success_message'] = 'Post updated successfully!';
+                // Redirect to manage posts page
+                header('Location: manage_post.php?edited=success');
+                exit;
             } else {
                 $error_message = 'Failed to update post. Please try again.';
             }
@@ -282,28 +292,35 @@ $pageTitle = "Edit Post";
                             
                             <div class="mb-3">
                                 <label for="post_image" class="form-label">Image (Optional)</label>
-                                
-                                <?php if (!empty($post['image_url'])): ?>
-                                    <div class="image-preview-container">
-                                        <?php
-                                        if (strpos($post['image_url'], 'uploads/discussion_post_img/') !== false || 
-                                           strpos($post['image_url'], 'uploads/posts/') !== false) {
-                                            $image_path = '../' . $post['image_url'];
-                                        } else {
-                                            $image_path = '../assets/community/discussion_posts_img/' . basename($post['image_url']);
-                                        }
-                                        ?>
-                                        <img src="<?= htmlspecialchars($image_path) ?>" class="current-image" alt="Current Post Image">
-                                        <div class="remove-image-btn" id="removeImageBtn">
-                                            <i class="fas fa-times text-danger"></i>
+                                <div class="mt-2">
+                                    <?php if (!empty($post['image_url'])): ?>
+                                        <div class="image-preview-container">
+                                            <?php
+                                            if (strpos($post['image_url'], 'uploads/discussion_post_img/') !== false || 
+                                               strpos($post['image_url'], 'uploads/posts/') !== false) {
+                                                // It's a real uploaded image
+                                                $image_path = '../' . $post['image_url'];
+                                            } else {
+                                                // It's a dummy data filename
+                                                $image_path = '../assets/community/discussion_posts_img/' . basename($post['image_url']);
+                                            }
+                                            ?>
+                                            <img src="<?= htmlspecialchars($image_path) ?>" class="current-image" alt="Current Post Image">
+                                            <div class="remove-image-btn" id="removeImageBtn">
+                                                <i class="fas fa-times text-danger"></i>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="removeImage" name="remove_image" value="0">
+                                    <?php endif; ?>
+                                    
+                                    <div class="mt-2">
+                                        <input type="file" class="form-control" id="post_image" name="post_image" accept="image/*">
+                                        <small class="text-muted d-block mt-1">Maximum file size: 5MB. Supported formats: JPG, JPEG, PNG, GIF.</small>
+                                        <div class="mt-3 text-center">
+                                            <img id="imagePreview" src="#" alt="Image Preview" style="max-width:100%; max-height:300px; display:none;">
                                         </div>
                                     </div>
-                                    <input type="hidden" id="removeImage" name="remove_image" value="0">
-                                <?php endif; ?>
-                                
-                                <input type="file" class="form-control" id="post_image" name="post_image" accept="image/*">
-                                <small class="text-muted">Maximum file size: 5MB. Supported formats: JPG, JPEG, PNG, GIF.</small>
-                                <img id="imagePreview" src="#" alt="Image Preview">
+                                </div>
                             </div>
                             
                             <div class="d-flex justify-content-between">
