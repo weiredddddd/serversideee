@@ -30,35 +30,38 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Manage My Recipes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../recipes/css/recipe.css">
-
 </head>
 <body>
 <?php include_once '../includes/navigation.php'; ?> <!-- Include navigation bar -->
 
     <div class="container mt-5">
         <h2>Manage My Recipes</h2>
+        <!-- Back Button -->
+        <a href="recipes.php" class="btn btn-outline-secondary mb-4">
+            <i class="bi bi-arrow-left"></i> Back to Recipes
+        </a>
         <div class="row mt-4">
-    <?php if (empty($recipes)): ?>
-        <p class="text-muted">You haven't added any recipes yet.</p>
-    <?php else: ?>
-        <?php foreach ($recipes as $recipe): ?>
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
-                        <p class="card-text">
-                            <strong>Category:</strong> <?= htmlspecialchars($recipe['category']) ?><br>
-                            <small class="text-muted">Posted on <?= date('F j, Y', strtotime($recipe['created_at'])) ?></small>
-                        </p>
-                        <a href="edit.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-warning btn-sm me-2">Edit</a>
-                        <a href="delete.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+            <?php if (empty($recipes)): ?>
+                <p class="text-muted">You haven't added any recipes yet.</p>
+            <?php else: ?>
+                <?php foreach ($recipes as $recipe): ?>
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
+                                <p class="card-text">
+                                    <strong>Category:</strong> <?= htmlspecialchars($recipe['category']) ?><br>
+                                    <small class="text-muted">Posted on <?= date('F j, Y', strtotime($recipe['created_at'])) ?></small>
+                                </p>
+                                <a href="view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary btn-sm me-2">View</a>
+                                <a href="edit.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-warning btn-sm me-2">Edit</a>
+                                <a href="delete.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
-</div>
-
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
