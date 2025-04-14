@@ -18,6 +18,7 @@ try {
 
     $mealplansDB = new PDO("mysql:host=$host;dbname=mealplansDB;charset=utf8", $username, $password);
     $mealplansDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
     // Connect to competitionDB
     $competitionDB = new PDO("mysql:host=$host;dbname=competitiondb;charset=utf8", $username, $password);
     $competitionDB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
