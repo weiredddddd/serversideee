@@ -1,0 +1,567 @@
+/* Post cards styling */
+.post-card {
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.post-header {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Create post form styling */
+.create-post-container {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.post-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Like button styling */
+.like-btn {
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+
+.like-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Animation for likes */
+@keyframes heart-beat {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.3); }
+    50% { transform: scale(1); }
+    75% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.fa-beat {
+    animation: heart-beat 0.8s ease;
+}
+
+/* Comment styling */
+.comment-card {
+    margin-bottom: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.comment-header {
+    padding: 8px 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 0.875rem;
+}
+
+/* Recipe card styling */
+.recipe-card {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.recipe-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.recipe-img {
+    height: 180px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.recipe-img-placeholder {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+/* Featured recipe styling */
+.featured-recipe {
+    display: flex;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.featured-recipe:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.featured-recipe-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 15px;
+}
+
+.featured-recipe-img-placeholder {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin-right: 15px;
+}
+
+/* Tab content styling */
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Post image styling */
+.post-image {
+    padding: 0;
+    overflow: hidden;
+    max-height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+}
+
+.post-image img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+}
+
+/* Modal post preview */
+.post-preview {
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 25px;
+    padding: 0 5px 15px 5px;
+}
+
+/* Comment item styling */
+.comment-item {
+    margin-bottom: 12px;
+}
+
+.comment-item .bg-light {
+    padding: 10px 15px;
+    border-radius: 18px;
+    background-color: #f0f2f5 !important;
+    position: relative;
+    margin-bottom: 5px;
+}
+
+.comment-item .bg-light:hover {
+    background-color: #e9ebee !important;
+}
+
+.comment-item img.rounded-circle {
+    width: 36px;
+    height: 36px;
+    object-fit: cover;
+}
+
+.comment-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #212529;
+    white-space: pre-line;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+.comment-item .text-muted {
+    font-size: 0.7rem;
+}
+
+/* Comment form styling */
+#comment-form {
+    flex: 0 0 auto;   /* Fixed size, don't grow or shrink */
+    background-color: white;
+    border-top: 1px solid #dee2e6;
+    padding: 15px 20px;
+    margin: 0;
+    border-radius: 0 0 0.3rem 0.3rem;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+/* Send comment button styling */
+.send-comment-btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    width: 40px;
+    padding: 0.375rem 0;
+}
+
+.send-comment-btn:hover {
+    background-color: #0069d9;
+}
+
+.send-comment-btn:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+}
+
+.send-comment-btn .fa-paper-plane {
+    font-size: 0.9rem;
+}
+
+/* Input group styling for comment form */
+#comment-form .input-group {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+#comment-text {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    resize: none;
+    min-height: 45px;
+}
+
+/* Modal styling */
+.modal-dialog {
+    max-height: 95vh; 
+    display: flex;
+    max-width: 700px;
+    margin: 1.75rem auto;
+}
+
+.modal-content {
+    max-height: 95vh; 
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.modal-body {
+    max-height: 85vh; 
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+    padding: 1rem;
+    position: relative;
+}
+
+/* Modal content scrolling area */
+.modal-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 120px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* Comment form styling - make it fixed at bottom */
+#comment-form-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 15px;
+    border-top: 1px solid #dee2e6;
+    z-index: 1030; /* Higher z-index to ensure it stays on top */
+    border-radius: 0 0 0.3rem 0.3rem;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+#comment-form {
+    margin: 0;
+}
+
+/* Comment container styling */
+#comments-container {
+    overflow-y: visible;
+    margin-top: 20px;
+    border-radius: 5px;
+    padding: 5px 8px;
+    margin-bottom: 20px;
+}
+
+/* Last comment visibility indicator */
+.scroll-indicator {
+    text-align: center;
+    padding: 5px;
+    margin-bottom: 10px;
+    color: #6c757d;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* Ensure comments are properly padded for scroll */
+.comment-list {
+    padding-bottom: 10px;
+}
+
+/* Modal image styling */
+#modal-post-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom, #e9f2ff, #f8f9fa);
+    padding: 15px 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    max-height: 400px;
+    overflow: hidden;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+    border: 1px solid #e0e8f5;
+    margin-left: -5px;
+    margin-right: -5px;
+    width: calc(100% + 10px);
+}
+
+#modal-post-image img {
+    margin: 0 auto;
+    max-width: 100%; 
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 5px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* Modal content area */
+#modal-post-content {
+    white-space: pre-line;
+    font-size: 0.95rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+#comments-container {
+    overflow-y: visible;
+    margin-top: 15px;
+    border-radius: 5px;
+    padding: 5px 0;
+}
+
+/* Scrollbar styling */
+.modal-scroll-area::-webkit-scrollbar {
+    width: 8px; /* Slightly wider scrollbar */
+}
+
+.modal-scroll-area::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.modal-scroll-area::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.modal-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Fixed Filter Categories Sidebar - REPLACING with inline sidebar */
+.filter-sidebar {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    height: fit-content;
+    margin-bottom: 20px;
+}
+
+.filter-heading {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #007bff;
+    color: #343a40;
+    font-size: 1.25rem;
+}
+
+.filter-subheading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 12px;
+}
+
+.filter-section {
+    margin-bottom: 25px;
+}
+
+.filter-sidebar .list-group-item {
+    border-radius: 5px;
+    margin-bottom: 5px;
+    transition: all 0.2s ease;
+    border: 1px solid #eaeaea;
+    padding: 8px 15px;
+}
+
+.filter-sidebar .list-group-item:hover {
+    background-color: #e9f2ff;
+    transform: translateX(3px);
+}
+
+.filter-sidebar .list-group-item.active {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.filter-sidebar .dropdown-item.active {
+    background-color: #007bff;
+}
+
+.filter-sidebar .dropdown-toggle {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* Remove the main-content-with-sidebar class as we'll use standard Bootstrap grid */
+/* Delete or comment out these CSS rules:
+.main-content-with-sidebar {
+    margin-left: 300px;
+}
+
+@media (max-width: 992px) {
+    .filter-sidebar {
+        width: 240px;
+    }
+    
+    .main-content-with-sidebar {
+        margin-left: 260px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-sidebar {
+        position: static;
+        width: 100%;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        max-height: none;
+    }
+    
+    .main-content-with-sidebar {
+        margin-left: 0;
+    }
+}
+*/
+
+/* Scrollbar styling for filter sidebar */
+.filter-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.filter-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.post-content-scrollable {
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 10px;
+    position: relative;
+}
+
+/* Styling for scroll fadeout effect */
+.post-content-scrollable.has-more::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: linear-gradient(transparent, rgba(255, 255, 255, 0.9) 70%, white);
+    pointer-events: none;
+}
+
+/* Scroll indicator */
+.scroll-indicator {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 5px;
+    margin-bottom: -5px;
+}
+
+/* Scrollable posts container */
+.posts-container {
+    height: calc(100vh - 250px);
+    min-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+    margin-right: -10px;
+    padding-bottom: 20px;
+}
+
+/* Custom scrollbar for posts container */
+.posts-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.posts-container::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.posts-container::-webkit-scrollbar-thumb {
+    background: #adb5bd;
+    border-radius: 5px;
+}
+
+.posts-container::-webkit-scrollbar-thumb:hover {
+    background: #6c757d;
+}
+
+/* Visual indicator for scrollable area */
+.scroll-container-indicator {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 1px dashed #dee2e6;
+}

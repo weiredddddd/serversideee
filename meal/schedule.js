@@ -23,7 +23,6 @@ function initializeCalendar(startDate, mainDate = null) {
         }
     }
 
-    // Animate the week range text
     const weekRangeElement = document.getElementById('current-week-range');
     if (animationsEnabled) {
         weekRangeElement.style.opacity = '0';
@@ -60,10 +59,15 @@ function processMeals(meals) {
 
 function renderCompactView(mealData) {
     const grid = document.getElementById('compact-weekly-view');
-    
-    // Create a temporary container for the new content
     const tempContainer = document.createElement('div');
     tempContainer.className = 'row g-2';
+    
+    const nutrientThresholds = {
+        calories: { min: 2000, max: 2500 },
+        carbs: { min: 225, max: 300 },
+        protein: { min: 60, max: 150, high: 120 },
+        fat: { min: 44, max: 78 }
+    };
     
     for (let i = 0; i < 7; i++) {
         const date = new Date(currentStartDate);
@@ -73,11 +77,69 @@ function renderCompactView(mealData) {
         const dayMeals = { ...defaultSlots, ...(mealData[dateStr] || {}) };
         const isActive = dateStr === currentMainDate.toISOString().split('T')[0];
         const isToday = dateStr === new Date().toISOString().split('T')[0];
-
+        
+        // Calculate daily totals for all nutrients
+        const dailyTotals = {
+            calories: 0,
+            fat: 0,
+            carbs: 0,
+            protein: 0
+        };
+        
+        const allMeals = [...dayMeals.Breakfast, ...dayMeals.Lunch, ...dayMeals.Dinner];
+        
+        allMeals.forEach(meal => {
+            const isRecipe = !!meal.recipe_id;
+            const nutrition = isRecipe ? {
+                calories: parseInt(meal.calories || 0),
+                fat: parseFloat(meal.fat || 0),
+                carbs: parseFloat(meal.carbs || 0),
+                protein: parseFloat(meal.protein || 0)
+            } : {
+                calories: parseInt(meal.custom_calories || 0),
+                fat: parseFloat(meal.custom_fat || 0),
+                carbs: parseFloat(meal.custom_carbs || 0),
+                protein: parseFloat(meal.custom_protein || 0)
+            };
+            
+            dailyTotals.calories += nutrition.calories;
+            dailyTotals.fat += nutrition.fat;
+            dailyTotals.carbs += nutrition.carbs;
+            dailyTotals.protein += nutrition.protein;
+        });
+        
+        // Determine nutrition status class based on meter logic
+        let statusClass = '';
+        if (allMeals.length > 0) {
+            const anyExcessive = 
+                dailyTotals.calories > nutrientThresholds.calories.max ||
+                dailyTotals.carbs > nutrientThresholds.carbs.max ||
+                dailyTotals.protein > nutrientThresholds.protein.max ||
+                dailyTotals.fat > nutrientThresholds.fat.max;
+            
+            const allSufficient = 
+                dailyTotals.calories >= nutrientThresholds.calories.min &&
+                dailyTotals.carbs >= nutrientThresholds.carbs.min &&
+                dailyTotals.protein >= nutrientThresholds.protein.min &&
+                dailyTotals.fat >= nutrientThresholds.fat.min;
+            
+            const highProtein = dailyTotals.protein >= nutrientThresholds.protein.high;
+            
+            if (anyExcessive) {
+                statusClass = 'nutrition-cheat'; // Purple
+            } else if (allSufficient && highProtein) {
+                statusClass = 'nutrition-muscle'; // Yellow
+            } else if (allSufficient) {
+                statusClass = 'nutrition-balanced'; // Green
+            } else {
+                statusClass = 'nutrition-insufficient'; // Red
+            }
+        }
+        
         const dayCol = document.createElement('div');
         dayCol.className = 'col-4';
         dayCol.innerHTML = `
-            <div class="compact-day p-2 ${isActive ? 'active' : ''} ${isToday ? 'today' : ''}" data-date="${dateStr}">
+            <div class="compact-day p-2 ${isActive ? 'active' : ''} ${isToday ? 'today' : ''} ${statusClass}" data-date="${dateStr}">
                 <h6>${shortDayNames[date.getDay()]} ${date.getDate()} ${monthNames[date.getMonth()]}</h6>
                 ${['Breakfast', 'Lunch', 'Dinner'].map(slot => {
                     const meals = dayMeals[slot];
@@ -101,14 +163,11 @@ function renderCompactView(mealData) {
         tempContainer.appendChild(dayCol);
     }
     
-    // Apply animation when replacing content
     if (animationsEnabled) {
         grid.style.opacity = '0';
         setTimeout(() => {
             grid.innerHTML = tempContainer.innerHTML;
             grid.style.opacity = '1';
-            
-            // Add event listeners to the new elements
             addCompactDayEventListeners();
         }, 300);
     } else {
@@ -128,7 +187,6 @@ function addCompactDayEventListeners() {
             this.classList.add('active');
             currentMainDate = new Date(this.dataset.date);
             
-            // Animate the transition
             const mainDisplay = document.getElementById('main-day-display');
             if (animationsEnabled) {
                 mainDisplay.style.opacity = '0';
@@ -152,86 +210,219 @@ function renderMainDay(mealData) {
     const defaultSlots = { Breakfast: [], Lunch: [], Dinner: [] };
     const dayMeals = { ...defaultSlots, ...(mealData[dateStr] || {}) };
     const isToday = dateStr === new Date().toISOString().split('T')[0];
-
-    // Create meal day content
-    let mealDayContent = `
-        <div class="meal-day p-4">
-            <h3>${dayNames[currentMainDate.getDay()]}, ${formatDate(currentMainDate)} ${isToday ? '<span class="badge bg-primary">Today</span>' : ''}</h3>
-    `;
-
-    // Add meal slots
-    ['Breakfast', 'Lunch', 'Dinner'].forEach((slot, index) => {
-        let icon = '';
-        let bgColor = '';
+  
+    // Calculate daily totals
+    let dailyTotals = {
+      calories: 0,
+      fat: 0,
+      carbs: 0,
+      protein: 0
+    };
+  
+    ['Breakfast', 'Lunch', 'Dinner'].forEach(slot => {
+      const slotMeals = dayMeals[slot] || [];
+      slotMeals.forEach(meal => {
+        const isRecipe = !!meal.recipe_id;
+        const nutrition = isRecipe ? {
+          calories: parseInt(meal.calories || 0),
+          fat: parseFloat(meal.fat || 0),
+          carbs: parseFloat(meal.carbs || 0),
+          protein: parseFloat(meal.protein || 0)
+        } : {
+          calories: parseInt(meal.custom_calories || 0),
+          fat: parseFloat(meal.custom_fat || 0),
+          carbs: parseFloat(meal.custom_carbs || 0),
+          protein: parseFloat(meal.custom_protein || 0)
+        };
         
-        if (slot === 'Breakfast') {
-            icon = '<i class="bi bi-cup-hot me-2"></i>';
-            bgColor = 'rgba(249, 115, 22, 0.1)';
-        } else if (slot === 'Lunch') {
-            icon = '<i class="bi bi-egg-fried me-2"></i>';
-            bgColor = 'rgba(16, 185, 129, 0.1)';
-        } else if (slot === 'Dinner') {
-            icon = '<i class="bi bi-moon me-2"></i>';
-            bgColor = 'rgba(79, 70, 229, 0.1)';
-        }
-        
-        mealDayContent += `
-            <div class="meal-slot mb-4" data-date="${dateStr}" data-slot="${slot}" style="border-left: 4px solid ${bgColor.replace('0.1', '1')}; background-color: ${bgColor}">
-                <h5>${icon}${slot}</h5>
-                <div class="meal-list">
-        `;
-        
-        // Add meals or empty state
-        if (dayMeals[slot].length === 0) {
-            mealDayContent += `
-                <div class="empty-slot-message">
-                    <i class="bi bi-plus-circle me-2"></i>No meals planned for ${slot.toLowerCase()}
-                </div>
-            `;
-        } else {
-            dayMeals[slot].forEach((meal, mealIndex) => {
-                const delay = 0.1 * mealIndex;
-                mealDayContent += `
-                    <div class="meal-item" style="animation-delay: ${delay}s">
-                        ${meal.image_url ? `<img src="/ServerSide/serversideee/uploads/${meal.image_url}" alt="${meal.recipe_title}" class="img-fluid mb-2">` : ''}
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>${meal.recipe_title || meal.custom_meal_name}</strong>
-                                ${meal.custom_meal_description ? `<div class="text-muted small">${meal.custom_meal_description}</div>` : ''}
-                            </div>
-                            <div class="meal-actions">
-                                <button class="btn btn-icon btn-edit me-1" onclick="editMeal(${meal.meal_plan_id})">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-icon btn-delete" onclick="deleteMeal(${meal.meal_plan_id})">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-        
-        mealDayContent += `
-                </div>
-                <button class="btn btn-add-meal mt-2" onclick="addMeal('${dateStr}', '${slot}')">
-                    <i class="bi bi-plus-circle me-1"></i>Add Meal
-                </button>
-            </div>
-        `;
+        dailyTotals.calories += nutrition.calories;
+        dailyTotals.fat += nutrition.fat;
+        dailyTotals.carbs += nutrition.carbs;
+        dailyTotals.protein += nutrition.protein;
+      });
     });
-    
+  
+    // Round values to 1 decimal place
+    dailyTotals.fat = Math.round(dailyTotals.fat * 10) / 10;
+    dailyTotals.carbs = Math.round(dailyTotals.carbs * 10) / 10;
+    dailyTotals.protein = Math.round(dailyTotals.protein * 10) / 10;
+  
+    // Start building the HTML content
+    let mealDayContent = `
+      <div class="meal-day p-4">
+        <h3>${dayNames[currentMainDate.getDay()]}, ${formatDate(currentMainDate)} ${isToday ? '<span class="badge bg-primary">Today</span>' : ''}</h3>
+        <div id="nutrition-meter-container" class="mb-4"></div>
+    `;
+  
+    ['Breakfast', 'Lunch', 'Dinner'].forEach((slot, index) => {
+      let icon = '';
+      let bgColor = '';
+      if (slot === 'Breakfast') {
+        icon = '<i class="bi bi-cup-hot me-2"></i>';
+        bgColor = 'rgba(249, 115, 22, 0.1)';
+      } else if (slot === 'Lunch') {
+        icon = '<i class="bi bi-egg-fried me-2"></i>';
+        bgColor = 'rgba(16, 185, 129, 0.1)';
+      } else if (slot === 'Dinner') {
+        icon = '<i class="bi bi-moon me-2"></i>';
+        bgColor = 'rgba(79, 70, 229, 0.1)';
+      }
+  
+      const totalNutrition = dayMeals[slot].reduce(
+        (acc, meal) => {
+          const isRecipe = !!meal.recipe_id;
+          const nutrition = isRecipe
+            ? {
+                calories: parseInt(meal.calories || 0),
+                fat: parseFloat(meal.fat || 0),
+                carbs: parseFloat(meal.carbs || 0),
+                protein: parseFloat(meal.protein || 0),
+              }
+            : {
+                calories: parseInt(meal.custom_calories || 0),
+                fat: parseFloat(meal.custom_fat || 0),
+                carbs: parseFloat(meal.custom_carbs || 0),
+                protein: parseFloat(meal.custom_protein || 0),
+              };
+          acc.calories += nutrition.calories;
+          acc.fat += nutrition.fat;
+          acc.carbs += nutrition.carbs;
+          acc.protein += nutrition.protein;
+          return acc;
+        },
+        { calories: 0, fat: 0, carbs: 0, protein: 0 }
+      );
+  
+      totalNutrition.fat = Math.round(totalNutrition.fat * 10) / 10;
+      totalNutrition.carbs = Math.round(totalNutrition.carbs * 10) / 10;
+      totalNutrition.protein = Math.round(totalNutrition.protein * 10) / 10;
+  
+      mealDayContent += `
+        <div class="meal-slot mb-4" data-date="${dateStr}" data-slot="${slot}" style="border-left: 4px solid ${bgColor.replace(
+        '0.1',
+        '1'
+      )}; background-color: ${bgColor}">
+          <h5>${icon}${slot}</h5>
+          <div class="meal-list">
+      `;
+  
+      if (dayMeals[slot].length === 0) {
+        mealDayContent += `
+          <div class="empty-slot-message">
+            <i class="bi bi-plus-circle me-2"></i>No meals planned for ${slot.toLowerCase()}
+          </div>
+        `;
+      } else {
+        dayMeals[slot].forEach((meal, mealIndex) => {
+          const delay = 0.1 * mealIndex;
+          const isRecipe = !!meal.recipe_id;
+          const nutrition = isRecipe
+            ? {
+                calories: meal.calories || 0,
+                fat: meal.fat || 0,
+                carbs: meal.carbs || 0,
+                protein: meal.protein || 0,
+              }
+            : {
+                calories: meal.custom_calories || 0,
+                fat: meal.custom_fat || 0,
+                carbs: meal.custom_carbs || 0,
+                protein: meal.custom_protein || 0,
+              };
+          mealDayContent += `
+            <div class="meal-item" style="animation-delay: ${delay}s">
+              ${
+                meal.image_url
+                  ? `<img src="/ServerSide/serversideee/uploads/recipe/${meal.image_url}" alt="${meal.recipe_title}" class="img-fluid mb-2">`
+                  : ''
+              }
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>${meal.recipe_title || meal.custom_meal_name}</strong>
+                  <div class="nutrition-info">
+                    <span>Calories: ${nutrition.calories}</span>
+                    <span>Fat: ${nutrition.fat}g</span>
+                    <span>Carbs: ${nutrition.carbs}g</span>
+                    <span>Protein: ${nutrition.protein}g</span>
+                  </div>
+                  ${
+                    meal.custom_meal_description
+                      ? `<div class="text-muted small">${meal.custom_meal_description}</div>`
+                      : ''
+                  }
+                </div>
+                <div class="meal-actions">
+                  <button class="btn btn-icon btn-edit me-1" onclick="editMeal(${meal.meal_plan_id})">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-icon btn-delete" onclick="deleteMeal(${meal.meal_plan_id})">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+  
+      mealDayContent += `
+          </div>
+          <div class="slot-totals nutrition-info">
+            <span>Total: </span>
+            <span>Calories: ${totalNutrition.calories}</span>
+            <span>Fat: ${totalNutrition.fat}g</span>
+            <span>Carbs: ${totalNutrition.carbs}g</span>
+            <span>Protein: ${totalNutrition.protein}g</span>
+          </div>
+          <button class="btn btn-add-meal mt-2" onclick="addMeal('${dateStr}', '${slot}')">
+            <i class="bi bi-plus-circle me-1"></i>Add Meal
+          </button>
+        </div>
+      `;
+    });
+  
     mealDayContent += `</div>`;
+  
+    mainDisplay.innerHTML = mealDayContent;
     
-    // Apply animation when replacing content
-    if (animationsEnabled) {
-        mainDisplay.innerHTML = mealDayContent;
-        mainDisplay.style.opacity = '1';
-        mainDisplay.style.transform = 'translateY(0)';
-    } else {
-        mainDisplay.innerHTML = mealDayContent;
+    // Update the nutrition meter with the daily totals
+    if (window.updateNutritionMeter) {
+      window.updateNutritionMeter(dailyTotals);
     }
+  
+    if (animationsEnabled) {
+      mainDisplay.style.opacity = '1';
+      mainDisplay.style.transform = 'translateY(0)';
+    }
+  }
+
+function editMeal(mealId) {
+    fetch(`fetch_meal_plans.php?meal_id=${mealId}`)
+        .then(response => response.json())
+        .then(meal => {
+            document.getElementById('mealDate').value = meal.date;
+            document.getElementById('mealSlot').value = meal.time_slot;
+            document.getElementById('mealPlanId').value = meal.meal_plan_id;
+            document.getElementById('recipeSelect').value = meal.recipe_id || '';
+            document.getElementById('customMeal').value = meal.custom_meal_name || '';
+            document.getElementById('mealNotes').value = meal.custom_meal_description || '';
+            if (meal.custom_meal_name) {
+                document.getElementById('customNutritionFields').style.display = 'block';
+                document.getElementById('customCalories').value = meal.custom_calories || '';
+                document.getElementById('customFat').value = meal.custom_fat || '';
+                document.getElementById('customCarbs').value = meal.custom_carbs || '';
+                document.getElementById('customProtein').value = meal.custom_protein || '';
+            } else {
+                document.getElementById('customNutritionFields').style.display = 'none';
+            }
+            document.getElementById('btnDelete').style.display = 'block';
+            
+            const modalTitle = document.querySelector('#mealModal .modal-title');
+            modalTitle.innerHTML = `<i class="bi bi-pencil-square me-2"></i>Edit ${meal.time_slot} for ${dayNames[new Date(meal.date).getDay()]}, ${formatDate(new Date(meal.date))}`;
+            
+            const modal = new bootstrap.Modal(document.getElementById('mealModal'));
+            modal.show();
+        });
 }
 
 function addMeal(date, slot) {
@@ -250,28 +441,7 @@ function addMeal(date, slot) {
     modal.show();
 }
 
-function editMeal(mealId) {
-    fetch(`fetch_meal_plans.php?meal_id=${mealId}`)
-        .then(response => response.json())
-        .then(meal => {
-            document.getElementById('mealDate').value = meal.date;
-            document.getElementById('mealSlot').value = meal.time_slot;
-            document.getElementById('mealPlanId').value = meal.meal_plan_id;
-            document.getElementById('recipeSelect').value = meal.recipe_id || '';
-            document.getElementById('customMeal').value = meal.custom_meal_name || '';
-            document.getElementById('mealNotes').value = meal.custom_meal_description || '';
-            document.getElementById('btnDelete').style.display = 'block';
-            
-            const modalTitle = document.querySelector('#mealModal .modal-title');
-            modalTitle.innerHTML = `<i class="bi bi-pencil-square me-2"></i>Edit ${meal.time_slot} for ${dayNames[new Date(meal.date).getDay()]}, ${formatDate(new Date(meal.date))}`;
-            
-            const modal = new bootstrap.Modal(document.getElementById('mealModal'));
-            modal.show();
-        });
-}
-
 function saveMeal() {
-    // Add a small animation to the save button
     const saveButton = document.getElementById('btnSave');
     saveButton.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
     saveButton.disabled = true;
@@ -282,7 +452,11 @@ function saveMeal() {
         time_slot: document.getElementById('mealSlot').value,
         recipe_id: document.getElementById('recipeSelect').value,
         custom_meal_name: document.getElementById('customMeal').value,
-        custom_meal_description: document.getElementById('mealNotes').value
+        custom_meal_description: document.getElementById('mealNotes').value,
+        custom_calories: document.getElementById('customCalories').value || 0,
+        custom_fat: document.getElementById('customFat').value || 0,
+        custom_carbs: document.getElementById('customCarbs').value || 0,
+        custom_protein: document.getElementById('customProtein').value || 0
     };
 
     fetch('save_meal_plan.php', {
@@ -293,15 +467,11 @@ function saveMeal() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Reset button state
             saveButton.innerHTML = '<i class="bi bi-check-circle me-1"></i>Save Meal';
             saveButton.disabled = false;
             
-            // Close modal with animation
             const modalElement = document.getElementById('mealModal');
             const modal = bootstrap.Modal.getInstance(modalElement);
-            
-            // Add success feedback
             const modalBody = modalElement.querySelector('.modal-body');
             const successAlert = document.createElement('div');
             successAlert.className = 'alert alert-success mt-3';
@@ -322,14 +492,12 @@ function saveMeal() {
 }
 
 function deleteMeal(mealId) {
-    // Use a more stylish confirmation dialog
     if (confirm('Are you sure you want to delete this meal?')) {
         const affectedElement = mealId ? 
             document.querySelector(`.meal-item:has(button[onclick="editMeal(${mealId})"])`) : 
             null;
         
         if (affectedElement && animationsEnabled) {
-            // Add delete animation
             affectedElement.style.opacity = '0.5';
             affectedElement.style.transform = 'translateX(10px)';
         }
@@ -359,7 +527,6 @@ function deleteMeal(mealId) {
                     initializeCalendar(currentStartDate, currentMainDate);
                 }
                 
-                // Close modal if open
                 const modal = bootstrap.Modal.getInstance(document.getElementById('mealModal'));
                 if (modal) modal.hide();
             } else {
@@ -374,7 +541,6 @@ function deleteMeal(mealId) {
 }
 
 function navigateWeek(days) {
-    // Animate the navigation buttons
     const button = days < 0 ? document.getElementById('prev-week') : document.getElementById('next-week');
     button.classList.add('animate-pulse');
     
@@ -382,7 +548,6 @@ function navigateWeek(days) {
         button.classList.remove('animate-pulse');
         currentStartDate.setDate(currentStartDate.getDate() + days);
         
-        // Slide animation for week change
         const mainDisplay = document.getElementById('main-day-display');
         const compactView = document.getElementById('compact-weekly-view');
         
@@ -407,11 +572,10 @@ function navigateWeek(days) {
         }
     }, 300);
 }
-
+document.getElementById('btnJumpToDate').addEventListener('click', jumpToDate);
 function jumpToDate() {
     const targetDate = new Date(document.getElementById('targetDate').value);
     
-    // Add animation for date jump
     const mainDisplay = document.getElementById('main-day-display');
     const compactView = document.getElementById('compact-weekly-view');
     
@@ -440,14 +604,21 @@ function formatDate(date) {
     return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-// Event listeners
+document.getElementById('customMeal').addEventListener('input', function() {
+    const nutritionFields = document.getElementById('customNutritionFields');
+    if (this.value.trim() !== '') {
+        nutritionFields.style.display = 'block';
+    } else {
+        nutritionFields.style.display = 'none';
+    }
+});
+
 document.getElementById('prev-week').addEventListener('click', () => navigateWeek(-7));
 document.getElementById('next-week').addEventListener('click', () => navigateWeek(7));
 document.getElementById('btnJumpToDate').addEventListener('click', jumpToDate);
 document.getElementById('btnSave').addEventListener('click', saveMeal);
 document.getElementById('btnDelete').addEventListener('click', () => deleteMeal(document.getElementById('mealPlanId').value));
 
-// Initialize calendar
 document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar(new Date());
 });

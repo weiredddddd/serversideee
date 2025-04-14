@@ -1,4 +1,5 @@
 <?php
+// filepath: c:\xampp\htdocs\asm\users\register.php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -16,8 +17,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validate username
     if (empty($username)) {
         $errors[] = "Username is required";
-    } elseif (strlen($username) > 30) {
-        $errors[] = "Username cannot exceed 30 characters";
+    } elseif (!preg_match('/^[a-zA-Z0-9_\-]+$/', $username)) {
+        $errors[] = "Username can only contain letters, numbers, underscores and hyphens";
+    } elseif (strlen($username) < 3 || strlen($username) > 20) {
+        $errors[] = "Username must be between 3 and 20 characters";
+    } else {
+        // Check if username already exists
+        $stmt = $usersDB->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        if ($stmt->fetchColumn() > 0) {
+            $errors[] = "Username already taken. Please choose a different username.";
+        }
     }
 
     // Validate email
@@ -52,9 +62,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Hash password
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-            // Insert user into database (lowercase 'users')
-            $stmt = $usersDB->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-            if ($stmt->execute([$username, $email, $hashedPassword])) {
+            // Insert user into database with nickname set to username
+            $stmt = $usersDB->prepare("INSERT INTO users (username, email, password, nickname) VALUES (?, ?, ?, ?)");
+            if ($stmt->execute([$username, $email, $hashedPassword, $username])) {
                 $success = "Account successfully registered!";
                 $show_redirect_button = true; // Set flag to show button
             } else {
@@ -63,7 +73,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } catch (PDOException $e) {
             // More user-friendly error messages based on error code
             if ($e->getCode() == 23000) { // Integrity constraint violation
-                $errors[] = "This email address is already registered.";
+                if (strpos($e->getMessage(), 'username') !== false) {
+                    $errors[] = "This username is already taken.";
+                } else {
+                    $errors[] = "This email address is already registered.";
+                }
             } else {
                 $errors[] = "Database error: " . $e->getMessage();
             }
@@ -114,23 +128,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form method="POST" id="registerForm">
                 <div class="mb-3">
                     <label class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" placeholder="Enter username" 
-                        value="<?= isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>" required>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" name="username" id="username" class="form-control" 
+                            placeholder="Enter username" 
+                            pattern="[a-zA-Z0-9_\-]+" 
+                            title="Username can only contain letters, numbers, underscores and hyphens"
+                            minlength="3" maxlength="20"
+                            value="<?= isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>" 
+                            required>
+                    </div>
+                    <div class="invalid-feedback" id="username-feedback"></div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" placeholder="Enter email" 
-                        value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>" required>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        <input type="email" name="email" id="email" class="form-control" 
+                               placeholder="Enter email" 
+                               value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>" 
+                               required>
+                    </div>
                 </div>
+                
                 <div class="mb-3">
                     <label class="form-label">Password</label>
-                    <input type="password" name="password" id="password" class="form-control" placeholder="Enter password" required>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" name="password" id="password" class="form-control" 
+                               placeholder="Enter password" required>
+                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
                     <small id="password-feedback" class="text-danger" style="display: none;">Password must be at least 8 characters</small>
                 </div>
+                
                 <div class="mb-3">
                     <label class="form-label">Confirm Password</label>
-                    <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Confirm password" required>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" name="confirm_password" id="confirm_password" class="form-control" 
+                               placeholder="Confirm password" required>
+                        <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
+                    <small id="confirm-feedback" class="text-danger" style="display: none;">Passwords do not match</small>
                 </div>
+                
                 <button type="submit" class="btn btn-primary w-100">Register</button>
             </form>
 
@@ -150,49 +196,126 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Client-side validation (additional layer)
-        document.getElementById('registerForm')?.addEventListener('submit', function(e) {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-            
-            if (password.length < 8) {
-                e.preventDefault();
-                alert('Password must be at least 8 characters long');
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                e.preventDefault();
-                alert('Passwords do not match');
-                return;
-            }
-        });
-
-        // Add this new code for dynamic feedback
+        // Client-side validation for all fields
+        const form = document.getElementById('registerForm');
+        const usernameInput = document.getElementById('username');
+        const usernameFeedback = document.getElementById('username-feedback');
         const passwordInput = document.getElementById('password');
         const passwordFeedback = document.getElementById('password-feedback');
-
+        const confirmInput = document.getElementById('confirm_password');
+        const confirmFeedback = document.getElementById('confirm-feedback');
+        
+        // Username validation
+        usernameInput?.addEventListener('input', function() {
+            const username = this.value.trim();
+            const usernamePattern = /^[a-zA-Z0-9_\-]+$/;
+            
+            if (username.length > 0) {
+                if (!usernamePattern.test(username)) {
+                    this.classList.add('is-invalid');
+                    usernameFeedback.textContent = 'Username can only contain letters, numbers, underscores and hyphens';
+                    usernameFeedback.style.display = 'block';
+                } else if (username.length < 3 || username.length > 20) {
+                    this.classList.add('is-invalid');
+                    usernameFeedback.textContent = 'Username must be between 3 and 20 characters';
+                    usernameFeedback.style.display = 'block';
+                } else {
+                    this.classList.remove('is-invalid');
+                    usernameFeedback.style.display = 'none';
+                }
+            } else {
+                this.classList.remove('is-invalid');
+                usernameFeedback.style.display = 'none';
+            }
+        });
+        
+        // Password validation
         passwordInput?.addEventListener('input', function() {
             if (this.value.length > 0 && this.value.length < 8) {
-                // Show warning if password is being typed but too short
-                passwordFeedback.style.display = 'block';
-            } else {
-                // Hide warning if password is empty or long enough
-                passwordFeedback.style.display = 'none';
-            }
-        });
-
-        // Also check when field loses focus
-        passwordInput?.addEventListener('blur', function() {
-            if (this.value.length > 0 && this.value.length < 8) {
                 passwordFeedback.style.display = 'block';
             } else {
                 passwordFeedback.style.display = 'none';
+                
+                // Check password match if confirm has content
+                if (confirmInput.value.length > 0) {
+                    if (this.value !== confirmInput.value) {
+                        confirmFeedback.style.display = 'block';
+                    } else {
+                        confirmFeedback.style.display = 'none';
+                    }
+                }
             }
         });
+        
+        // Confirm password validation
+        confirmInput?.addEventListener('input', function() {
+            if (this.value !== passwordInput.value) {
+                confirmFeedback.style.display = 'block';
+            } else {
+                confirmFeedback.style.display = 'none';
+            }
+        });
+        
+        // Form submission validation
+        form?.addEventListener('submit', function(e) {
+            let isValid = true;
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmInput.value;
+            const usernamePattern = /^[a-zA-Z0-9_\-]+$/;
+            
+            // Username validation
+            if (!usernamePattern.test(username)) {
+                usernameInput.classList.add('is-invalid');
+                usernameFeedback.textContent = 'Username can only contain letters, numbers, underscores and hyphens';
+                usernameFeedback.style.display = 'block';
+                isValid = false;
+            } else if (username.length < 3 || username.length > 20) {
+                usernameInput.classList.add('is-invalid');
+                usernameFeedback.textContent = 'Username must be between 3 and 20 characters';
+                usernameFeedback.style.display = 'block';
+                isValid = false;
+            }
+            
+            // Password validation
+            if (password.length < 8) {
+                passwordFeedback.style.display = 'block';
+                isValid = false;
+            }
+            
+            // Confirm password validation
+            if (password !== confirmPassword) {
+                confirmFeedback.style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+        
+        // Toggle password visibility
+        document.getElementById('togglePassword')?.addEventListener('click', function() {
+            togglePasswordVisibility(passwordInput, this.querySelector('i'));
+        });
+        
+        document.getElementById('toggleConfirmPassword')?.addEventListener('click', function() {
+            togglePasswordVisibility(confirmInput, this.querySelector('i'));
+        });
+        
+        function togglePasswordVisibility(input, icon) {
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
     </script>
 
     <?php include_once '../includes/footer.php'; ?>
-
 </body>
 </html>

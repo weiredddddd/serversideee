@@ -13,15 +13,19 @@ require '../config/db.php';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="schedule.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="components/nutrition-meter.js"></script>
 </head>
 <body>
     <div class="container py-4">
         <div class="page-header px-4">
             <div class="d-flex justify-content-between align-items-center">
                 <h2><i class="bi bi-calendar-check me-2"></i>Meal Planner</h2>
-                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#datePickerModal">
+                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#datePickerModal" style="position: relative; z-index: 3;">
                     <i class="bi bi-calendar-range me-1"></i> Choose Date
                 </button>
             </div>
@@ -89,6 +93,23 @@ require '../config/db.php';
                                 <div class="mb-3">
                                     <label class="form-label fw-bold"><i class="bi bi-pencil me-1"></i>Custom Meal</label>
                                     <input type="text" class="form-control" id="customMeal" name="custom_meal_name" placeholder="Enter custom meal name">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="customNutritionFields" style="display: none;">
+                            <label class="form-label fw-bold"><i class="bi bi-bar-chart me-1"></i>Nutrition Information</label>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="number" class="form-control" id="customCalories" name="custom_calories" placeholder="Calories" min="0">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" id="customFat" name="custom_fat" placeholder="Fat (g)" min="0" step="0.1">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" id="customCarbs" name="custom_carbs" placeholder="Carbs (g)" min="0" step="0.1">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" id="customProtein" name="custom_protein" placeholder="Protein (g)" min="0" step="0.1">
                                 </div>
                             </div>
                         </div>

@@ -166,6 +166,16 @@ body {
     font-size: 1.05rem;
 }
 
+.nutrition-info {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.nutrition-info span {
+    margin-right: 1rem;
+}
+
 .compact-day {
     cursor: pointer;
     background: white;
@@ -263,7 +273,6 @@ body {
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
 }
 
-/* Animations */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -348,4 +357,26 @@ body {
 .btn-delete:hover {
     background-color: rgba(239, 68, 68, 0.2);
     color: #dc2626;
+}
+
+.compact-day.active.nutrition-insufficient {
+    background-color: #fee2e2; /* Light red */
+    border-color: #ef4444; /* Red, bg-danger */
+}
+.compact-day.active.nutrition-balanced {
+    background-color: #d1fae5; /* Light green */
+    border-color: #10b981; /* Green, bg-success */
+}
+.compact-day.active.nutrition-muscle {
+    background-color: #fef3c7; /* Light yellow */
+    border-color: #f59e0b; /* Yellow, bg-warning */
+}
+.compact-day.active.nutrition-cheat {
+    background-color: #e9d8fd; /* Light purple */
+    border-color: #8b5cf6; /* Purple, bg-purple */
+}
+/* Add this to schedule.css */
+.page-header .btn {
+    position: relative;
+    z-index: 3;
 }

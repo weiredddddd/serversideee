@@ -10,9 +10,10 @@ if (!isset($_SESSION['user_id'])) {
 try {
     $db = $mealplansDB;
 
-    $query = "SELECT mp.*, r.title AS recipe_title, r.image_url 
+    $query = "SELECT mp.*, r.title AS recipe_title, r.image_url, n.calories, n.fat, n.carbs, n.protein
               FROM MealPlans mp 
               LEFT JOIN RecipeDB.Recipes r ON mp.recipe_id = r.recipe_id 
+              LEFT JOIN RecipeDB.Nutrition n ON r.recipe_id = n.recipe_id
               WHERE mp.user_id = :user_id";
 
     $params = [];

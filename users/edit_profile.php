@@ -13,7 +13,7 @@ $errors = [];
 $success = false;
 
 // Fetch current user data
-$stmt = $usersDB->prepare("SELECT username, email FROM users WHERE user_id = ?");
+$stmt = $usersDB->prepare("SELECT username, nickname, email FROM users WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -23,28 +23,22 @@ $preset_avatars = [
     'avatar2.png',
     'avatar3.png',
     'avatar4.png',
-    'avatar5.png'
+    'avatar5.png',
+    'avatar6.png'
 ];
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $new_username = trim($_POST['username']);
+    $new_nickname = trim($_POST['nickname']);
     $avatar_choice = (int)$_POST['avatar'];
     
-    // Validate username
-    if (empty($new_username)) {
-        $errors[] = "Username cannot be empty";
-    } elseif (strlen($new_username) < 3) {
-        $errors[] = "Username must be at least 3 characters";
-    } elseif (strlen($new_username) > 30) {
-        $errors[] = "Username cannot exceed 30 characters";
-    } else {
-        // Check if username is already taken (excluding current user)
-        $stmt = $usersDB->prepare("SELECT user_id FROM users WHERE username = ? AND user_id != ?");
-        $stmt->execute([$new_username, $user_id]);
-        if ($stmt->fetch()) {
-            $errors[] = "Username is already taken";
-        }
+    // Validate nickname
+    if (empty($new_nickname)) {
+        $errors[] = "Nickname cannot be empty";
+    } elseif (strlen($new_nickname) < 3) {
+        $errors[] = "Nickname must be at least 3 characters";
+    } elseif (strlen($new_nickname) > 30) {
+        $errors[] = "Nickname cannot exceed 30 characters";
     }
     
     // Validate avatar selection
@@ -57,13 +51,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $usersDB->beginTransaction();
             
-            // Update username
-            $stmt = $usersDB->prepare("UPDATE users SET username = ? WHERE user_id = ?");
-            $stmt->execute([$new_username, $user_id]);
+            // Update nickname instead of username
+            $stmt = $usersDB->prepare("UPDATE users SET nickname = ?, avatar = ? WHERE user_id = ?");
+            $stmt->execute([$new_nickname, $avatar_choice, $user_id]);
             
-            // Update avatar in session (we'll use the index to remember)
+            // Store avatar in session
             $_SESSION['avatar'] = $avatar_choice;
-            $_SESSION['username'] = $new_username;
+            
+            // Store nickname in session for easy access
+            $_SESSION['nickname'] = $new_nickname;
             
             $usersDB->commit();
             $success = true;
@@ -86,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Edit Profile - NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .avatar-option {
             width: 80px;
@@ -152,10 +149,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <?php endforeach; ?>
                             </div>
                             
+                            <!-- Show username as non-editable -->
                             <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="username" name="username" 
-                                       value="<?= htmlspecialchars($_POST['username'] ?? $user['username']) ?>" required>
+                                <label class="form-label">Username (for login)</label>
+                                <input type="text" class="form-control" value="<?= htmlspecialchars($user['username']) ?>" disabled>
+                                <small class="text-muted">Username cannot be changed</small>
+                            </div>
+                            
+                            <!-- Add nickname field that can be edited -->
+                            <div class="mb-3">
+                                <label for="nickname" class="form-label">Nickname (display name)</label>
+                                <input type="text" class="form-control" id="nickname" name="nickname" 
+                                       value="<?= htmlspecialchars($_POST['nickname'] ?? $user['nickname'] ?? $user['username']) ?>" required>
+                                <small class="text-muted">This is how you appear to other users</small>
                             </div>
                             
                             <div class="mb-3">

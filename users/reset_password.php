@@ -92,11 +92,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
             height: 100vh;
             display: flex;
             align-items: center;
+            justify-content: center; /* Add this to center horizontally */
         }
         .password-card {
+            width: 100%; /* Make sure it takes full width of its container */
             max-width: 450px;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin: 0 auto; /* Add this for additional centering */
         }
         .password-strength {
             height: 5px;
@@ -115,8 +118,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
+            <div class="col-12 col-md-8 col-lg-6 d-flex justify-content-center"> <!-- Added d-flex and justify-content-center -->
                 <div class="password-card card p-4">
+                    <!-- Rest of your form content remains the same -->
                     <h2 class="text-center mb-4">Set New Password</h2>
                     
                     <?php if ($error): ?>
@@ -210,5 +214,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && empty($error)) {
         });
     </script>
 </body>
-
 </html>

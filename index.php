@@ -29,7 +29,7 @@ if (isset($_SESSION['logout_message'])) {
 // Fetch categories & ingredients for filters
 $categories = $RecipeDB->query("SELECT DISTINCT category FROM Recipes")->fetchAll(PDO::FETCH_ASSOC);
 // Fetch recipes
-$query = "SELECT r.recipe_id, r.title, r.description, r.image_url, r.category, u.username AS author 
+$query = "SELECT r.recipe_id, r.title, r.description, r.image_url, r.category, u.nickname AS author 
           FROM RecipeDB.Recipes r 
           JOIN usersDB.users u ON r.user_id = u.user_id 
           WHERE 1=1";
@@ -161,7 +161,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($recipes as $recipe): ?>
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm">
-                        <img src="uploads/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" alt="Recipe Image">
+                        <img src="uploads/recipe/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" alt="Recipe Image">
                         <div class="card-body">
                             <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
                             <p class="card-text">

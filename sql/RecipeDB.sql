@@ -19,6 +19,7 @@ CREATE TABLE Recipes (
   category VARCHAR(100) DEFAULT NULL,
   cuisine_type VARCHAR(50) DEFAULT NULL,
   spice_level TINYINT(4) DEFAULT 0,
+  view_count INT DEFAULT 0,
   image_url VARCHAR(255) DEFAULT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -52,7 +53,17 @@ CREATE TABLE Steps (
   FOREIGN KEY (recipe_id) REFERENCES Recipes(recipe_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-
+-- Add Nutrition Table
+CREATE TABLE Nutrition (
+  nutrition_id INT(11) NOT NULL AUTO_INCREMENT,
+  recipe_id INT(11) NOT NULL,
+  calories INT DEFAULT NULL,
+  fat FLOAT DEFAULT NULL,
+  carbs FLOAT DEFAULT NULL,
+  protein FLOAT DEFAULT NULL,
+  PRIMARY KEY (nutrition_id),
+  FOREIGN KEY (recipe_id) REFERENCES Recipes(recipe_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `Ingredients` (`ingredient_id`, `ingredient_name`) VALUES
 (18, 'All-purpose flour'),
@@ -134,6 +145,12 @@ INSERT INTO `Steps` (`step_id`, `recipe_id`, `step_no`, `description`, `image_ur
 (17, 3, 8, 'Bake the cookies for 11-12 minutes or until the edges appear set and the centers still look soft. Tip: If they aren’t really spreading by minute 9, remove them from the oven and lightly bang the baking sheet on the counter 2-3x. This helps initiate that spread. Return to the oven to continue baking.', '67f9c43bc86da_soft-double-chocolate-chip-cookies-on-baking-sheet.jpg'),
 (18, 3, 9, 'Cool cookies for 5 minutes on the baking sheet. During this time, I like to press a few more chocolate chips into the tops of the warm cookies. (This is optional and only for looks.) Transfer to cooling rack to cool completely. The cookies will slightly deflate as they cool. ', ''),
 (19, 3, 10, 'Cover leftover cookies tightly and store at room temperature for up to 1 week', '');
+
+INSERT INTO `Nutrition` (`nutrition_id`, `recipe_id`, `calories`, `fat`, `carbs`, `protein`) VALUES
+(1, 1, 570, 22.5, 65.0, 24.0),  -- Spaghetti Carbonara
+(2, 2, 450, 18.0, 20.0, 38.0),  -- Chicken Curry
+(3, 3, 320, 14.0, 45.0, 4.0);   -- Double Chocolate Chip Cookies
+
 COMMIT;
 
 

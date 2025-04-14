@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['first_attempt'] = time();
     }
 
-    if ($_SESSION['reset_attempts'] > 3 && (time() - $_SESSION['first_attempt']) < 3600) {
+    if ($_SESSION['reset_attempts'] > 100 && (time() - $_SESSION['first_attempt']) < 3600) {
         $message = "Too many attempts. Please try again later.";
         $message_type = 'error';
     } else {
@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $message_type = 'error';
         } else {
             try {
-                $stmt = $usersDB->prepare("SELECT user_id FROM Users WHERE email = ?");
+                $stmt = $usersDB->prepare("SELECT user_id FROM users WHERE email = ?");
                 $stmt->execute([$email]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $reset_token = bin2hex(random_bytes(32));
                     $expiry_time = date('Y-m-d H:i:s', strtotime('+1 hour'));
                     
-                    $stmt = $usersDB->prepare("UPDATE Users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?");
+                    $stmt = $usersDB->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?");
                     if ($stmt->execute([$reset_token, $expiry_time, $email])) {
                         $_SESSION['reset_attempts']++;
                         header("Location: reset_password.php?token=" . $reset_token);
@@ -115,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </form>
             
             <div class="text-center">
-                <a href="login.php" class="text-decoration-none">Back to Login</a>
+                <a href="login.php" >Back to Login</a>
             </div>
         </div>
     </div>
