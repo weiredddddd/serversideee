@@ -44,8 +44,12 @@ if (!empty($letter)) {
 }
 
 if (!empty($my_recipes) && isset($_SESSION['user_id'])) {
-    $query .= " AND user_id = :user_id";
+    $query .= " AND r.user_id = :user_id";
     $params[':user_id'] = $_SESSION['user_id'];
+}elseif (!empty($my_recipes)) {
+    // Redirect to login if "My Recipes" is toggled but the user is not logged in
+    header("Location: ../users/login.php");
+    exit();
 }
 
 $stmt = $RecipeDB->prepare($query);

@@ -2,7 +2,6 @@
 session_start();
 require '../config/db.php';
 
-
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../users/login.php");
@@ -42,6 +41,10 @@ $step_stmt = $RecipeDB->prepare("SELECT * FROM Steps WHERE recipe_id = ? ORDER B
 $step_stmt->execute([$recipe_id]);
 $existing_steps = $step_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Fetch existing nutrition data (add this with other fetches at the top)
+$nutrition_stmt = $RecipeDB->prepare("SELECT * FROM Nutrition WHERE recipe_id = ?");
+$nutrition_stmt->execute([$recipe_id]);
+$existing_nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
 $errors = [];
 
 // Handle form submission
@@ -135,12 +138,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Update nutrition facts
     if (!empty($_POST['nutrition'])) {
         $nutrition = $_POST['nutrition'];
-
-        // Check if nutrition data already exists for the recipe
-        $stmt = $RecipeDB->prepare("SELECT nutrition_id FROM Nutrition WHERE recipe_id = ?");
-        $stmt->execute([$recipe_id]);
-        $existing_nutrition = $stmt->fetch();
-
+// Validate nutrition values
+foreach (['calories', 'fat', 'carbs', 'protein'] as $field) {
+    if (isset($nutrition[$field]) && !is_numeric($nutrition[$field])) {
+        $errors[] = "Nutrition $field must be a number";
+    }
+}
         if ($existing_nutrition) {
             // Update existing nutrition data
             $stmt = $RecipeDB->prepare("UPDATE Nutrition SET 
@@ -253,7 +256,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Edit Recipe</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../recipes/recipe.css">
+    <link rel="stylesheet" href="../recipes/css/recipe.css">
 </head>
 
 <body>
@@ -392,23 +395,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php endforeach; ?>
             </div>
             <button type="button" id="add-step" class="btn btn-secondary mb-4">Add Step</button>
-            <h4>Nutrition Facts</h4>
+                        <h4>Nutrition Facts</h4>
             <div class="row">
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Calories</label>
-                    <input type="number" name="nutrition[calories]" class="form-control" placeholder="e.g., 200">
+                    <input type="number" name="nutrition[calories]" class="form-control" 
+                           value="<?= htmlspecialchars($existing_nutrition['calories'] ?? '') ?>" 
+                           placeholder="e.g., 200">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Fat (g)</label>
-                    <input type="number" step="0.1" name="nutrition[fat]" class="form-control" placeholder="e.g., 10.5">
+                    <input type="number" step="0.1" name="nutrition[fat]" class="form-control" 
+                           value="<?= htmlspecialchars($existing_nutrition['fat'] ?? '') ?>" 
+                           placeholder="e.g., 10.5">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Carbs (g)</label>
-                    <input type="number" step="0.1" name="nutrition[carbs]" class="form-control" placeholder="e.g., 30.2">
+                    <input type="number" step="0.1" name="nutrition[carbs]" class="form-control" 
+                           value="<?= htmlspecialchars($existing_nutrition['carbs'] ?? '') ?>" 
+                           placeholder="e.g., 30.2">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Protein (g)</label>
-                    <input type="number" step="0.1" name="nutrition[protein]" class="form-control" placeholder="e.g., 15.8">
+                    <input type="number" step="0.1" name="nutrition[protein]" class="form-control" 
+                           value="<?= htmlspecialchars($existing_nutrition['protein'] ?? '') ?>" 
+                           placeholder="e.g., 15.8">
                 </div>
             </div>
             <div class="mt-3">
