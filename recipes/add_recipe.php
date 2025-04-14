@@ -70,6 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (empty($errors)) {
                 if (!move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
                     $errors[] = "Failed to upload the main image. Check file permissions or path.";
+                    error_log("Upload error: " . print_r($_FILES, true));
                 }
             }
         }
@@ -305,9 +306,7 @@ ob_end_flush(); // Flush output buffer to prevent header issues
                         <input type="file" name="step_images[]" class="form-control">
                     </div>
                     <div class="col-md-1 d-flex align-items-end">
-                        <span class="remove-btn" onclick="removeStep(this)">
-                            <i class="bi bi-trash"></i>
-                        </span>
+                        <span class="remove-btn" onclick="removeStep(this)">✕</span>
                     </div>
                 </div>
             </div>
@@ -368,8 +367,8 @@ ob_end_flush(); // Flush output buffer to prevent header issues
                     </select>
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
-                    <span class="remove-btn" onclick="removeIngredient(this)"><i class="bi bi-trash"></i></span>
-                </div>
+                        <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                    </div>
             `;
             document.getElementById("ingredients-container").appendChild(ingredientDiv);
         });
@@ -391,9 +390,9 @@ ob_end_flush(); // Flush output buffer to prevent header issues
             <label class="form-label mt-2">Step ${stepCount} Image</label>
             <input type="file" name="step_images[]" class="form-control">
         </div>
-        <div class="col-md-1 d-flex align-items-end">
-            <span class="remove-btn" onclick="removeStep(this)"><i class="bi bi-trash"></i></span>
-        </div>
+       <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeStep(this)">✕</span>
+                    </div>
     `;
             document.getElementById("steps-container").appendChild(stepDiv);
         });

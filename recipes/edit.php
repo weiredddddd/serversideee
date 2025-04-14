@@ -361,8 +361,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
                         <div class="col-md-1 d-flex align-items-end">
-                            <span class="remove-btn" onclick="removeIngredient(this)"><i class="bi bi-trash"></i></span>
-                        </div>
+                        <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                    </div>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -385,8 +385,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <?php endif; ?>
                             </div>
                             <div class="col-md-1 d-flex align-items-end">
-                                <span class="remove-btn" onclick="removeStep(this)"><i class="bi bi-trash"></i></span>
-                            </div>
+                        <span class="remove-btn" onclick="removeStep(this)">✕</span>
+                    </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -448,9 +448,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="piece">piece</option>
                     </select>
                 </div>
-                <div class="col-md-1 d-flex align-items-end">
-                    <span class="remove-btn" onclick="removeIngredient(this)"><i class="bi bi-trash"></i></span>
-                </div>
+               <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                    </div>
             `;
             document.getElementById("ingredients-container").appendChild(ingredientDiv);
         });
@@ -467,11 +467,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label class="form-label mt-2">Step Image</label>
             <input type="file" name="step_images[${stepCount}]" class="form-control mb-2">
         </div>
-        <div class="col-md-1 d-flex align-items-end">
-            <span class="remove-btn" onclick="removeStep(this)"><i class="bi bi-trash"></i></span>
-              
-            </span>
-        </div>
+       <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeStep(this)">✕</span>
+                    </div>
     `;
             document.getElementById("steps-container").appendChild(stepDiv);
         });
