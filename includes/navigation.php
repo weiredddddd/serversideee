@@ -4,30 +4,7 @@ require_once __DIR__ . '/../config/session_config.php';
 
 // Define base URL dynamically
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-//define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/asm');
-// Use this better for more dynamic
-// Get current script path, e.g., /serversideee/recipes/recipes.php
-$scriptPath = $_SERVER['SCRIPT_NAME'];
-
-// Remove the filename (e.g., recipes.php), leave the base folder
-$projectFolder = explode('/', trim($scriptPath, '/'))[0];
-
-// Define BASE_URL
-define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/' . $projectFolder);
-
-
-// Get nickname if available
-if (isset($_SESSION['user_id']) && !isset($_SESSION['nickname'])) {
-    // Fetch nickname on first page load after login
-    require_once __DIR__ . '/../config/db.php';
-    $stmt = $usersDB->prepare("SELECT nickname FROM users WHERE user_id = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    $_SESSION['nickname'] = $user['nickname'] ?? $_SESSION['username'];
-}
-
-// Use nickname for display, falling back to username if not available
-$display_name = $_SESSION['nickname'] ?? $_SESSION['username'] ?? '';
+define('BASE_URL', $protocol . "://" . $_SERVER['HTTP_HOST'] . '/ServerSide/serversideee');
 ?>
 
 <!-- Top Navbar (First Layer) -->
@@ -47,7 +24,7 @@ $display_name = $_SESSION['nickname'] ?? $_SESSION['username'] ?? '';
             <?php if (isset($_SESSION['user_id']) && isset($_SESSION['username'])): ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
-                        <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($display_name) ?>
+                        <i class="fas fa-user-circle me-1"></i> <?= htmlspecialchars($_SESSION['username']) ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/profile.php">Profile</a></li>
@@ -81,20 +58,14 @@ $display_name = $_SESSION['nickname'] ?? $_SESSION['username'] ?? '';
                 <li class="nav-item">
                     <a class="nav-link" href="<?= BASE_URL ?>/recipes/recipes.php">Recipes</a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="mealPlanningDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Meal Planning
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="mealPlanningDropdown">
-                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/meal/planning.php">Plan a Meal</a></li>
-                        <li><a class="dropdown-item" href="<?= BASE_URL ?>/meal/schedule.php">View Schedule</a></li>
-                    </ul>
+                <li class="nav-item">
+    <a class="nav-link" href="<?= BASE_URL ?>/meal/schedule.php">Meal Planning</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= BASE_URL ?>/community/community.php">Community</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= BASE_URL ?>/competition/competitions.php">Competitions</a>
+                    <a class="nav-link" href="<?= BASE_URL ?>/competitions.php">Competitions</a>
                 </li>
             </ul>
         </div>
