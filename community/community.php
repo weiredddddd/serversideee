@@ -26,8 +26,7 @@ $recipe_sort = isset($_GET['recipe_sort']) ? htmlspecialchars($_GET['recipe_sort
 
 // Fetch discussion posts with search and category filters
 $discussions_sql = "SELECT dp.*, u.nickname, u.avatar, 
-        (SELECT COUNT(*) FROM post_comments WHERE post_id = dp.post_id) AS comment_count,
-        (SELECT COUNT(*) FROM post_likes WHERE post_id = dp.post_id) AS like_count
+        (SELECT COUNT(*) FROM post_comments WHERE post_id = dp.post_id) AS comment_count
         FROM discussion_posts dp
         JOIN usersDB.users u ON dp.user_id = u.user_id";
 
@@ -53,7 +52,7 @@ if (!empty($where_conditions)) {
 // Add ORDER BY clause based on sort selection
 switch ($sort_by) {
     case 'most_likes':
-        $discussions_sql .= " ORDER BY like_count DESC, dp.post_date DESC";
+        $discussions_sql .= " ORDER BY dp.like_count DESC, dp.post_date DESC";
         break;
     case 'most_views':
         $discussions_sql .= " ORDER BY dp.view_count DESC, dp.post_date DESC";
@@ -139,16 +138,6 @@ $recipe_categories_sql = "SELECT DISTINCT category FROM RecipeDB.recipes ORDER B
 $recipe_cat_stmt = $communityDB->prepare($recipe_categories_sql);
 $recipe_cat_stmt->execute();
 $recipe_categories = $recipe_cat_stmt->fetchAll(PDO::FETCH_COLUMN);
-
-// Check which posts the current user has liked
-$user_likes = [];
-if ($user_id) {
-    $likes_stmt = $communityDB->prepare("SELECT post_id FROM post_likes WHERE user_id = ?");
-    $likes_stmt->execute([$user_id]);
-    while ($like = $likes_stmt->fetch(PDO::FETCH_ASSOC)) {
-        $user_likes[] = $like['post_id'];
-    }
-}
 
 // Set page title
 $pageTitle = "Community Forum";
@@ -353,9 +342,9 @@ $pageTitle = "Community Forum";
                                     <div class="post-actions">
                                         <div class="d-flex">
                                             <?php 
-                                            // Check if user has liked this post
-                                            $has_liked = in_array($row['post_id'], $user_likes);
-                                            $like_btn_class = $has_liked ? 'btn-danger' : 'btn-outline-danger';
+                                            // Since we don't track user likes anymore, set default state to unliked
+                                            $has_liked = false;
+                                            $like_btn_class = 'btn-outline-danger';
                                             ?>
                                             
                                             <button class="btn btn-sm <?php echo $like_btn_class; ?> like-btn" 
@@ -637,6 +626,37 @@ $pageTitle = "Community Forum";
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
+            // Initialize liked posts from localStorage with user-specific key
+            let likedPosts = [];
+            <?php if ($user_id): ?>
+            try {
+                // Make the localStorage key user-specific to prevent sharing across accounts
+                const savedLikes = localStorage.getItem('likedPosts_user_<?php echo $user_id; ?>');
+                if (savedLikes) {
+                    likedPosts = JSON.parse(savedLikes);
+                }
+            } catch (e) {
+                console.error("Error loading liked posts from localStorage:", e);
+                likedPosts = [];
+            }
+            <?php endif; ?>
+            
+            // Apply liked status to buttons on page load
+            function initializeLikeButtons() {
+                <?php if ($user_id): ?>
+                $('.like-btn').each(function() {
+                    const postId = parseInt($(this).data('post-id'));
+                    if (likedPosts.includes(postId)) {
+                        $(this).removeClass('btn-outline-danger').addClass('btn-danger');
+                        $(this).data('liked', 'true');
+                    }
+                });
+                <?php endif; ?>
+            }
+            
+            // Call initialize on page load
+            initializeLikeButtons();
+            
             // Unified like button handler for both page and modal buttons
             $(document).on('click', '.like-btn, #modal-like-btn', function() {
                 // Only proceed if user is logged in
@@ -645,28 +665,28 @@ $pageTitle = "Community Forum";
                     return;
                 <?php endif; ?>
                 
-                var button = $(this);
-                var postId = button.data('post-id');
-                var isModalBtn = button.attr('id') === 'modal-like-btn';
+                const button = $(this);
+                const postId = parseInt(button.data('post-id'));
+                const isModalBtn = button.attr('id') === 'modal-like-btn';
                 
                 // Get the like count span based on button type
-                var likeCountSpan = isModalBtn ? $('#modal-like-count') : button.find('.like-count');
-                var currentCount = parseInt(likeCountSpan.text().replace(/[()]/g, '')) || 0;
-                var isLiked = button.data('liked') === 'true';
+                const likeCountSpan = isModalBtn ? $('#modal-like-count') : button.find('.like-count');
+                const currentCount = parseInt(likeCountSpan.text().replace(/[()]/g, '')) || 0;
+                const isLiked = button.data('liked') === 'true';
                 
                 // Find related button (either modal or main page)
-                var relatedBtn = isModalBtn ? 
+                const relatedBtn = isModalBtn ? 
                     $('.like-btn[data-post-id="' + postId + '"]') : 
                     $('#modal-like-btn').filter(function() {
                         return $(this).data('post-id') == postId;
                     });
-                var relatedCountSpan = isModalBtn ? 
+                const relatedCountSpan = isModalBtn ? 
                     relatedBtn.find('.like-count') : 
                     $('#modal-like-count');
                 
-                // Optimistically update both buttons
+                // Change button appearance 
                 if (isLiked) {
-                    // Unliking - change to outline
+                    // User is unliking
                     button.removeClass('btn-danger').addClass('btn-outline-danger');
                     button.data('liked', 'false');
                     likeCountSpan.text('(' + Math.max(0, currentCount - 1) + ')');
@@ -677,8 +697,12 @@ $pageTitle = "Community Forum";
                         relatedBtn.data('liked', 'false');
                         relatedCountSpan.text('(' + Math.max(0, currentCount - 1) + ')');
                     }
+                    
+                    // Update localStorage - with user-specific key
+                    likedPosts = likedPosts.filter(id => id !== postId);
+                    localStorage.setItem('likedPosts_user_<?php echo $user_id; ?>', JSON.stringify(likedPosts));
                 } else {
-                    // Liking - change to solid
+                    // User is liking
                     button.removeClass('btn-outline-danger').addClass('btn-danger');
                     button.data('liked', 'true');
                     likeCountSpan.text('(' + (currentCount + 1) + ')');
@@ -695,18 +719,26 @@ $pageTitle = "Community Forum";
                         relatedBtn.data('liked', 'true');
                         relatedCountSpan.text('(' + (currentCount + 1) + ')');
                     }
+                    
+                    // Update localStorage - with user-specific key
+                    if (!likedPosts.includes(postId)) {
+                        likedPosts.push(postId);
+                        localStorage.setItem('likedPosts_user_<?php echo $user_id; ?>', JSON.stringify(likedPosts));
+                    }
                 }
                 
                 // Disable button temporarily
                 button.prop('disabled', true);
                 if (relatedBtn.length) relatedBtn.prop('disabled', true);
                 
+                // Send the Ajax request with the appropriate action
                 $.ajax({
                     url: 'ajax/like_post.php',
                     type: 'POST',
                     dataType: 'json',
                     data: {
-                        post_id: postId
+                        post_id: postId,
+                        action: isLiked ? 'unlike' : 'like'
                     },
                     success: function(response) {
                         if (response.success) {
@@ -714,37 +746,37 @@ $pageTitle = "Community Forum";
                             var newCount = '(' + response.like_count + ')';
                             likeCountSpan.text(newCount);
                             if (relatedBtn.length) relatedCountSpan.text(newCount);
+                        } else {
+                            console.error(response.error);
+                            alert('Error: ' + response.error);
                             
-                            // Update button states based on server response
-                            if (response.action === 'liked') {
+                            // Revert changes on error
+                            if (isLiked) {
+                                // Revert unlike
                                 button.removeClass('btn-outline-danger').addClass('btn-danger');
                                 button.data('liked', 'true');
                                 if (relatedBtn.length) {
                                     relatedBtn.removeClass('btn-outline-danger').addClass('btn-danger');
                                     relatedBtn.data('liked', 'true');
                                 }
+                                // Restore to liked posts
+                                if (!likedPosts.includes(postId)) {
+                                    likedPosts.push(postId);
+                                    localStorage.setItem('likedPosts_user_<?php echo $user_id; ?>', JSON.stringify(likedPosts));
+                                }
                             } else {
+                                // Revert like
                                 button.removeClass('btn-danger').addClass('btn-outline-danger');
                                 button.data('liked', 'false');
                                 if (relatedBtn.length) {
                                     relatedBtn.removeClass('btn-danger').addClass('btn-outline-danger');
                                     relatedBtn.data('liked', 'false');
                                 }
+                                // Remove from liked posts
+                                likedPosts = likedPosts.filter(id => id !== postId);
+                                localStorage.setItem('likedPosts_user_<?php echo $user_id; ?>', JSON.stringify(likedPosts));
                             }
-                        } else {
-                            console.error(response.error);
-                            alert('Error: ' + response.error);
                             
-                            // Revert UI on error
-                            if (isLiked) {
-                                button.removeClass('btn-outline-danger').addClass('btn-danger');
-                                if (relatedBtn.length) relatedBtn.removeClass('btn-outline-danger').addClass('btn-danger');
-                            } else {
-                                button.removeClass('btn-danger').addClass('btn-outline-danger');
-                                if (relatedBtn.length) relatedBtn.removeClass('btn-danger').addClass('btn-outline-danger');
-                            }
-                            button.data('liked', isLiked ? 'true' : 'false');
-                            if (relatedBtn.length) relatedBtn.data('liked', isLiked ? 'true' : 'false');
                             likeCountSpan.text('(' + currentCount + ')');
                             if (relatedBtn.length) relatedCountSpan.text('(' + currentCount + ')');
                         }
@@ -754,16 +786,31 @@ $pageTitle = "Community Forum";
                         if (relatedBtn.length) relatedBtn.prop('disabled', false);
                     },
                     error: function() {
-                        // Revert UI on AJAX error
+                        // Revert changes on error
                         if (isLiked) {
                             button.removeClass('btn-outline-danger').addClass('btn-danger');
-                            if (relatedBtn.length) relatedBtn.removeClass('btn-outline-danger').addClass('btn-danger');
+                            button.data('liked', 'true');
+                            if (relatedBtn.length) {
+                                relatedBtn.removeClass('btn-outline-danger').addClass('btn-danger');
+                                relatedBtn.data('liked', 'true');
+                            }
+                            // Restore to liked posts
+                            if (!likedPosts.includes(postId)) {
+                                likedPosts.push(postId);
+                                localStorage.setItem('likedPosts_user_<?php echo $user_id; ?>', JSON.stringify(likedPosts));
+                            }
                         } else {
                             button.removeClass('btn-danger').addClass('btn-outline-danger');
-                            if (relatedBtn.length) relatedBtn.removeClass('btn-danger').addClass('btn-outline-danger');
+                            button.data('liked', 'false');
+                            if (relatedBtn.length) {
+                                relatedBtn.removeClass('btn-danger').addClass('btn-outline-danger');
+                                relatedBtn.data('liked', 'false');
+                            }
+                            // Remove from liked posts
+                            likedPosts = likedPosts.filter(id => id !== postId);
+                            localStorage.setItem('likedPosts_user_<?php echo $user_id; ?>', JSON.stringify(likedPosts));
                         }
-                        button.data('liked', isLiked ? 'true' : 'false');
-                        if (relatedBtn.length) relatedBtn.data('liked', isLiked ? 'true' : 'false');
+                        
                         likeCountSpan.text('(' + currentCount + ')');
                         if (relatedBtn.length) relatedCountSpan.text('(' + currentCount + ')');
                         
@@ -774,7 +821,7 @@ $pageTitle = "Community Forum";
                     }
                 });
             });
-        
+            
             // Handle comment modal
             $('#commentModal').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
@@ -906,6 +953,20 @@ $pageTitle = "Community Forum";
                 setTimeout(function() {
                     $(window).trigger('resize');
                 }, 200);
+                
+                // Also add code to check if this post is in likedPosts (with user check)
+                <?php if ($user_id): ?>
+                var isLiked = likedPosts.includes(parseInt(postId));
+                likeBtn.data('liked', isLiked ? 'true' : 'false');
+                
+                // Reset button appearance and apply correct styling
+                likeBtn.removeClass('btn-danger btn-outline-danger');
+                if (isLiked) {
+                    likeBtn.addClass('btn-danger');
+                } else {
+                    likeBtn.addClass('btn-outline-danger');
+                }
+                <?php endif; ?>
             });
             
             // Function to load comments
@@ -957,7 +1018,7 @@ $pageTitle = "Community Forum";
                 });
             }
             
-            // Function to render a comment
+            // Function to render a comment 
             function renderComment(comment) {
                 var date = new Date(comment.comment_date);
                 // Format date as "April 13, 2025" style
@@ -966,14 +1027,11 @@ $pageTitle = "Community Forum";
                 
                 // Map avatar number from database (0-5) to avatar filename (avatar1.png - avatar6.png) 
                 var avatarNum = parseInt(comment.avatar);
-                console.log("Avatar database value:", avatarNum);
                 
                 // Convert avatar value (0-5) to avatar filename (avatar1.png - avatar6.png)
                 // In the database: 0 → avatar1.png, 1 → avatar2.png, etc.
                 var avatarFile = 'avatar' + (avatarNum + 1) + '.png';
                 var profileImage = '../assets/avatars/' + avatarFile;
-                
-                console.log("Using avatar file:", avatarFile);
                 
                 var html = '<div class="comment-item mb-2">' +
                     '<div class="d-flex">' +
