@@ -66,14 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Handle image upload
     $image_url = $recipe['image_url'];
     if (!empty($_FILES['image']['name'])) {
-        $upload_dir = '../uploads/';
+        $upload_dir = '../uploads/recipe/';
         $image_name = uniqid() . '_' . basename($_FILES['image']['name']);
         $target_file = $upload_dir . $image_name;
 
         // Validate file
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         $file_type = mime_content_type($_FILES['image']['tmp_name']);
-        
+
         if (!in_array($file_type, $allowed_types)) {
             $errors[] = "Only JPG, PNG, and GIF files are allowed.";
         } elseif ($_FILES['image']['size'] > 10 * 1024 * 1024) {
@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!empty($_FILES['step_images']['name'])) {
         foreach ($_FILES['step_images']['name'] as $index => $name) {
             if (!empty($name) && isset($steps[$index])) {
-                $upload_dir = '../uploads/';
+                $upload_dir = '../uploads/recipe/';
                 $step_image_name = uniqid() . '_' . basename($name);
                 $target_file = $upload_dir . $step_image_name;
 
@@ -132,6 +132,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
+    // Update nutrition facts
+    if (!empty($_POST['nutrition'])) {
+        $nutrition = $_POST['nutrition'];
+
+        // Check if nutrition data already exists for the recipe
+        $stmt = $RecipeDB->prepare("SELECT nutrition_id FROM Nutrition WHERE recipe_id = ?");
+        $stmt->execute([$recipe_id]);
+        $existing_nutrition = $stmt->fetch();
+
+        if ($existing_nutrition) {
+            // Update existing nutrition data
+            $stmt = $RecipeDB->prepare("UPDATE Nutrition SET 
+                                    calories = ?, fat = ?, carbs = ?, protein = ? 
+                                    WHERE recipe_id = ?");
+            $stmt->execute([
+                $nutrition['calories'] ?? null,
+                $nutrition['fat'] ?? null,
+                $nutrition['carbs'] ?? null,
+                $nutrition['protein'] ?? null,
+                $recipe_id
+            ]);
+        } else {
+            // Insert new nutrition data if it doesn't exist
+            $stmt = $RecipeDB->prepare("INSERT INTO Nutrition (recipe_id, calories, fat, carbs, protein) 
+                                    VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $recipe_id,
+                $nutrition['calories'] ?? null,
+                $nutrition['fat'] ?? null,
+                $nutrition['carbs'] ?? null,
+                $nutrition['protein'] ?? null
+            ]);
+        }
+    }
     // If no errors, update everything
     if (empty($errors)) {
         try {
@@ -143,9 +177,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                   cuisine_type = ?, spice_level = ?, image_url = ? 
                                   WHERE recipe_id = ? AND user_id = ?");
             $stmt->execute([
-                $title, $description, $category, 
-                $cuisine_type, $spice_level, $image_url,
-                $recipe_id, $user_id
+                $title,
+                $description,
+                $category,
+                $cuisine_type,
+                $spice_level,
+                $image_url,
+                $recipe_id,
+                $user_id
             ]);
 
             // Delete existing ingredients and steps
@@ -160,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $existing = $stmt->fetch();
 
                 $ingredient_id = $existing ? $existing['ingredient_id'] : null;
-                
+
                 if (!$existing) {
                     $stmt = $RecipeDB->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
                     $stmt->execute([$ingredient['name']]);
@@ -207,6 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -215,6 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../recipes/recipe.css">
 </head>
+
 <body>
     <?php include '../navigation.php'; ?>
 
@@ -275,8 +316,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php $current_spice = $recipe['spice_level'] ?? 0; ?>
                         <?php foreach ([0 => 'None', 1 => 'Mild', 2 => 'Medium', 3 => 'Spicy', 4 => 'Very Spicy'] as $level => $label): ?>
                             <div class="form-check spice-option">
-                                <input class="form-check-input" type="radio" name="spice_level" id="spice<?= $level ?>" 
-                                       value="<?= $level ?>" <?= $current_spice == $level ? 'checked' : '' ?>>
+                                <input class="form-check-input" type="radio" name="spice_level" id="spice<?= $level ?>"
+                                    value="<?= $level ?>" <?= $current_spice == $level ? 'checked' : '' ?>>
                                 <label class="form-check-label" for="spice<?= $level ?>"><?= $label ?></label>
                             </div>
                         <?php endforeach; ?>
@@ -289,8 +330,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <label class="form-label">Recipe Image</label>
                 <input type="file" name="image" class="form-control">
                 <?php if (!empty($recipe['image_url'])): ?>
-                    <p class="mt-2">Current Image: <a href="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" target="_blank"><?= htmlspecialchars($recipe['image_url']) ?></a></p>
-                    <img src="../uploads/recipe_img/<?= htmlspecialchars($recipe['image_url']) ?>" class="img-thumbnail" style="max-height: 150px;">
+                    <p class="mt-2">Current Image: <a href="../uploads/recipe/<?= htmlspecialchars($recipe['image_url']) ?>" target="_blank"><?= htmlspecialchars($recipe['image_url']) ?></a></p>
+                    <img src="../uploads/recipe/<?= htmlspecialchars($recipe['image_url']) ?>" class="img-thumbnail" style="max-height: 150px;">
                 <?php endif; ?>
             </div>
 
@@ -301,13 +342,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="ingredient-group row" data-index="<?= $index ?>">
                         <div class="col-md-5">
                             <label class="form-label">Ingredient Name</label>
-                            <input type="text" name="ingredients[<?= $index ?>][name]" class="form-control" 
-                                   value="<?= htmlspecialchars($ing['ingredient_name']) ?>" required>
+                            <input type="text" name="ingredients[<?= $index ?>][name]" class="form-control"
+                                value="<?= htmlspecialchars($ing['ingredient_name']) ?>" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Quantity</label>
-                            <input type="text" name="ingredients[<?= $index ?>][quantity]" class="form-control" 
-                                   value="<?= htmlspecialchars($ing['quantity']) ?>" required>
+                            <input type="text" name="ingredients[<?= $index ?>][quantity]" class="form-control"
+                                value="<?= htmlspecialchars($ing['quantity']) ?>" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Unit</label>
@@ -320,8 +361,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </select>
                         </div>
                         <div class="col-md-1 d-flex align-items-end">
-                            <span class="remove-btn" onclick="removeIngredient(this)"><i class="bi bi-trash"></i></span>
-                        </div>
+                        <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                    </div>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -330,28 +371,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Steps -->
             <h4>Steps</h4>
             <div id="steps-container">
-    <?php foreach ($existing_steps as $index => $step): ?>
-        <div class="step-group mb-3" data-index="<?= $index ?>">
+                <?php foreach ($existing_steps as $index => $step): ?>
+                    <div class="step-group mb-3" data-index="<?= $index ?>">
+                        <div class="row">
+                            <div class="col-md-11">
+                                <label class="form-label">Step <?= $index + 1 ?></label>
+                                <textarea name="steps[<?= $index ?>]" class="form-control" rows="2" required><?= htmlspecialchars($step['description']) ?></textarea>
+                                <label class="form-label mt-2">Step Image</label>
+                                <input type="file" name="step_images[<?= $index ?>]" class="form-control mb-2">
+                                <?php if (!empty($step['image_url'])): ?>
+                                    <p>Current Image: <a href="../uploads/recipe/?= htmlspecialchars($step['image_url']) ?>" target="_blank"><?= htmlspecialchars($step['image_url']) ?></a></p>
+                                    <img src="../uploads/recipe/<?= htmlspecialchars($step['image_url']) ?>" class="img-thumbnail" style="max-height: 100px;">
+                                <?php endif; ?>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeStep(this)">✕</span>
+                    </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <button type="button" id="add-step" class="btn btn-secondary mb-4">Add Step</button>
+            <h4>Nutrition Facts</h4>
             <div class="row">
-                <div class="col-md-11">
-                    <label class="form-label">Step <?= $index + 1 ?></label>
-                    <textarea name="steps[<?= $index ?>]" class="form-control" rows="2" required><?= htmlspecialchars($step['description']) ?></textarea>
-                    <label class="form-label mt-2">Step Image</label>
-                    <input type="file" name="step_images[<?= $index ?>]" class="form-control mb-2">
-                    <?php if (!empty($step['image_url'])): ?>
-                        <p>Current Image: <a href="../uploads/recipe_img/?= htmlspecialchars($step['image_url']) ?>" target="_blank"><?= htmlspecialchars($step['image_url']) ?></a></p>
-                        <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" class="img-thumbnail" style="max-height: 100px;">
-                    <?php endif; ?>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Calories</label>
+                    <input type="number" name="nutrition[calories]" class="form-control" placeholder="e.g., 200">
                 </div>
-                <div class="col-md-1 d-flex align-items-end">
-                    <span class="remove-btn" onclick="removeStep(this)"><i class="bi bi-trash"></i></span>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Fat (g)</label>
+                    <input type="number" step="0.1" name="nutrition[fat]" class="form-control" placeholder="e.g., 10.5">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Carbs (g)</label>
+                    <input type="number" step="0.1" name="nutrition[carbs]" class="form-control" placeholder="e.g., 30.2">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Protein (g)</label>
+                    <input type="number" step="0.1" name="nutrition[protein]" class="form-control" placeholder="e.g., 15.8">
                 </div>
             </div>
-        </div>
-    <?php endforeach; ?>
-</div>
-            <button type="button" id="add-step" class="btn btn-secondary mb-4">Add Step</button>
-
             <div class="mt-3">
                 <button type="submit" class="btn btn-primary">Update Recipe</button>
                 <a href="manage.php" class="btn btn-outline-secondary">Cancel</a>
@@ -389,39 +448,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="piece">piece</option>
                     </select>
                 </div>
-                <div class="col-md-1 d-flex align-items-end">
-                    <span class="remove-btn" onclick="removeIngredient(this)"><i class="bi bi-trash"></i></span>
-                </div>
+               <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                    </div>
             `;
             document.getElementById("ingredients-container").appendChild(ingredientDiv);
         });
 
-        // Steps functionality
-        let stepCount = <?= count($existing_steps) ?>;
+        /let stepCount = <?= count($existing_steps) ?>;
         document.getElementById("add-step").addEventListener("click", function() {
             stepCount++;
             const stepDiv = document.createElement("div");
-            stepDiv.classList.add("step-group", "mb-3");
+            stepDiv.classList.add("step-group", "mb-3", "row");
             stepDiv.innerHTML = `
-                <label class="form-label">Step ${stepCount}</label>
-                <textarea name="steps[${stepCount}]" class="form-control" rows="2" required></textarea>
-                <label class="form-label mt-2">Step Image</label>
-                <input type="file" name="step_images[${stepCount}]" class="form-control mb-2">
-            `;
+        <div class="col-md-11">
+            <label class="form-label">Step ${stepCount}</label>
+            <textarea name="steps[${stepCount}]" class="form-control" rows="2" required></textarea>
+            <label class="form-label mt-2">Step Image</label>
+            <input type="file" name="step_images[${stepCount}]" class="form-control mb-2">
+        </div>
+       <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeStep(this)">✕</span>
+                    </div>
+    `;
             document.getElementById("steps-container").appendChild(stepDiv);
-            
-    });
-    
+        });
+
+
+
+
 
         function removeIngredient(element) {
             element.closest('.ingredient-group').remove();
         }
         // Function to remove a step
-function removeStep(element) {
-    element.closest('.step-group').remove();
-}
+        function removeStep(element) {
+            element.closest('.step-group').remove();
+        }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

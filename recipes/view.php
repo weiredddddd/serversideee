@@ -57,6 +57,9 @@ try {
     header("Location: ../error.php?message=Database error: " . urlencode($e->getMessage()));
     exit();
 }
+$nutrition_stmt = $RecipeDB->prepare("SELECT * FROM Nutrition WHERE recipe_id = ?");
+$nutrition_stmt->execute([$recipe_id]);
+$nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -107,7 +110,7 @@ try {
         <!-- Recipe Image -->
         <div class="text-center mb-4">
             <?php if (!empty($recipe['image_url'])): ?>
-                <img src="../uploads/<?= htmlspecialchars($recipe['image_url']) ?>" 
+                <img src="../uploads/recipe/<?= htmlspecialchars($recipe['image_url']) ?>" 
                      alt="Recipe Image" 
                      class="img-fluid rounded shadow" 
                      style="max-height: 300px; width: auto;">
@@ -126,60 +129,90 @@ try {
             </div>
         </div>
 
-        <!-- Ingredients and Steps in Two Columns -->
-        <div class="row">
-            <!-- Ingredients Column -->
-            <div class="col-md-5 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h3 class="mb-0">Ingredients</h3>
-                    </div>
-                    <div class="card-body">
-                        <ul class="ingredient-list">
-                        <?php if (!empty($ingredients)): ?>
-    <?php foreach ($ingredients as $ingredient): ?>
-        <li class="ingredient-item">
-            <span class="ingredient-quantity">
-                <?= htmlspecialchars($ingredient['quantity']) ?>
-                <?= htmlspecialchars($ingredient['unit']) ?>
-            </span>
-            <?= htmlspecialchars($ingredient['name']) ?> <!-- This should now work -->
-        </li>
-    <?php endforeach; ?>
-<?php else: ?>
-    <li class="text-muted">No ingredients listed</li>
-<?php endif; ?>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+       <!-- Ingredients Section -->
+<div class="mb-4">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">Ingredients</h3>
+        </div>
+        <div class="card-body">
+            <ul class="ingredient-list">
+                <?php if (!empty($ingredients)): ?>
+                    <?php foreach ($ingredients as $ingredient): ?>
+                        <li class="ingredient-item">
+                            <span class="ingredient-quantity">
+                                <?= htmlspecialchars($ingredient['quantity']) ?>
+                                <?= htmlspecialchars($ingredient['unit']) ?>
+                            </span>
+                            <?= htmlspecialchars($ingredient['name']) ?>
+                        </li>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <li class="text-muted">No ingredients listed</li>
+                <?php endif; ?>
+            </ul>
+        </div>
+    </div>
+</div>
 
-            <!-- Steps Column -->
-            <div class="col-md-7 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h3 class="mb-0">Cooking Steps</h3>
-                    </div>
-                    <div class="card-body">
-                        <ol class="list-group list-group-numbered">
-                            <?php foreach ($steps as $step): ?>
-                                <li class="list-group-item d-flex justify-content-between align-items-start">
-                                    <div class="ms-2 me-auto">
-                                        <div class="fw-bold">Step <?= htmlspecialchars($step['step_no']) ?></div>
-                                        <?= nl2br(htmlspecialchars($step['description'])) ?>
-                                    </div>
-                                    <?php if (!empty($step['image_url'])): ?>
-                                        <img src="../uploads/<?= htmlspecialchars($step['image_url']) ?>" 
-                                             class="img-thumbnail step-image" 
-                                             style="max-width: 250px; height: auto;">
-                                    <?php endif; ?>
-                                </li>
-                            <?php endforeach; ?>
-                        </ol>
-                    </div>
-                </div>
+<!-- Steps Section -->
+<div class="mb-4">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">Cooking Steps</h3>
+        </div>
+        <div class="card-body">
+            <ol class="list-group list-group-numbered">
+                <?php foreach ($steps as $step): ?>
+                    <li class="list-group-item">
+                        <div class="fw-bold">Step <?= htmlspecialchars($step['step_no']) ?></div>
+                        <p><?= nl2br(htmlspecialchars($step['description'])) ?></p>
+                        <?php if (!empty($step['image_url'])): ?>
+                            <div class="mt-2">
+                                <img src="../uploads/recipe/<?= htmlspecialchars($step['image_url']) ?>" 
+                                     class="img-thumbnail step-image" 
+                                     style="max-width: 100%; height: auto;">
+                            </div>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<!-- Nutrition Facts Section -->
+<?php if ($nutrition): ?>
+    <div class="mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">Nutrition Facts</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th>Calories</th>
+                            <td><?= htmlspecialchars($nutrition['calories']) ?> kcal</td>
+                        </tr>
+                        <tr>
+                            <th>Fat</th>
+                            <td><?= htmlspecialchars($nutrition['fat']) ?> g</td>
+                        </tr>
+                        <tr>
+                            <th>Carbs</th>
+                            <td><?= htmlspecialchars($nutrition['carbs']) ?> g</td>
+                        </tr>
+                        <tr>
+                            <th>Protein</th>
+                            <td><?= htmlspecialchars($nutrition['protein']) ?> g</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
+    </div>
+<?php endif; ?>
 
         <!-- Edit Button (for recipe owner) -->
         <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $recipe['user_id']): ?>
