@@ -231,15 +231,16 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
                 <a href="delete.php?id=<?= $recipe_id ?>" class="btn btn-danger">Delete Recipe</a>
             </div>
         <?php endif; ?>
-        
 
-        
+
+    </div>
+    <?php include_once '../includes/footer.php'; ?>
     <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                const recipeId = <?= json_encode($recipe_id) ?>;
-        
-                // Send AJAX request to track recipe view
-                fetch('../recipes/ajax/track_recipe_view.php', {
+        document.addEventListener("DOMContentLoaded", function() {
+            const recipeId = <?= json_encode($recipe_id) ?>;
+
+            // Send AJAX request to track recipe view
+            fetch('../recipes/ajax/track_recipe_view.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -262,11 +263,11 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
                 .catch(error => {
                     console.error('Error tracking recipe view:', error);
                 });
-            });
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<?php include_once '../includes/footer.php'; ?>
+
 </body>
 
 </html>
