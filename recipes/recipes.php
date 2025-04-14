@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../includes/navigation.php';
+
 require '../config/db.php';
 
 // Fetch filter parameters
@@ -12,7 +12,7 @@ $letter = $_GET['letter'] ?? '';
 $my_recipes = $_GET['my_recipes'] ?? '';
 
 // Build query
-$query = "SELECT r.*, u.nickname AS author 
+$query = "SELECT r.*, u.nickname AS author, r.view_count, r.spice_level
           FROM Recipes r 
           JOIN usersDB.users u ON r.user_id = u.user_id 
           WHERE 1=1";
@@ -44,8 +44,12 @@ if (!empty($letter)) {
 }
 
 if (!empty($my_recipes) && isset($_SESSION['user_id'])) {
-    $query .= " AND user_id = :user_id";
+    $query .= " AND r.user_id = :user_id";
     $params[':user_id'] = $_SESSION['user_id'];
+}elseif (!empty($my_recipes)) {
+    // Redirect to login if "My Recipes" is toggled but the user is not logged in
+    header("Location: ../users/login.php");
+    exit();
 }
 
 $stmt = $RecipeDB->prepare($query);
@@ -65,11 +69,12 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
     <title>Recipes - NoiceFoodie</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../recipes/recipe.css">
+    <link rel="stylesheet" href="../recipes/css/recipe.css">
         
 </head>
 
 <body>
+<?php include_once '../includes/navigation.php'; ?> <!-- Include navigation bar -->
     <div class="container mt-4">
         <div class="row">
             <div class="col-md-3">
@@ -193,6 +198,7 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
                                         </p>
                                         <p class="card-text"><?= htmlspecialchars(substr($recipe['description'], 0, 100)) ?>...</p>
                                         <p class="text-muted"><small>By <?= htmlspecialchars($recipe['author']) ?></small></p>
+                                        <p class="text-muted"><small><i class="bi bi-eye"></i> <?= htmlspecialchars($recipe['view_count'] ?? 0) ?> views</small></p>
                                     </div>
                                     <div class="card-footer bg-transparent">
                                         <a href="view.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-primary">View Recipe</a>
@@ -205,8 +211,10 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
             </div>
         </div>
     </div>
+    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include_once '../includes/footer.php'; ?>
 </body>
 
 </html>

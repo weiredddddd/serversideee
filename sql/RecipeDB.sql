@@ -69,8 +69,15 @@ INSERT INTO `Ingredients` (`ingredient_id`, `ingredient_name`) VALUES
 (18, 'All-purpose flour'),
 (2, 'Bacon'),
 (19, 'Baking Soda'),
+(35, 'Basil'),
+(26, 'Black Pepper'),
+(27, 'Boneless Chicken Breasts'),
 (13, 'Butter'),
+(28, 'Cake Mix'),
 (5, 'Chicken'),
+(25, 'Chicken Broth'),
+(24, 'Chicken gravy'),
+(23, 'Chicken Soup'),
 (22, 'Chocolate chips'),
 (12, 'Cocoa Powder'),
 (7, 'Coconut Milk'),
@@ -80,27 +87,50 @@ INSERT INTO `Ingredients` (`ingredient_id`, `ingredient_name`) VALUES
 (3, 'Eggs'),
 (10, 'Flour'),
 (9, 'Garlic'),
+(33, 'Ground Beef'),
+(38, 'Heavy Cream'),
+(31, 'Ice Cream'),
 (21, 'Milk'),
+(34, 'Mozzarella Cheese'),
+(30, 'Oil'),
 (8, 'Onion'),
+(36, 'Oregano'),
 (4, 'Parmesan Cheese'),
+(39, 'Pasta Sheets'),
+(37, 'Red Chili Flakes'),
+(40, 'Ricotta Cheese'),
 (20, 'Salt'),
 (1, 'Spaghetti'),
+(41, 'Spinach'),
 (11, 'Sugar'),
+(32, 'Tomato Paste'),
 (14, 'Unsalted butter'),
-(17, 'Vanilla Extract');
+(17, 'Vanilla Extract'),
+(29, 'Water');
 
---
--- Dumping data for table `Recipes`
---
+INSERT INTO `Nutrition` (`nutrition_id`, `recipe_id`, `calories`, `fat`, `carbs`, `protein`) VALUES
+(1, 1, 570, 22.5, 65, 24),
+(2, 2, 450, 18, 20, 38),
+(3, 3, 320, 14, 45, 4),
+(4, 4, 180, 6, 9, 21),
+(5, 5, 250, 11, 30, 4),
+(6, 6, 650, 35, 45, 40),
+(7, 7, 200, 10, 25, 5),
+(8, 8, 500, 30, 35, 25),
+(9, 9, 400, 25, 5, 35),
+(10, 10, 300, 15, 40, 10);
 
-INSERT INTO `Recipes` (`recipe_id`, `user_id`, `title`, `description`, `category`, `cuisine_type`, `spice_level`, `image_url`, `created_at`, `updated_at`, `created_by`, `updated_by`) VALUES
-(1, 1, 'Spaghetti Carbonara', 'A classic Italian pasta dish with creamy sauce.', 'Appetizer', 'Japanese', 0, 'carbonara.jpg', '2025-04-11 16:21:48', '2025-04-11 17:14:55', 1, 1),
-(2, 2, 'Chicken Curry', 'Spicy and rich curry with tender chicken pieces.', 'Main Course', 'Indian', 2, '67f9507a991da_Chicken_Curry.jpg', '2025-04-11 16:21:48', '2025-04-11 17:25:14', 2, 2),
-(3, 3, 'Double Chocolate Chip Cookies Recipe', 'The best recipe for double chocolate chip cookies must obviously include extra doses of chocolate. These soft-baked thick and chunky cookies are as indulgent as they look: rich and fudge-like with chewy centers, slightly crisp edges, and oodles of melty chocolate chips in each glorious bite.\r\n\r\nIt’s the chocolate dough recipe I’ve been making for years and even included it in my cookbook stuffed with peanut butter cups. There’s no reason to stray from this basic chocolate dough!', 'Dessert', 'Other', 0, '67f9c43bc7a35_double-chocolate-chip-cookies-recipe-2.jpg', '2025-04-11 16:21:48', '2025-04-12 01:39:07', 3, 3);
-
---
--- Dumping data for table `Recipe_Ingredient`
---
+INSERT INTO `Recipes` (`recipe_id`, `user_id`, `title`, `description`, `category`, `cuisine_type`, `spice_level`, `image_url`, `created_at`, `updated_at`, `created_by`, `updated_by`, `view_count`) VALUES
+(1, 1, 'Spaghetti Carbonara', 'A classic Italian pasta dish with creamy sauce.', 'Appetizer', 'Japanese', 0, 'carbonara.jpg', '2025-04-11 16:21:48', '2025-04-14 16:26:04', 1, 1, 2),
+(2, 2, 'Chicken Curry', 'Spicy and rich curry with tender chicken pieces.', 'Main Course', 'Indian', 2, '67f9507a991da_Chicken_Curry.jpg', '2025-04-11 16:21:48', '2025-04-14 17:26:51', 2, 2, 1),
+(3, 3, 'Double Chocolate Chip Cookies Recipe', 'The best recipe for double chocolate chip cookies must obviously include extra doses of chocolate. These soft-baked thick and chunky cookies are as indulgent as they look: rich and fudge-like with chewy centers, slightly crisp edges, and oodles of melty chocolate chips in each glorious bite.\r\n\r\nIt’s the chocolate dough recipe I’ve been making for years and even included it in my cookbook stuffed with peanut butter cups. There’s no reason to stray from this basic chocolate dough!', 'Dessert', 'Other', 0, '67f9c43bc7a35_double-chocolate-chip-cookies-recipe-2.jpg', '2025-04-11 16:21:48', '2025-04-12 01:39:07', 3, 3, 0),
+(4, 5, 'Slow Cooker Chicken and Gravy', 'This slow cooker chicken and gravy could not be easier. You\'ll want to serve this over hot rice or mashed potatoes for the ultimate comfort food dish.', 'Main Course', 'Japanese', 0, '67fca4ad5ec10_slowcooker-gravy.jpg', '2025-04-14 14:01:17', '2025-04-14 14:01:17', NULL, NULL, 0),
+(5, 5, 'Ice Cream Cake', 'This ice cream cake is easy to make with any flavor of ice cream or cake mix you prefer. Frost with your favorite frosting, fudge topping, crushed Oreos, or anything!', 'Dessert', 'Western', 0, '67fca650d94b6_ice-cream.jpg', '2025-04-14 14:08:16', '2025-04-14 14:08:16', NULL, NULL, 0),
+(6, 1, 'Classic Lasagna', 'Layers of pasta with rich meat sauce and creamy cheese.', 'Main Course', 'Italian', 1, '67fce40cd2b06_lagsanapic.jpg', '2025-04-14 17:00:00', '2025-04-14 18:31:40', 1, 1, 1),
+(7, 2, 'Creamy Tomato Basil Soup', 'A smooth and flavorful tomato soup with fresh basil.', 'Appetizer', 'Japanese', 0, '67fce4e7c25c3_tomato-basil-soup.jpg', '2025-04-14 17:05:00', '2025-04-14 18:35:19', 2, 2, 0),
+(8, 3, 'Spicy Beef Tacos', 'Ground beef tacos with a spicy kick.', 'Main Course', 'Mexican', 3, '67fce53e12464_Spicy-Beef-Tacos.jpg', '2025-04-14 17:10:00', '2025-04-14 18:36:46', 3, 3, 0),
+(9, 4, 'Garlic Butter Shrimp', 'Juicy shrimp sautéed in garlic butter sauce.', 'Main Course', 'Japanese', 1, '67fce4663806a_garlic-butter-shrimp.jpg', '2025-04-14 17:15:00', '2025-04-14 18:33:10', 4, 4, 0),
+(10, 5, 'Vegetable Stir Fry', 'A mix of fresh vegetables stir-fried in a savory sauce.', 'Main Course', 'Japanese', 2, '67fce3424df7f_vegetable-stirfry.jpg', '2025-04-14 17:20:00', '2025-04-14 18:28:18', 5, 5, 0);
 
 INSERT INTO `Recipe_Ingredient` (`recipe_id`, `ingredient_id`, `quantity`, `unit`) VALUES
 (1, 1, '200', 'g'),
@@ -122,11 +152,36 @@ INSERT INTO `Recipe_Ingredient` (`recipe_id`, `ingredient_id`, `quantity`, `unit
 (3, 19, '1', 'tsp'),
 (3, 20, '1/8', 'tsp'),
 (3, 21, '15', 'ml'),
-(3, 22, '225', 'g');
-
---
--- Dumping data for table `Steps`
---
+(3, 22, '225', 'g'),
+(4, 20, '1/2', 'tsp'),
+(4, 23, '1', 'tbsp'),
+(4, 24, '2', 'piece'),
+(4, 25, '1/2', 'cup'),
+(4, 26, '1/2', 'tsp'),
+(4, 27, '3 to 4', 'piece'),
+(5, 3, '3', 'piece'),
+(5, 28, '1', 'piece'),
+(5, 29, '1', 'cup'),
+(5, 30, '1', 'tsp'),
+(5, 31, '1', 'cup'),
+(6, 32, '200', 'g'),
+(6, 33, '500', 'g'),
+(6, 34, '250', 'g'),
+(6, 35, '1', 'tbsp'),
+(6, 39, '9', 'g'),
+(6, 40, '200', 'g'),
+(7, 32, '300', 'g'),
+(7, 35, '2', 'tbsp'),
+(7, 38, '100', 'ml'),
+(8, 20, '1', 'tsp'),
+(8, 33, '400', 'g'),
+(8, 37, '1', 'tsp'),
+(9, 9, '3', 'g'),
+(9, 13, '50', 'g'),
+(9, 20, '1', 'tsp'),
+(10, 6, '2', 'tsp'),
+(10, 8, '1', 'piece'),
+(10, 41, '200', 'g');
 
 INSERT INTO `Steps` (`step_id`, `recipe_id`, `step_no`, `description`, `image_url`) VALUES
 (4, 1, 1, 'Boil spaghetti until al dente.', ''),
@@ -144,12 +199,29 @@ INSERT INTO `Steps` (`step_id`, `recipe_id`, `step_no`, `description`, `image_ur
 (16, 3, 7, 'Scoop and roll dough, a heaping 1.5 Tablespoons (about 35-40g; I like to use this medium cookie scoop) in size, into balls. To ensure a thicker cookie, make the balls taller than they are wide (almost like a cylinder or column). Arrange 2-3 inches apart on the baking sheets. The cookie dough is certainly sticky, so wipe your hands clean after every few balls of dough you shape.', '67f9c43bc862d_double-chocolate-cookie-dough-balls.jpg'),
 (17, 3, 8, 'Bake the cookies for 11-12 minutes or until the edges appear set and the centers still look soft. Tip: If they aren’t really spreading by minute 9, remove them from the oven and lightly bang the baking sheet on the counter 2-3x. This helps initiate that spread. Return to the oven to continue baking.', '67f9c43bc86da_soft-double-chocolate-chip-cookies-on-baking-sheet.jpg'),
 (18, 3, 9, 'Cool cookies for 5 minutes on the baking sheet. During this time, I like to press a few more chocolate chips into the tops of the warm cookies. (This is optional and only for looks.) Transfer to cooling rack to cool completely. The cookies will slightly deflate as they cool. ', ''),
-(19, 3, 10, 'Cover leftover cookies tightly and store at room temperature for up to 1 week', '');
+(19, 3, 10, 'Cover leftover cookies tightly and store at room temperature for up to 1 week', ''),
+(20, 4, 1, 'In a 6-quart slow cooker, whisk together canned soup, gravy mix. chicken broth, salt, and pepper. Add chicken. Cover and cook on Low for 4 hours.', ''),
+(21, 4, 2, 'Before serving, carefully shred chicken using a hand mixer.', ''),
+(22, 5, 1, 'Preheat the oven to 350 degrees F (175 degrees C). Grease a 9x13-inch baking dish.', ''),
+(23, 5, 2, 'Combine chocolate cake mix, water, eggs, and oil in a large bowl. Beat with an electric mixer on medium speed until smooth, about 2 minutes. Pour batter into the prepared baking dish.', '67fca650dcfc1_ice-cream-step-2.jpg'),
+(24, 5, 3, 'Bake in the preheated oven until a toothpick inserted into the center comes out clean, 26 to 30 minutes. Allow to cool completely on a wired rack.', '67fca650dd557_ice-cream-step-3.jpg'),
+(25, 5, 4, 'Meanwhile, remove the carton paper from ice cream. Set ice cream block on its long side. Use a piece of string or dental floss to cut ice cream in half lengthwise, then place the 2 pieces side-by-side on a sheet of waxed paper.', '67fca650dd704_ice-cream-step-4.jpg'),
+(26, 5, 5, 'Remove cooled cake from the baking dish and place over the ice cream slabs. Trim cake and ice cream, so the edges are flush.', ''),
+(27, 5, 6, 'Place a board or serving platter over cake. Holding onto the waxed paper and board, flip ice cream cake over. Remove the waxed paper and smooth the seam between the ice cream slabs.', '67fca650dd8f4_ice-cream-step-6jpg.jpg'),
+(41, 10, 1, 'Stir-fry onions and spinach with curry powder.', ''),
+(42, 10, 2, 'Add other vegetables and cook until tender.', ''),
+(43, 6, 1, 'Preheat oven to 375°F (190°C).', ''),
+(44, 6, 2, 'Cook ground beef until browned. Add tomato paste and simmer.', ''),
+(45, 6, 3, 'Layer pasta sheets, meat sauce, ricotta, and mozzarella in a baking dish.', ''),
+(46, 6, 4, 'Bake for 45 minutes until cheese is bubbly.', ''),
+(47, 9, 1, 'Sauté garlic in butter, add shrimp and cook until pink.', ''),
+(48, 9, 2, 'Season with salt and pepper, garnish with parsley.', ''),
+(49, 7, 1, 'Sauté garlic in butter, add tomato paste and cook.', ''),
+(50, 7, 2, 'Add heavy cream and fresh basil, simmer for 15 minutes.', ''),
+(51, 7, 3, 'Blend the mixture until smooth and serve hot.', ''),
+(52, 8, 1, 'Cook ground beef with chili flakes and seasoning.', ''),
+(53, 8, 2, 'Assemble beef in taco shells with desired toppings.', '');
 
-INSERT INTO `Nutrition` (`nutrition_id`, `recipe_id`, `calories`, `fat`, `carbs`, `protein`) VALUES
-(1, 1, 570, 22.5, 65.0, 24.0),  -- Spaghetti Carbonara
-(2, 2, 450, 18.0, 20.0, 38.0),  -- Chicken Curry
-(3, 3, 320, 14.0, 45.0, 4.0);   -- Double Chocolate Chip Cookies
 
 COMMIT;
 
