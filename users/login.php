@@ -40,6 +40,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['username'] = $user['username'];
             $_SESSION['nickname'] = $user['nickname'] ?? $user['username']; // Store nickname in session
             $_SESSION['avatar'] = $user['avatar'] ?? 0;
+            $_SESSION['is_admin'] = $user['is_admin'] ?? 0; // Add this line
+
 
             // Redirect to homepage
             header("Location: ../index.php");
