@@ -161,7 +161,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($recipes as $recipe): ?>
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm">
-                        <img src="uploads/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" alt="Recipe Image">
+                        <img src="uploads/recipe/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" alt="Recipe Image">
                         <div class="card-body">
                             <h5 class="card-title"><?= htmlspecialchars($recipe['title']) ?></h5>
                             <p class="card-text">

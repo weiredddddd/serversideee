@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Handle main recipe image upload
     $image_url = "";
     if (!empty($_FILES['image']['name'])) {
-        $upload_dir = "../uploads/recipe_img/";
+        $upload_dir = "../uploads/recipe/";
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0755, true);
         }
@@ -128,7 +128,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (!empty($step_desc)) {
                 $step_image_url = "";
                 if (!empty($_FILES['step_images']['name'][$index])) {
-                    $upload_dir = "../uploads/recipe_img/";
+                    $upload_dir = "../uploads/recipe/";
                     $step_image_url = uniqid() . "_" . basename($_FILES["step_images"]["name"][$index]);
                     $target_file = $upload_dir . $step_image_url;
 
@@ -150,7 +150,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $step_stmt->execute([$recipe_id, $index + 1, $step_desc, $step_image_url]);
             }
         }
-
+        if (!empty($_POST['nutrition'])) {
+            $nutrition = $_POST['nutrition'];
+            $stmt = $RecipeDB->prepare("INSERT INTO Nutrition (recipe_id, calories, fat, carbs, protein) 
+                                        VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $recipe_id,
+                $nutrition['calories'] ?? null,
+                $nutrition['fat'] ?? null,
+                $nutrition['carbs'] ?? null,
+                $nutrition['protein'] ?? null
+            ]);
+        }
         if (empty($errors)) {
             $_SESSION['success_message'] = "Recipe posted successfully!";
             header("Location: ../recipes/view.php?id=" . $recipe_id);
@@ -168,7 +179,7 @@ ob_end_flush(); // Flush output buffer to prevent header issues
     <title>Add Recipe</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../recipes/recipe.css">
-    
+
 </head>
 
 <body>
@@ -301,7 +312,25 @@ ob_end_flush(); // Flush output buffer to prevent header issues
                 </div>
             </div>
             <button type="button" id="add-step" class="btn btn-secondary">Add Step</button>
-
+            <h4>Nutrition Facts</h4>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Calories</label>
+                    <input type="number" name="nutrition[calories]" class="form-control" placeholder="e.g., 200">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Fat (g)</label>
+                    <input type="number" step="0.1" name="nutrition[fat]" class="form-control" placeholder="e.g., 10.5">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Carbs (g)</label>
+                    <input type="number" step="0.1" name="nutrition[carbs]" class="form-control" placeholder="e.g., 30.2">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Protein (g)</label>
+                    <input type="number" step="0.1" name="nutrition[protein]" class="form-control" placeholder="e.g., 15.8">
+                </div>
+            </div>
             <div class="mt-3">
                 <button type="submit" class="btn btn-primary">Add Recipe</button>
             </div>
@@ -339,7 +368,7 @@ ob_end_flush(); // Flush output buffer to prevent header issues
                     </select>
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
-                    <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                    <span class="remove-btn" onclick="removeIngredient(this)"><i class="bi bi-trash"></i></span>
                 </div>
             `;
             document.getElementById("ingredients-container").appendChild(ingredientDiv);
@@ -363,9 +392,7 @@ ob_end_flush(); // Flush output buffer to prevent header issues
             <input type="file" name="step_images[]" class="form-control">
         </div>
         <div class="col-md-1 d-flex align-items-end">
-            <span class="remove-btn text-danger" onclick="removeStep(this)" style="cursor: pointer;">
-                <i class="bi bi-trash"></i>
-            </span>
+            <span class="remove-btn" onclick="removeStep(this)"><i class="bi bi-trash"></i></span>
         </div>
     `;
             document.getElementById("steps-container").appendChild(stepDiv);

@@ -171,7 +171,7 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
                             <div class="col">
                                 <div class="card recipe-card h-100">
                                     <?php if (!empty($recipe['image_url'])): ?>
-                                        <img src="../uploads/recipe_img/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($recipe['title']) ?>">
+                                        <img src="../uploads/recipe/<?= htmlspecialchars($recipe['image_url']) ?>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<?= htmlspecialchars($recipe['title']) ?>">
                                     <?php else: ?>
                                         <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Placeholder">
                                     <?php endif; ?>
