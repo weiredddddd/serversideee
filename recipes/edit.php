@@ -1,7 +1,7 @@
 <?php
 session_start();
 require '../config/db.php';
-include '../includes/navigation.php';
+
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -257,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body>
-    <?php include '../navigation.php'; ?>
+<?php include_once '../includes/navigation.php'; ?> <!-- Include navigation bar -->
 
     <div class="container mt-5">
         <h2>Edit Recipe</h2>
@@ -488,6 +488,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include_once '../includes/footer.php'; ?>
 </body>
 
 </html>
