@@ -79,57 +79,62 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
         <h1 class="text-center"><?= htmlspecialchars($recipe['title']) ?></h1>
         <p class="text-center text-muted"><strong>By:</strong> <?= htmlspecialchars($recipe['author']) ?></p>
         
-        <!-- Recipe Meta Information -->
-        <div class="recipe-meta">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="meta-item">
-                        <strong>Category:</strong> <?= htmlspecialchars($recipe['category']) ?>
-                    </div>
+      
+<!-- Recipe Details Section -->
+<div class="mb-4">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">Recipe Details</h3>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between flex-wrap">
+                <div>
+                    <strong>Category:</strong> <?= htmlspecialchars($recipe['category']) ?>
                 </div>
-                <div class="col-md-4">
-                    <div class="meta-item">
-                        <strong>Cuisine:</strong> <?= htmlspecialchars($recipe['cuisine_type']) ?>
-                    </div>
+                <div>
+                    <strong>Cuisine:</strong> <?= htmlspecialchars($recipe['cuisine_type']) ?>
                 </div>
-                <div class="col-md-4">
-                    <div class="meta-item">
-                        <strong>Spice Level:</strong>
-                        <span class="spice-indicator">
-                            <?php 
-                            $spice_level = $recipe['spice_level'] ?? 0;
-                            echo str_repeat('<i class="bi bi-pepper-hot spice-icon"></i>', $spice_level);
-                            if ($spice_level == 0) echo 'None';
-                            ?>
-                        </span>
-                    </div>
+                <div>
+                    <strong>Spice Level:</strong>
+                    <span class="spice-indicator">
+                        <?php 
+                        $spice_level = $recipe['spice_level'] ?? 0;
+                        echo str_repeat('<i class="bi bi-pepper-hot spice-icon"></i>', $spice_level);
+                        if ($spice_level == 0) echo 'None';
+                        ?>
+                    </span>
                 </div>
             </div>
         </div>
-        
-        <!-- Recipe Image -->
-        <div class="text-center mb-4">
-            <?php if (!empty($recipe['image_url'])): ?>
-                <img src="../uploads/recipe/<?= htmlspecialchars($recipe['image_url']) ?>" 
-                     alt="Recipe Image" 
-                     class="img-fluid rounded shadow" 
-                     style="max-height: 300px; width: auto;">
-            <?php else: ?>
-                <div class="bg-light rounded p-5 text-muted">
-                    No image available
-                </div>
-            <?php endif; ?>
-        </div>
-        
-        <!-- Recipe Description -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h3 class="card-title">About This Recipe</h3>
-                <p class="card-text"><?= nl2br(htmlspecialchars($recipe['description'])) ?></p>
-            </div>
-        </div>
+    </div>
+</div>
 
-       <!-- Ingredients Section -->
+
+<!-- Recipe Image -->
+<div class="text-center mb-4">
+    <?php if (!empty($recipe['image_url'])): ?>
+        <img src="../uploads/recipe/<?= htmlspecialchars($recipe['image_url']) ?>" 
+             alt="Recipe Image" 
+             class="img-fluid rounded shadow" 
+             style="max-height: 400px; width: auto;">
+    <?php else: ?>
+        <div class="bg-light rounded p-5 text-muted">
+            No image available
+        </div>
+    <?php endif; ?>
+</div>
+
+<!-- Recipe Description -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="mb-0">About This Recipe</h3>
+    </div>
+    <div class="card-body">
+        <p class="card-text"><?= nl2br(htmlspecialchars($recipe['description'])) ?></p>
+    </div>
+</div>
+
+<!-- Ingredients Section -->
 <div class="mb-4">
     <div class="card">
         <div class="card-header">
@@ -171,7 +176,7 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
                             <div class="mt-2">
                                 <img src="../uploads/recipe/<?= htmlspecialchars($step['image_url']) ?>" 
                                      class="img-thumbnail step-image" 
-                                     style="max-width: 100%; height: auto;">
+                                     style="max-width: 250px; height: auto;">
                             </div>
                         <?php endif; ?>
                     </li>
@@ -214,13 +219,12 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
     </div>
 <?php endif; ?>
 
-        <!-- Edit Button (for recipe owner) -->
-        <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $recipe['user_id']): ?>
-            <div class="mt-4 text-center">
-                <a href="edit.php?id=<?= $recipe_id ?>" class="btn btn-primary">Edit Recipe</a>
-            </div>
-        <?php endif; ?>
+<!-- Edit Button (for recipe owner) -->
+<?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $recipe['user_id']): ?>
+    <div class="mt-4 text-center">
+        <a href="edit.php?id=<?= $recipe_id ?>" class="btn btn-primary">Edit Recipe</a>
     </div>
+<?php endif; ?>
 
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
