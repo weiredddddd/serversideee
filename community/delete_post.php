@@ -27,7 +27,7 @@ try {
     $author_id = $post_data['user_id'];
     
     // Don't count views from the author or non-logged in users
-    if ($user_id && $user_id != $author_id) {
+    if (($user_id && $user_id != $author_id) && !$is_admin) {
         // Check if this user has already viewed this post in this session
         $session_key = 'viewed_post_' . $post_id;
         if (!isset($_SESSION[$session_key])) {

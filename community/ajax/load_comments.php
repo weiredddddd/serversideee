@@ -16,8 +16,9 @@ $post_id = $_GET['post_id'];
 
 // Fetch comments with user information using JOIN
 try {
+    // Modify the SQL query to include post_id
     $stmt = $communityDB->prepare("
-        SELECT pc.*, u.nickname, u.avatar 
+        SELECT pc.*, u.nickname, u.avatar, pc.post_id 
         FROM post_comments pc
         JOIN usersDB.users u ON pc.user_id = u.user_id
         WHERE pc.post_id = ?
