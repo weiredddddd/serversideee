@@ -93,62 +93,58 @@ $pageTitle = "Competition Details";
 <body>
     <?php include_once '../includes/navigation.php'; ?>
     <div class="container mt-4">
-    <h1><?= htmlspecialchars($competition['title']) ?></h1>
-    
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Competition Details</h5>
-            <p class="card-text"><?= nl2br(htmlspecialchars($competition['description'])) ?></p>
+        <div class="competition-details-card">
+            <h1><?= htmlspecialchars($competition['title']) ?></h1>
             
-            <div class="row mt-3">
-                <div class="col-md-4">
-                    <strong>Status:</strong> 
-                    <span class="badge 
-                        <?= $competition['status'] == 'upcoming' ? 'bg-secondary' : '' ?>
-                        <?= $competition['status'] == 'active' ? 'bg-primary' : '' ?>
-                        <?= $competition['status'] == 'voting' ? 'bg-info' : '' ?>
-                        <?= $competition['status'] == 'completed' ? 'bg-success' : '' ?>
-                    ">
+            <p><?= nl2br(htmlspecialchars($competition['description'])) ?></p>
+            
+            <div class="competition-timeline">
+                <div class="timeline-item">
+                    <span class="timeline-date">Status:</span> 
+                    <span class="badge badge-<?= $competition['status'] ?>">
                         <?= ucfirst($competition['status']) ?>
                     </span>
                 </div>
-                <div class="col-md-4">
-                    <strong>Start Date:</strong> <?= date('F j, Y', strtotime($competition['start_date'])) ?>
+                <div class="timeline-item">
+                    <span class="timeline-date">Start Date:</span> <?= date('F j, Y', strtotime($competition['start_date'])) ?>
                 </div>
-                <div class="col-md-4">
-                    <strong>Submission Deadline:</strong> <?= date('F j, Y', strtotime($competition['end_date'])) ?>
+                <div class="timeline-item">
+                    <span class="timeline-date">Submission Deadline:</span> <?= date('F j, Y', strtotime($competition['end_date'])) ?>
                 </div>
+                <?php if ($competition['status'] == 'voting' || $competition['status'] == 'completed'): ?>
+                <div class="timeline-item">
+                    <span class="timeline-date">Voting Ends:</span> <?= date('F j, Y', strtotime($competition['voting_end_date'])) ?>
+                </div>
+                <?php endif; ?>
             </div>
             
-            <div class="mt-3">
+            <div class="competition-rules">
                 <h6>Rules:</h6>
                 <p><?= nl2br(htmlspecialchars($competition['rules'])) ?></p>
             </div>
             
-            <div class="mt-3">
+            <div class="competition-prize">
                 <h6>Prize:</h6>
                 <p><?= nl2br(htmlspecialchars($competition['prize_description'])) ?></p>
             </div>
         </div>
-    </div>
     
-    <?php if ($competition['status'] == 'active'): ?>
-        <!-- Submission Section -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Submit Your Entry</h5>
+        <?php if ($competition['status'] == 'active'): ?>
+            <!-- Submission Section -->
+            <div class="form-section">
+                <h5>Submit Your Entry</h5>
                 
                 <?php if ($user_entry): ?>
                     <div class="alert alert-info">
                         You have already submitted: <strong><?= htmlspecialchars($user_entry['recipe_title']) ?></strong>
-                        <br>Submitted on: <strong><?= ucfirst($user_entry['submission_date']) ?></strong>
+                        <br>Submitted on: <strong><?= date('F j, Y', strtotime($user_entry['submission_date'])) ?></strong>
                     </div>
                 <?php elseif (!empty($user_recipes)): ?>
                     <form action="submit_entry.php" method="post">
                         <input type="hidden" name="competition_id" value="<?= $competition_id ?>">
                         
-                        <div class="form-group">
-                            <label for="recipe_id">Select one of your recipes to submit:</label>
+                        <div class="mb-3">
+                            <label for="recipe_id" class="form-label">Select one of your recipes to submit:</label>
                             <select name="recipe_id" id="recipe_id" class="form-control" required>
                                 <option value="">-- Select Recipe --</option>
                                 <?php foreach ($user_recipes as $recipe): ?>
@@ -157,25 +153,24 @@ $pageTitle = "Competition Details";
                             </select>
                         </div>
                         
-                        <div class="form-group mt-3">
-                            <label for="notes">Additional Notes (optional):</label>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Additional Notes (optional):</label>
                             <textarea name="notes" id="notes" class="form-control" rows="3"></textarea>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary mt-3">Submit Entry</button>
+                        <button type="submit" class="btn btn-primary">Submit Entry</button>
                     </form>
                 <?php else: ?>
                     <p>You don't have any eligible recipes to submit. <a href="../recipes/add_recipe.php">Create a new recipe</a> first!</p>
                 <?php endif; ?>
             </div>
-        </div>
-    <?php endif; ?>
-    
-    
-        <!-- Voting Section -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Vote for Your Favorite</h5>
+        <?php endif; ?>
+        
+        
+        <?php if ($competition['status'] == 'active'): ?>
+            <!-- Voting Section -->
+            <div class="form-section">
+                <h5>Vote for Your Favorite</h5>
                 <p>Voting ends on: <?= date('F j, Y', strtotime($competition['voting_end_date'])) ?></p>
                 
                 <?php if ($user_voted): ?>
@@ -186,8 +181,8 @@ $pageTitle = "Competition Details";
                     <form action="vote.php" method="post">
                         <input type="hidden" name="competition_id" value="<?= $competition_id ?>">
                         
-                        <div class="form-group">
-                            <label>Select your favorite entry:</label>
+                        <div class="mb-3">
+                            <label class="form-label">Select your favorite entry:</label>
                             <?php foreach ($entries as $entry): ?>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="entry_id" id="entry_<?= $entry['entry_id'] ?>" value="<?= $entry['entry_id'] ?>" required>
@@ -198,45 +193,43 @@ $pageTitle = "Competition Details";
                             <?php endforeach; ?>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary mt-3">Submit Vote</button>
+                        <button type="submit" class="btn btn-primary">Submit Vote</button>
                     </form>
                 <?php endif; ?>
             </div>
-        </div>
+        <?php endif; ?>
+        
     
-    
-    <?php if ($competition['status'] == 'completed' || $competition['status'] == 'active'): ?>
-        <div class="alert alert-info">
-            You can view the results for the competition here. <a href="results.php?id=<?= $competition_id ?>" class="alert-link">View Results</a>
-        </div>
-    <?php endif; ?>
-    
-    <!-- Entries Section -->
-    <h2>Competition Entries</h2>
-    
-    <?php if (empty($entries)): ?>
-        <p>No entries have been submitted yet.</p>
-    <?php else: ?>
-        <div class="row">
-            <?php foreach ($entries as $entry): ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm">
-                        <img src="<?= BASE_URL ?>/uploads/<?= htmlspecialchars($entry['image_url']) ?>" class="card-img-top square-img" alt="Recipe Image">
-                        <div class="card-body">
-                            <h5 class="card-title"><?= htmlspecialchars($entry['recipe_title']) ?></h5>
-                            <h6 class="card-subtitle mb-2 text-muted">By <?= htmlspecialchars($entry['username']) ?></h6>
-                            <p class="card-text">
-                                <small class="text-muted">Submitted on: <?= date('F j, Y', strtotime($entry['submission_date'])) ?></small>
-                            </p>
-                            <a href="../recipes/view.php?id=<?= $entry['recipe_id'] ?>" class="btn btn-info">View Recipe</a>
+        <?php if ($competition['status'] == 'completed' || $competition['status'] == 'active'): ?>
+            <div class="alert alert-info">
+                You can view the current standings for the competition here. <a href="results.php?id=<?= $competition_id ?>" class="alert-link">View Results</a>
+            </div>
+        <?php endif; ?>
+        
+        <!-- Entries Section -->
+        <h2>Competition Entries</h2>
+        
+        <?php if (empty($entries)): ?>
+            <p>No entries have been submitted yet.</p>
+        <?php else: ?>
+            <div class="entry-grid">
+                <?php foreach ($entries as $entry): ?>
+                    <div class="entry-card animate-fade-in">
+                        <div class="entry-image">
+                            <img src="<?= BASE_URL ?>/uploads/recipe/<?= htmlspecialchars($entry['image_url']) ?>" alt="Recipe Image">
+                        </div>
+                        <div class="entry-info">
+                            <h5 class="entry-title"><?= htmlspecialchars($entry['recipe_title']) ?></h5>
+                            <p class="entry-author">By <?= htmlspecialchars($entry['username']) ?></p>
+                            <p><small class="text-muted">Submitted on: <?= date('F j, Y', strtotime($entry['submission_date'])) ?></small></p>
+                            <a href="../recipes/view.php?id=<?= $entry['recipe_id'] ?>" class="btn btn-secondary">View Recipe</a>
                         </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-</div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
 
-<?php include_once '../includes/footer.php'; ?>
+    <?php include_once '../includes/footer.php'; ?>
 </body>
 </html>

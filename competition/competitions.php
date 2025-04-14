@@ -44,46 +44,55 @@ $pageTitle = "Competition";
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Include the competition CSS file -->
-
+    <link rel="stylesheet" href="competition.css">
 </head>
 <body>
     <?php include_once '../includes/navigation.php'; ?>
     <div class="container mt-4">
-        <h1>Cooking Competitions</h1>
-        
-
-        <div class="text-right mb-3">
-            <a href="create_competition.php" class="btn btn-primary">Create New Competition</a>
+        <div class="competition-hero">
+            <h1>Cooking Competitions</h1>
+            <p>Show off your culinary skills and compete with other chefs. Win prizes and recognition!</p>
         </div>
-        
-        <!-- Active Competitions -->
-        <h2>Active Competitions</h2>
-        <?php if (empty($active_competitions)): ?>
-            <p>No active competitions at the moment. Check back soon!</p>
-        <?php else: ?>
-            <div class="row">
-                <?php foreach ($active_competitions as $competition): ?>
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title"><?= htmlspecialchars($competition['title']) ?></h5>
-                                <p class="card-text"><?= substr(htmlspecialchars($competition['description']), 0, 100) ?>...</p>
-                                <p class="card-text">
-                                    <small class="text-muted">
-                                        <?php if ($competition['status'] == 'active'): ?>
-                                            Submissions until: <?= date('F j, Y', strtotime($competition['end_date'])) ?>
-                                        <?php else: ?>
-                                            Voting until: <?= date('F j, Y', strtotime($competition['voting_end_date'])) ?>
-                                        <?php endif; ?>
-                                    </small>
-                                </p>
-                                <a href="competition_details.php?id=<?= $competition['competition_id'] ?>" class="btn btn-info">View Details</a>
+
+        <!-- <div class="text-right mb-3">
+            <a href="create_competition.php" class="btn btn-primary">Create New Competition</a>
+        </div> -->
+
+        <div class="competitions-section">
+            <!-- Active Competitions -->
+            <h2>Active Competitions</h2>
+            <?php if (empty($active_competitions)): ?>
+                <p>No active competitions at the moment. Check back soon!</p>
+            <?php else: ?>
+                <div class="row">
+                    <?php foreach ($active_competitions as $competition): ?>
+                        <div class="col-md-4 mb-4">
+                            <div class="card competition-<?= $competition['status'] ?> animate-fade-in">
+                                <div class="card-header position-relative py-2">
+                                    <div class="status-badge">
+                                        <span class="badge badge-<?= $competition['status'] ?>"><?= ucfirst($competition['status']) ?></span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title"><?= htmlspecialchars($competition['title']) ?></h5>
+                                    <p class="card-text"><?= substr(htmlspecialchars($competition['description']), 0, 100) ?>...</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <?php if ($competition['status'] == 'active'): ?>
+                                                Submissions until: <?= date('F j, Y', strtotime($competition['end_date'])) ?>
+                                            <?php else: ?>
+                                                Voting until: <?= date('F j, Y', strtotime($competition['voting_end_date'])) ?>
+                                            <?php endif; ?>
+                                        </small>
+                                    </p>
+                                    <a href="competition_details.php?id=<?= $competition['competition_id'] ?>" class="btn btn-info">View Details</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
         
         <!-- Upcoming Competitions -->
         <h2>Upcoming Competitions</h2>
@@ -93,7 +102,12 @@ $pageTitle = "Competition";
             <div class="row">
                 <?php foreach ($upcoming_competitions as $competition): ?>
                     <div class="col-md-4 mb-4">
-                        <div class="card">
+                        <div class="card competition-upcoming animate-fade-in">
+                            <div class="card-header position-relative py-2">
+                                <div class="status-badge">
+                                    <span class="badge badge-upcoming">Upcoming</span>
+                                </div>
+                            </div>
                             <div class="card-body">
                                 <h5 class="card-title"><?= htmlspecialchars($competition['title']) ?></h5>
                                 <p class="card-text"><?= substr(htmlspecialchars($competition['description']), 0, 100) ?>...</p>
@@ -118,7 +132,12 @@ $pageTitle = "Competition";
             <div class="row">
                 <?php foreach ($past_competitions as $competition): ?>
                     <div class="col-md-4 mb-4">
-                        <div class="card">
+                        <div class="card competition-completed animate-fade-in">
+                            <div class="card-header position-relative py-2">
+                                <div class="status-badge">
+                                    <span class="badge badge-completed">Completed</span>
+                                </div>
+                            </div>
                             <div class="card-body">
                                 <h5 class="card-title"><?= htmlspecialchars($competition['title']) ?></h5>
                                 <p class="card-text"><?= substr(htmlspecialchars($competition['description']), 0, 100) ?>...</p>

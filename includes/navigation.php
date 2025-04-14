@@ -53,6 +53,7 @@ $display_name = $_SESSION['nickname'] ?? $_SESSION['username'] ?? '';
                         <?php if ($_SESSION['is_admin'] ?? 0 === 1): ?>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/admin_users.php">Edit Users</a></li>
+                            <li><a class="dropdown-item" href="<?= BASE_URL ?>/users/admin_competition.php">Manage Competitions</a></li>
                         <?php endif; ?>
                     </ul>
                 </li>
