@@ -43,6 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($voting_end_date)) {
         $errors[] = "Voting end date is required.";
     }
+
+    if (empty($rules)) {
+        $errors[] = "Rules is required.";
+    }
+
+    if (empty($prize_description)) {
+        $errors[] = "Prize description is required.";
+    }
     
     // Check if dates are in the correct order
     if (strtotime($start_date) >= strtotime($end_date)) {
