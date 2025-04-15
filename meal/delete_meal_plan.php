@@ -17,7 +17,7 @@ if (!$meal_id) {
 }
 
 try {
-    $db = $mealplansDB;
+    $db = $MealPlansDB;
     $stmt = $db->prepare("DELETE FROM MealPlans 
                         WHERE meal_plan_id = :meal_id 
                         AND user_id = :user_id");
