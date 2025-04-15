@@ -2,10 +2,6 @@
 session_start();
 include '../config/db.php';
 
-
-error_log("Tracking view for recipe ID: $recipe_id, User ID: $user_id");
-
-
 if (isset($_SESSION['success_message'])) {
     echo '<div class="alert alert-success">' . $_SESSION['success_message'] . '</div>';
     unset($_SESSION['success_message']); // Clear message after displaying
@@ -265,8 +261,7 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
                 });
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+    
 
 </body>
 
