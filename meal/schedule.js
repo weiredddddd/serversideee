@@ -333,7 +333,7 @@ function renderMainDay(mealData) {
             <div class="meal-item" style="animation-delay: ${delay}s">
               ${
                 meal.image_url
-                  ? `<img src="/ServerSide/serversideee/uploads/recipe/${meal.image_url}" alt="${meal.recipe_title}" class="img-fluid mb-2">`
+                  ? `<img src="/serversideee/uploads/recipe/${meal.image_url}" alt="${meal.recipe_title}" class="img-fluid mb-2">`
                   : ''
               }
               <div class="d-flex justify-content-between align-items-center">
