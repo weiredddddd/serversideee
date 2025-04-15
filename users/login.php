@@ -30,47 +30,52 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $username_value = $username; 
     }
     else {
-        // Proceed with login process based on login type
-        if ($login_type == 'admin') {
-            // Admin login logic
-            $stmt = $usersDB->prepare("SELECT * FROM users WHERE username = ? AND is_admin = 1");
-            $stmt->execute([$username]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['nickname'] = $user['nickname'] ?? $user['username'];
-                $_SESSION['avatar'] = $user['avatar'] ?? 0;
-                $_SESSION['is_admin'] = true; // Mark as admin in session
-                
-                // Redirect to admin dashboard
-                header("Location: ../admin/dashboard.php");
-                exit();
+        // First check if the user exists and verify password
+        $stmt = $usersDB->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($user && password_verify($password, $user['password'])) {
+            // Check if user is admin
+            $is_admin = $user['is_admin'] == 1;
+            
+            // Proceed with login process based on login type
+            if ($login_type == 'admin') {
+                // Admin login logic - check if the user is actually an admin
+                if ($is_admin) {
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['nickname'] = $user['nickname'] ?? $user['username'];
+                    $_SESSION['avatar'] = $user['avatar'] ?? 0;
+                    $_SESSION['is_admin'] = true; // Mark as admin in session
+                    
+                    // Redirect to admin dashboard
+                    header("Location: ../admin/index.php");
+                    exit();
+                } else {
+                    $error = "You don't have admin privileges!";
+                    $username_value = $username; // Save for form repopulation
+                }
             } else {
-                $error = "Invalid admin credentials!";
-                $username_value = $username; // Save for form repopulation
+                // Regular user login - only non-admin users can log in as regular users
+                if (!$is_admin) {
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['nickname'] = $user['nickname'] ?? $user['username']; // Store nickname in session
+                    $_SESSION['avatar'] = $user['avatar'] ?? 0;
+                    $_SESSION['is_admin'] = false; // Regular users are not admins
+                    
+                    // Redirect to homepage
+                    header("Location: ../index.php");
+                    exit();
+                } else {
+                    $error = "Admin users must login using the Admin Panel option.";
+                    $username_value = $username; // Save for form repopulation
+                }
             }
         } else {
-            // Regular user login logic
-            $stmt = $usersDB->prepare("SELECT * FROM users WHERE username = ?");
-            $stmt->execute([$username]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['nickname'] = $user['nickname'] ?? $user['username']; // Store nickname in session
-                $_SESSION['avatar'] = $user['avatar'] ?? 0;
-                $_SESSION['is_admin'] = false; // Mark as regular user
-
-                // Redirect to homepage
-                header("Location: ../index.php");
-                exit();
-            } else {
-                $error = "Invalid username or password!";
-                $username_value = $username; // Save for form repopulation
-            }
+            $error = "Invalid username or password!";
+            $username_value = $username; // Save for form repopulation
         }
     }
 }
@@ -179,13 +184,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         .login-label {
             display: block;
-            padding: 15px 20px;
+            padding: 15px 10px;
             background-color: #f8f9fa;
             border: 2px solid #dee2e6;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
-            width: 100px;
+            width: 130px;
         }
         
         .login-icon {
