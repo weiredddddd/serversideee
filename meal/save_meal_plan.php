@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $data = json_decode(file_get_contents('php://input'), true);
 
 try {
-    $db = $mealplansDB;
+    $db = $MealPlansDB;
     if (empty($data['recipe_id']) && empty($data['custom_meal_name'])) {
         http_response_code(400);
         die(json_encode(['error' => 'Recipe or Custom Meal required']));

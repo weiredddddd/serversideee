@@ -181,7 +181,13 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
         <?php if (!empty($message)): ?>
             <div class="alert alert-success"><?php echo $message; ?></div>
         <?php endif; ?>
+        <?php if (isset($_GET['deleted']) && $_GET['deleted'] == 'success'): ?>
+            <div class="alert alert-success">Comment deleted successfully!</div>
+        <?php endif; ?>
 
+        <?php if (isset($_GET['error'])): ?>
+            <div class="alert alert-danger"><?= htmlspecialchars($_GET['error']) ?></div>
+        <?php endif; ?>
         <div class="row">
             <div class="col-md-8">
                 <div class="card mb-4">
@@ -356,8 +362,15 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
                                             ?>
                                         </div>
                                     </div>
-                                    <small class="text-muted"><?php echo date('M d, Y g:i a', strtotime($comment['comment_date'])); ?></small>
-                                </div>
+                                        <small class="text-muted"><?php echo date('M d, Y g:i a', strtotime($comment['comment_date'])); ?></small>
+                                    </div>
+                                    <?php if (($_SESSION['is_admin'] ?? 0) === 1): ?>
+                                        <a href="admin_delete_comment.php?comment_id=<?= $comment['comment_id'] ?>&recipe_id=<?= $recipe_id ?>" 
+                                            class="btn btn-sm btn-danger ms-2"
+                                            onclick="return confirm('Delete this comment permanently?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    <?php endif; ?>
                             </div>
                             <div class="card-body">
                                 <p class="card-text"><?php echo nl2br(htmlspecialchars($comment['comment_text'])); ?></p>

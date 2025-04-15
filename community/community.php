@@ -168,7 +168,12 @@ $pageTitle = "Community Forum";
                 <?php if (isset($_GET['deleted']) && $_GET['deleted'] == 'success'): ?>
                     <div class="alert alert-success">Your post has been deleted successfully!</div>
                 <?php endif; ?>
-                
+                <?php if (isset($_GET['error'])): ?>
+                    <div class="alert alert-danger"><?= htmlspecialchars($_GET['error']) ?></div>
+                <?php endif; ?>
+                <?php if (isset($_GET['deleted']) && $_GET['deleted'] == 'success'): ?>
+                    <div class="alert alert-success">Comment deleted successfully!</div>
+                <?php endif; ?>
                 <!-- Search bar at the top level -->
                 <form class="d-flex mb-4" method="GET" action="community.php">
                     <input type="hidden" name="tab" value="<?= $active_tab ?>">
@@ -366,6 +371,13 @@ $pageTitle = "Community Forum";
                                                     data-author-avatar="<?php echo isset($row['avatar']) ? $row['avatar'] : 0; ?>">
                                                 <i class="fas fa-comment"></i> Comments (<?php echo $row['comment_count']; ?>)
                                             </button>
+                                            <?php if (($_SESSION['is_admin'] ?? 0) === 1): ?>
+                                                <a href="admin_delete_post.php?post_id=<?= $row['post_id'] ?>" 
+                                                    class="btn btn-sm btn-danger ms-2" 
+                                                    onclick="return confirm('Are you sure you want to delete this post?')">
+                                                        <i class="fas fa-trash"></i> Admin Delete
+                                                </a>
+                                            <?php endif; ?>
                                         </div>
                                         <div>
                                             <span class="text-muted"><i class="fas fa-eye"></i> <?php echo isset($row['view_count']) ? $row['view_count'] : 0; ?> views</span>
@@ -640,7 +652,6 @@ $pageTitle = "Community Forum";
             let likedPosts = [];
             <?php if ($user_id): ?>
             try {
-                // Make the localStorage key user-specific to prevent sharing across accounts
                 const savedLikes = localStorage.getItem('likedPosts_user_<?php echo $user_id; ?>');
                 if (savedLikes) {
                     likedPosts = JSON.parse(savedLikes);
@@ -650,8 +661,6 @@ $pageTitle = "Community Forum";
                 likedPosts = [];
             }
             <?php endif; ?>
-            
-            // Apply liked status to buttons on page load
             function initializeLikeButtons() {
                 <?php if ($user_id): ?>
                 $('.like-btn').each(function() {
@@ -978,7 +987,55 @@ $pageTitle = "Community Forum";
                 }
                 <?php endif; ?>
             });
-            
+            const isAdmin = <?php echo ($_SESSION['is_admin'] ?? 0) === 1 ? 'true' : 'false'; ?>;
+            function renderComment(comment) {
+                // Convert avatar number to filename (0 → avatar1.png, 1 → avatar2.png, etc)
+                const avatarNum = parseInt(comment.avatar);
+                const avatarFile = `avatar${avatarNum + 1}.png`;
+                
+                // Format comment date
+                const commentDate = new Date(comment.comment_date);
+                const formattedDate = commentDate.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+
+                // Create delete button HTML if admin
+                let deleteButton = '';
+                if (isAdmin) {
+                    deleteButton = `
+                    <div class="mt-2 text-end">
+                        <a href="admin_delete_post_comment.php?comment_id=${comment.comment_id}&post_id=${comment.post_id}" 
+                        class="btn btn-sm btn-danger"
+                        onclick="return confirm('Delete this comment permanently?')">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </div>`;
+                }
+
+                return `
+                <div class="comment-item mb-2">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0 me-2">
+                            <img src="../assets/avatars/${avatarFile}" 
+                                class="rounded-circle" 
+                                style="width: 32px; height: 32px; object-fit: cover;"
+                                onerror="this.onerror=null; this.src='../assets/avatars/avatar1.png'">
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="bg-light p-2 rounded">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div><strong>${comment.nickname}</strong></div>
+                                    <small class="text-muted">${formattedDate}</small>
+                                </div>
+                                <div class="comment-text">${comment.comment_text}</div>
+                                ${deleteButton}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
             // Function to load comments
             function loadComments(postId) {
                 $('#comments-container').html('<div class="text-center p-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
@@ -1028,42 +1085,6 @@ $pageTitle = "Community Forum";
                 });
             }
             
-            // Function to render a comment 
-            function renderComment(comment) {
-                var date = new Date(comment.comment_date);
-                // Format date as "April 13, 2025" style
-                var options = { year: 'numeric', month: 'long', day: 'numeric' };
-                var formattedDate = date.toLocaleDateString('en-US', options);
-                
-                // Map avatar number from database (0-5) to avatar filename (avatar1.png - avatar6.png) 
-                var avatarNum = parseInt(comment.avatar);
-                
-                // Convert avatar value (0-5) to avatar filename (avatar1.png - avatar6.png)
-                // In the database: 0 → avatar1.png, 1 → avatar2.png, etc.
-                var avatarFile = 'avatar' + (avatarNum + 1) + '.png';
-                var profileImage = '../assets/avatars/' + avatarFile;
-                
-                var html = '<div class="comment-item mb-2">' +
-                    '<div class="d-flex">' +
-                        '<div class="flex-shrink-0 me-2">' +
-                            '<img src="' + profileImage + '" alt="Profile" class="rounded-circle" ' +
-                            'style="width: 32px; height: 32px; object-fit: cover;" ' +
-                            'onerror="this.onerror=null; this.src=\'../assets/avatars/avatar1.png\';">' +
-                        '</div>' +
-                        '<div class="flex-grow-1">' +
-                            '<div class="bg-light p-2 rounded">' +
-                                '<div class="d-flex justify-content-between">' +
-                                    '<div><strong class="small">' + comment.nickname + '</strong></div>' +
-                                    '<small class="text-muted ms-2" style="font-size:0.7rem;">' + formattedDate + '</small>' +
-                                '</div>' +
-                                '<div class="comment-text">' + comment.comment_text + '</div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>';
-                
-                return html;
-            }
             
             // Handle comment submission
             $('#comment-form').on('submit', function(e) {
