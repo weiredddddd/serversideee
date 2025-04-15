@@ -36,15 +36,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['nickname'] = $user['nickname'] ?? $user['username']; // Store nickname in session
-            $_SESSION['avatar'] = $user['avatar'] ?? 0;
-            $_SESSION['is_admin'] = $user['is_admin'] ?? 0; // Add this line
-
-            // Redirect to homepage
-            header("Location: ../index.php");
-            exit();
             // Check if user is admin
             $is_admin = $user['is_admin'] == 1;
 
@@ -54,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($is_admin) {
                     $_SESSION['user_id'] = $user['user_id'];
                     $_SESSION['username'] = $user['username'];
-                    $_SESSION['nickname'] = $user['nickname'] ?? $user['username']; // Store nickname in session
+                    $_SESSION['nickname'] = $user['nickname'] ?? $user['username'];
                     $_SESSION['avatar'] = $user['avatar'] ?? 0;
                     $_SESSION['is_admin'] = true; // Mark as admin in session
 
