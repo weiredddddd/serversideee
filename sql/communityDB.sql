@@ -52,17 +52,6 @@ CREATE TABLE IF NOT EXISTS recipe_ratings (
     FOREIGN KEY (user_id) REFERENCES usersDB.users(user_id) ON DELETE CASCADE
 );
 
--- Create a new table for post likes with user tracking
-CREATE TABLE IF NOT EXISTS post_likes (
-    like_id INT AUTO_INCREMENT PRIMARY KEY,
-    post_id INT NOT NULL,
-    user_id INT NOT NULL,
-    like_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_user_post_like (user_id, post_id),
-    FOREIGN KEY (post_id) REFERENCES discussion_posts(post_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES usersDB.users(user_id) ON DELETE CASCADE
-);
-
 -- Sample data for discussion_posts
 -- Insert into discussion_posts
 INSERT INTO discussion_posts (user_id, title, content, category, image_url, view_count, like_count) VALUES
@@ -127,11 +116,8 @@ INSERT INTO post_comments (post_id, user_id, comment_text) VALUES
 
 -- Sample data for recipe_comments
 INSERT INTO recipe_comments (recipe_id, user_id, comment_text) VALUES
-(1, 6, 'I used turkey bacon instead and it was still delicious!'),
 (1, 3, 'Took me only 20 minutes — perfect for a quick dinner.'),
-(2, 5, 'The curry was super rich, I added coconut milk for a creamier texture.'),
 (2, 2, 'I tried it with tofu instead of chicken — turned out great.'),
-(3, 7, 'These are the best cookies I’ve ever made. Seriously.'),
 (3, 4, 'Added white chocolate chips and it was amazing!'),
 (4, 1, 'Smelled amazing while cooking. Will make this again.'),
 (4, 6, 'Could use a bit more seasoning, but overall very comforting.'),
@@ -139,22 +125,16 @@ INSERT INTO recipe_comments (recipe_id, user_id, comment_text) VALUES
 (5, 3, 'I layered brownies between ice cream layers. Game changer.'),
 (6, 1, 'The lasagna held up great even the next day. Perfect leftovers.'),
 (6, 7, 'I used ricotta and cream cheese together. Cheesy heaven!'),
-(7, 2, 'Soothing and perfect with a grilled cheese on the side.'),
 (7, 5, 'Tried it with roasted garlic — next level flavor.'),
 (8, 3, 'Spicy and satisfying! I added avocado on top.'),
 (8, 6, 'Used ground turkey instead of beef and it was still juicy.'),
 (9, 4, 'Garlic butter is a win every time. Served with rice.'),
-(9, 1, 'Used jumbo shrimp and it turned out great.'),
-(10, 7, 'Fast and colorful. Great for meal prepping.'),
 (10, 5, 'Tried it with hoisin sauce and it gave a sweet kick.'),
 (2, 4, 'I love how the spices blended — didn’t even need salt.'),
 (4, 3, 'I added carrots and peas to make it more filling.'),
 (6, 2, 'Used gluten-free noodles and it still layered nicely.'),
 (5, 6, 'I topped it with crushed Oreos and it was a hit!'),
 (3, 5, 'Fudgy, rich, and chocolatey — everything I wanted.'),
-(7, 1, 'I blended it for a smoother texture, perfect for kids.'),
-(1, 2, 'I used parmesan instead of pecorino, still tasted awesome.'),
-(9, 7, 'I served this over pasta — delicious!'),
 (8, 1, 'Wrapped the tacos in lettuce leaves for a low-carb version.'),
 (10, 6, 'Used oyster sauce in the mix and it was a bomb!');
 
@@ -167,10 +147,12 @@ INSERT INTO recipe_ratings (recipe_id, user_id, rating_value) VALUES
 (2, 4, 4),
 (3, 5, 5),
 (3, 6, 3),
+(4, 6, 3),
 (4, 7, 4),
 (4, 1, 3),
 (5, 2, 5),
 (5, 3, 4),
+(5, 6, 4),
 (6, 4, 5),
 (6, 5, 4),
 (7, 6, 3),
@@ -190,5 +172,10 @@ INSERT INTO recipe_ratings (recipe_id, user_id, rating_value) VALUES
 (7, 5, 3),
 (8, 3, 4),
 (9, 2, 5),
-(10, 1, 4);
+(10, 1, 4),
+(3, 4, 4),  
+(6, 1, 5),  
+(6, 2, 4),  
+(8, 6, 4);
+
 

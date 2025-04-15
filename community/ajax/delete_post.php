@@ -40,9 +40,6 @@ try {
     $del_comments = $communityDB->prepare("DELETE FROM post_comments WHERE post_id = ?");
     $del_comments->execute([$post_id]);
     
-    // Note: We no longer need to delete from post_likes table since it has been removed
-    // like_count is now a column in the discussion_posts table
-    
     // Delete the post
     $del_post = $communityDB->prepare("DELETE FROM discussion_posts WHERE post_id = ?");
     $success = $del_post->execute([$post_id]);
