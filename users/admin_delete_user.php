@@ -33,20 +33,55 @@ try {
     $user = $stmt->fetch();
     
     if (!$user) throw new Exception("User not found");
+    $userId = $user['user_id'];
 
-    // 2. Delete votes from competitionDB
-    $stmt = $competitionDB->prepare("DELETE FROM votes WHERE user_id = ?");
-    $stmt->execute([$user['user_id']]);
+    // 2. Delete competitions created by user and their dependencies
+    $stmt = $competitionDB->prepare("SELECT competition_id FROM competitions WHERE created_by = ?");
+    $stmt->execute([$userId]);
+    $competitions = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-    // 3. Delete competition entries
+    foreach ($competitions as $compId) {
+        // Delete votes in this competition's entries
+        $stmt = $competitionDB->prepare("
+            DELETE v FROM votes v
+            INNER JOIN competition_entries e ON v.entry_id = e.entry_id
+            WHERE e.competition_id = ?
+        ");
+        $stmt->execute([$compId]);
+
+        // Delete competition entries
+        $stmt = $competitionDB->prepare("DELETE FROM competition_entries WHERE competition_id = ?");
+        $stmt->execute([$compId]);
+
+        // Delete competition itself
+        $stmt = $competitionDB->prepare("DELETE FROM competitions WHERE competition_id = ?");
+        $stmt->execute([$compId]);
+    }
+
+    // 3. Delete votes on user's entries (in other competitions)
+    $stmt = $competitionDB->prepare("SELECT entry_id FROM competition_entries WHERE user_id = ?");
+    $stmt->execute([$userId]);
+    $entries = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    if (!empty($entries)) {
+        $placeholders = implode(',', array_fill(0, count($entries), '?'));
+        $stmt = $competitionDB->prepare("DELETE FROM votes WHERE entry_id IN ($placeholders)");
+        $stmt->execute($entries);
+    }
+
+    // 4. Delete user's competition entries
     $stmt = $competitionDB->prepare("DELETE FROM competition_entries WHERE user_id = ?");
-    $stmt->execute([$user['user_id']]);
+    $stmt->execute([$userId]);
 
-    // 4. Delete recipes
+    // 5. Delete votes made BY the user
+    $stmt = $competitionDB->prepare("DELETE FROM votes WHERE user_id = ?");
+    $stmt->execute([$userId]);
+
+    // 6. Delete recipes
     $stmt = $RecipeDB->prepare("DELETE FROM Recipes WHERE user_id = ?");
-    $stmt->execute([$user['user_id']]);
+    $stmt->execute([$userId]);
 
-    // 5. Delete user
+    // 7. Finally, delete the user
     $stmt = $usersDB->prepare("DELETE FROM users WHERE username = ?");
     $stmt->execute([$username_to_delete]);
 
