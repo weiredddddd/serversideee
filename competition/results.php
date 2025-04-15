@@ -32,7 +32,7 @@ if (!$competition) {
 }
 
 // Get entries with vote counts, ordered by votes (descending)
-$entries_sql = "SELECT ce.entry_id, ce.recipe_id, r.title as recipe_title, u.username,
+$entries_sql = "SELECT ce.entry_id, ce.recipe_id, r.title as recipe_title, u.nickname,
                 COUNT(v.vote_id) as vote_count
                 FROM competition_entries ce 
                 JOIN recipeDB.recipes r ON ce.recipe_id = r.recipe_id 
@@ -78,107 +78,111 @@ $pageTitle = "View Competition Result";
 </head>
 <body>
     <?php include_once '../includes/navigation.php'; ?>
-    <div class="container mt-4">
-        <h1>Competition Results: <?= htmlspecialchars($competition['title']) ?></h1>
-        
-        <div class="alert alert-info mb-4">
-            <strong>Status:</strong> <?= ucfirst($competition['status']) ?>
-            <br>
-            <strong>Total Votes Cast:</strong> <?= $total_votes ?>
-        </div>
-        
-        <?php if ($competition['status'] != 'completed'): ?>
-            <div class="alert alert-warning">
-                This competition is not yet completed. Final results will be available after <?= date('F j, Y', strtotime($competition['voting_end_date'])) ?>.
+
+    <div class="competition-content">
+        <div class="container mt-4">
+            <h1>Competition Results: <?= htmlspecialchars($competition['title']) ?></h1>
+            
+            <div class="alert alert-info mb-4">
+                <strong>Status:</strong> <?= ucfirst($competition['status']) ?>
                 <br>
-                <a href="competition_details.php?id=<?= $competition_id ?>" class="alert-link">Return to competition details</a>
-            </div>
-        <?php endif; ?>
-        
-        <h2>Leaderboard</h2>
-        
-        <?php if (empty($entries)): ?>
-            <p>No entries were submitted for this competition.</p>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Recipe</th>
-                            <th>Chef</th>
-                            <th>Votes</th>
-                            <th>Percentage</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($entries as $index => $entry): ?>
-                            <tr <?= $index === 0 && $competition['status'] === 'completed' ? 'class="table-success"' : '' ?>>
-                                <td><?= $index + 1 ?></td>
-                                <td><?= htmlspecialchars($entry['recipe_title']) ?></td>
-                                <td><?= htmlspecialchars($entry['username']) ?></td>
-                                <td><?= $entry['vote_count'] ?></td>
-                                <td>
-                                    <?= $total_votes > 0 ? round(($entry['vote_count'] / $total_votes) * 100, 1) : 0 ?>%
-                                    <div class="progress">
-                                        <div class="progress-bar" role="progressbar" 
-                                            style="width: <?= $total_votes > 0 ? ($entry['vote_count'] / $total_votes) * 100 : 0 ?>%" 
-                                            aria-valuenow="<?= $entry['vote_count'] ?>" 
-                                            aria-valuemin="0" 
-                                            aria-valuemax="<?= $total_votes ?>">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <a href="../recipes/view.php?id=<?= $entry['recipe_id'] ?>" class="btn btn-sm btn-info">View Recipe</a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                <strong>Total Votes Cast:</strong> <?= $total_votes ?>
             </div>
             
-            <?php if (!empty($entries) && $competition['status'] === 'completed'): ?>
-                <div class="alert alert-success mt-4">
-                    <h4 class="alert-heading">Winner: <?= htmlspecialchars($entries[0]['recipe_title']) ?> by <?= htmlspecialchars($entries[0]['username']) ?></h4>
-                    <p>Congratulations to our competition winner!</p>
-                    <hr>
-                    <p class="mb-0">Prize: <?= nl2br(htmlspecialchars($competition['prize_description'])) ?></p>
+            <?php if ($competition['status'] != 'completed'): ?>
+                <div class="alert alert-warning">
+                    This competition is not yet completed. Final results will be available after <?= date('F j, Y', strtotime($competition['voting_end_date'])) ?>.
+                    <br>
+                    <a href="competition_details.php?id=<?= $competition_id ?>" class="alert-link">Return to competition details</a>
                 </div>
             <?php endif; ?>
-        <?php endif; ?>
-        
-        <?php if ($user_participated): ?>
-            <div class="mt-4">
-                <h3>Your Participation</h3>
-                <?php
-                    $user_entry = null;
-                    $user_rank = 0;
-                    
-                    foreach ($entries as $index => $entry) {
-                        if ($entry['username'] === $_SESSION['username']) {
-                            $user_entry = $entry;
-                            $user_rank = $index + 1;
-                            break;
-                        }
-                    }
-                    
-                    if ($user_entry):
-                ?>
-                    <div class="alert alert-info">
-                        Your recipe "<?= htmlspecialchars($user_entry['recipe_title']) ?>" 
-                        ranked #<?= $user_rank ?> out of <?= count($entries) ?> entries
-                        with <?= $user_entry['vote_count'] ?> votes!
+            
+            <h2>Leaderboard</h2>
+            
+            <?php if (empty($entries)): ?>
+                <p>No entries were submitted for this competition.</p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Recipe</th>
+                                <th>Chef</th>
+                                <th>Votes</th>
+                                <th>Percentage</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($entries as $index => $entry): ?>
+                                <tr <?= $index === 0 && $competition['status'] === 'completed' ? 'class="table-success"' : '' ?>>
+                                    <td><?= $index + 1 ?></td>
+                                    <td><?= htmlspecialchars($entry['recipe_title']) ?></td>
+                                    <td><?= htmlspecialchars($entry['nickname']) ?></td>
+                                    <td><?= $entry['vote_count'] ?></td>
+                                    <td>
+                                        <?= $total_votes > 0 ? round(($entry['vote_count'] / $total_votes) * 100, 1) : 0 ?>%
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" 
+                                                style="width: <?= $total_votes > 0 ? ($entry['vote_count'] / $total_votes) * 100 : 0 ?>%" 
+                                                aria-valuenow="<?= $entry['vote_count'] ?>" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="<?= $total_votes ?>">
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="../recipes/view.php?id=<?= $entry['recipe_id'] ?>" class="btn btn-sm btn-info">View Recipe</a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <?php if (!empty($entries) && $competition['status'] === 'completed'): ?>
+                    <div class="alert alert-success mt-4">
+                        <h4 class="alert-heading">Winner: <?= htmlspecialchars($entries[0]['recipe_title']) ?> by <?= htmlspecialchars($entries[0]['nickname']) ?></h4>
+                        <p>Congratulations to our competition winner!</p>
+                        <hr>
+                        <p class="mb-0">Prize: <?= nl2br(htmlspecialchars($competition['prize_description'])) ?></p>
                     </div>
                 <?php endif; ?>
+            <?php endif; ?>
+            
+            <?php if ($user_participated): ?>
+                <div class="mt-4">
+                    <h3>Your Participation</h3>
+                    <?php
+                        $user_entry = null;
+                        $user_rank = 0;
+                        
+                        foreach ($entries as $index => $entry) {
+                            if ($entry['nickname'] === $_SESSION['nickname']) {
+                                $user_entry = $entry;
+                                $user_rank = $index + 1;
+                                break;
+                            }
+                        }
+                        
+                        if ($user_entry):
+                    ?>
+                        <div class="alert alert-info">
+                            Your recipe "<?= htmlspecialchars($user_entry['recipe_title']) ?>" 
+                            ranked #<?= $user_rank ?> out of <?= count($entries) ?> entries
+                            with <?= $user_entry['vote_count'] ?> votes!
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+            
+            <div class="mt-4">
+                <a href="competitions.php" class="btn btn-secondary">Back to Competitions</a>
             </div>
-        <?php endif; ?>
-        
-        <div class="mt-4">
-            <a href="competitions.php" class="btn btn-secondary">Back to Competitions</a>
         </div>
     </div>
+    
     <?php include_once '../includes/footer.php'; ?>
 </body>
 </html>

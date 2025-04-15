@@ -1,7 +1,6 @@
 <?php
 session_start();
 require '../config/db.php'; 
-include '../includes/navigation.php'; // Include database connection
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../users/login.php"); // Redirect to login page
@@ -29,10 +28,11 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage My Recipes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../recipes/css/recipe.css">
 </head>
 <body>
-<?php include_once '../includes/navigation.php'; ?> <!-- Include navigation bar -->
+<?php include_once '../includes/navigation.php'; ?>
 
     <div class="container mt-5">
         <h2>Manage My Recipes</h2>
@@ -64,7 +64,7 @@ $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+   
     <?php include_once '../includes/footer.php'; ?>
 </body>
 </html>

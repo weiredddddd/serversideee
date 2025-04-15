@@ -3,13 +3,13 @@
 require_once '../config/session_config.php';
 require_once '../config/db.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    $_SESSION['error'] = "You must be logged in to create competitions.";
+
+// Admin check
+if (!isset($_SESSION['user_id']) || ($_SESSION['is_admin'] ?? 0) !== 1) {
+    $_SESSION['error'] = "You must be logged in as admin to create competitions.";
     header("Location: ../users/login.php");
     exit();
 }
-
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate inputs
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } elseif (strtotime($end_date) > strtotime($current_date)) {
             $status = 'active';
         } elseif (strtotime($voting_end_date) > strtotime($current_date)) {
-            $status = 'voting';
+            $status = 'active';
         } else {
             $status = 'completed';
         }
@@ -112,67 +112,71 @@ $pageTitle = "Create Competition";
 </head>
 <body>
     <?php include_once '../includes/navigation.php'; ?>
-    <div class="container mt-4">
-        <h1>Create New Competition</h1>
-        
-        <?php if (!empty($errors)): ?>
-            <div class="alert alert-danger">
-                <ul>
-                    <?php foreach ($errors as $error): ?>
-                        <li><?= $error ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-        
-        <form method="post" action="">
-            <div class="form-group mb-3">
-                <label for="title">Competition Title:</label>
-                <input type="text" class="form-control" id="title" name="title" value="<?= isset($title) ? htmlspecialchars($title) : '' ?>" required>
-            </div>
+
+    <div class="competition-content">
+        <div class="container mt-4">
+            <h1>Create New Competition</h1>
             
-            <div class="form-group mb-3">
-                <label for="description">Description:</label>
-                <textarea class="form-control" id="description" name="description" rows="3" required><?= isset($description) ? htmlspecialchars($description) : '' ?></textarea>
-            </div>
+            <?php if (!empty($errors)): ?>
+                <div class="alert alert-danger">
+                    <ul>
+                        <?php foreach ($errors as $error): ?>
+                            <li><?= $error ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
             
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="start_date">Start Date:</label>
-                        <input type="datetime-local" class="form-control" id="start_date" name="start_date" value="<?= isset($start_date) ? htmlspecialchars($start_date) : '' ?>" required>
+            <form method="post" action="">
+                <div class="form-group mb-3">
+                    <label for="title">Competition Title:</label>
+                    <input type="text" class="form-control" id="title" name="title" value="<?= isset($title) ? htmlspecialchars($title) : '' ?>" required>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="description">Description:</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required><?= isset($description) ? htmlspecialchars($description) : '' ?></textarea>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="start_date">Start Date:</label>
+                            <input type="datetime-local" class="form-control" id="start_date" name="start_date" value="<?= isset($start_date) ? htmlspecialchars($start_date) : '' ?>" required>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="end_date">Submission End Date:</label>
+                            <input type="datetime-local" class="form-control" id="end_date" name="end_date" value="<?= isset($end_date) ? htmlspecialchars($end_date) : '' ?>" required>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="voting_end_date">Voting End Date:</label>
+                            <input type="datetime-local" class="form-control" id="voting_end_date" name="voting_end_date" value="<?= isset($voting_end_date) ? htmlspecialchars($voting_end_date) : '' ?>" required>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="end_date">Submission End Date:</label>
-                        <input type="datetime-local" class="form-control" id="end_date" name="end_date" value="<?= isset($end_date) ? htmlspecialchars($end_date) : '' ?>" required>
-                    </div>
+                <div class="form-group mb-3">
+                    <label for="rules">Competition Rules:</label>
+                    <textarea class="form-control" id="rules" name="rules" rows="4"><?= isset($rules) ? htmlspecialchars($rules) : '' ?></textarea>
                 </div>
                 
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label for="voting_end_date">Voting End Date:</label>
-                        <input type="datetime-local" class="form-control" id="voting_end_date" name="voting_end_date" value="<?= isset($voting_end_date) ? htmlspecialchars($voting_end_date) : '' ?>" required>
-                    </div>
+                <div class="form-group mb-3">
+                    <label for="prize_description">Prize Description:</label>
+                    <textarea class="form-control" id="prize_description" name="prize_description" rows="2"><?= isset($prize_description) ? htmlspecialchars($prize_description) : '' ?></textarea>
                 </div>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="rules">Competition Rules:</label>
-                <textarea class="form-control" id="rules" name="rules" rows="4"><?= isset($rules) ? htmlspecialchars($rules) : '' ?></textarea>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="prize_description">Prize Description:</label>
-                <textarea class="form-control" id="prize_description" name="prize_description" rows="2"><?= isset($prize_description) ? htmlspecialchars($prize_description) : '' ?></textarea>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Create Competition</button>
-            <a href="competitions.php" class="btn btn-secondary">Cancel</a>
-        </form>
+                
+                <button type="submit" class="btn btn-primary">Create Competition</button>
+                <a href="competitions.php" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
     </div>
+    
 
     <?php include_once '../includes/footer.php'; ?>
 </body>

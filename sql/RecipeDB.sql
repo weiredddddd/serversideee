@@ -1,69 +1,15 @@
--- Drop and recreate database
 DROP DATABASE IF EXISTS RecipeDB;
 CREATE DATABASE RecipeDB;
 USE RecipeDB;
 
--- Ingredients Table
-CREATE TABLE Ingredients (
-  ingredient_id INT(11) NOT NULL AUTO_INCREMENT,
-  ingredient_name VARCHAR(255) NOT NULL UNIQUE,
-  PRIMARY KEY (ingredient_id)
+CREATE TABLE `Ingredients` (
+  `ingredient_id` int(11) NOT NULL,
+  `ingredient_name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Recipes Table
-CREATE TABLE Recipes (
-  recipe_id INT(11) NOT NULL AUTO_INCREMENT,
-  user_id INT(11) DEFAULT NULL,
-  title VARCHAR(255) NOT NULL,
-  description TEXT DEFAULT NULL,
-  category VARCHAR(100) DEFAULT NULL,
-  cuisine_type VARCHAR(50) DEFAULT NULL,
-  spice_level TINYINT(4) DEFAULT 0,
-  view_count INT DEFAULT 0,
-  image_url VARCHAR(255) DEFAULT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  created_by INT(11) DEFAULT NULL,
-  updated_by INT(11) DEFAULT NULL,
-  PRIMARY KEY (recipe_id),
-  FOREIGN KEY (user_id) REFERENCES usersDB.Users(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (created_by) REFERENCES usersDB.Users(user_id) ON DELETE SET NULL,
-  FOREIGN KEY (updated_by) REFERENCES usersDB.Users(user_id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Recipe_Ingredient Table
-CREATE TABLE Recipe_Ingredient (
-  recipe_id INT(11) NOT NULL,
-  ingredient_id INT(11) NOT NULL,
-  quantity VARCHAR(50) DEFAULT NULL,
-  unit VARCHAR(50) DEFAULT NULL,
-  PRIMARY KEY (recipe_id, ingredient_id),
-  FOREIGN KEY (recipe_id) REFERENCES Recipes(recipe_id) ON DELETE CASCADE,
-  FOREIGN KEY (ingredient_id) REFERENCES Ingredients(ingredient_id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Steps Table
-CREATE TABLE Steps (
-  step_id INT(11) NOT NULL AUTO_INCREMENT,
-  recipe_id INT(11) NOT NULL,
-  step_no INT(11) NOT NULL,
-  description TEXT NOT NULL,
-  image_url VARCHAR(255) DEFAULT NULL,
-  PRIMARY KEY (step_id),
-  FOREIGN KEY (recipe_id) REFERENCES Recipes(recipe_id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Add Nutrition Table
-CREATE TABLE Nutrition (
-  nutrition_id INT(11) NOT NULL AUTO_INCREMENT,
-  recipe_id INT(11) NOT NULL,
-  calories INT DEFAULT NULL,
-  fat FLOAT DEFAULT NULL,
-  carbs FLOAT DEFAULT NULL,
-  protein FLOAT DEFAULT NULL,
-  PRIMARY KEY (nutrition_id),
-  FOREIGN KEY (recipe_id) REFERENCES Recipes(recipe_id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+--
+-- Dumping data for table `Ingredients`
+--
 
 INSERT INTO `Ingredients` (`ingredient_id`, `ingredient_name`) VALUES
 (18, 'All-purpose flour'),
@@ -108,6 +54,25 @@ INSERT INTO `Ingredients` (`ingredient_id`, `ingredient_name`) VALUES
 (17, 'Vanilla Extract'),
 (29, 'Water');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Nutrition`
+--
+
+CREATE TABLE `Nutrition` (
+  `nutrition_id` int(11) NOT NULL,
+  `recipe_id` int(11) NOT NULL,
+  `calories` int(11) DEFAULT NULL,
+  `fat` float DEFAULT NULL,
+  `carbs` float DEFAULT NULL,
+  `protein` float DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `Nutrition`
+--
+
 INSERT INTO `Nutrition` (`nutrition_id`, `recipe_id`, `calories`, `fat`, `carbs`, `protein`) VALUES
 (1, 1, 570, 22.5, 65, 24),
 (2, 2, 450, 18, 20, 38),
@@ -120,8 +85,34 @@ INSERT INTO `Nutrition` (`nutrition_id`, `recipe_id`, `calories`, `fat`, `carbs`
 (9, 9, 400, 25, 5, 35),
 (10, 10, 300, 15, 40, 10);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Recipes`
+--
+
+CREATE TABLE `Recipes` (
+  `recipe_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `cuisine_type` varchar(50) DEFAULT NULL,
+  `spice_level` tinyint(4) DEFAULT 0,
+  `image_url` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_by` int(11) DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `view_count` int(11) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `Recipes`
+--
+
 INSERT INTO `Recipes` (`recipe_id`, `user_id`, `title`, `description`, `category`, `cuisine_type`, `spice_level`, `image_url`, `created_at`, `updated_at`, `created_by`, `updated_by`, `view_count`) VALUES
-(1, 1, 'Spaghetti Carbonara', 'A classic Italian pasta dish with creamy sauce.', 'Appetizer', 'Japanese', 0, 'carbonara.jpg', '2025-04-11 16:21:48', '2025-04-14 16:26:04', 1, 1, 2),
+(1, 1, 'Spaghetti Carbonara', 'A classic Italian pasta dish with creamy sauce.', 'Appetizer', 'Japanese', 0, 'carbonara.jpg', '2025-04-11 16:21:48', '2025-04-14 18:46:21', 1, 1, 3),
 (2, 2, 'Chicken Curry', 'Spicy and rich curry with tender chicken pieces.', 'Main Course', 'Indian', 2, '67f9507a991da_Chicken_Curry.jpg', '2025-04-11 16:21:48', '2025-04-14 17:26:51', 2, 2, 1),
 (3, 3, 'Double Chocolate Chip Cookies Recipe', 'The best recipe for double chocolate chip cookies must obviously include extra doses of chocolate. These soft-baked thick and chunky cookies are as indulgent as they look: rich and fudge-like with chewy centers, slightly crisp edges, and oodles of melty chocolate chips in each glorious bite.\r\n\r\nIt’s the chocolate dough recipe I’ve been making for years and even included it in my cookbook stuffed with peanut butter cups. There’s no reason to stray from this basic chocolate dough!', 'Dessert', 'Other', 0, '67f9c43bc7a35_double-chocolate-chip-cookies-recipe-2.jpg', '2025-04-11 16:21:48', '2025-04-12 01:39:07', 3, 3, 0),
 (4, 5, 'Slow Cooker Chicken and Gravy', 'This slow cooker chicken and gravy could not be easier. You\'ll want to serve this over hot rice or mashed potatoes for the ultimate comfort food dish.', 'Main Course', 'Japanese', 0, '67fca4ad5ec10_slowcooker-gravy.jpg', '2025-04-14 14:01:17', '2025-04-14 14:01:17', NULL, NULL, 0),
@@ -131,6 +122,23 @@ INSERT INTO `Recipes` (`recipe_id`, `user_id`, `title`, `description`, `category
 (8, 3, 'Spicy Beef Tacos', 'Ground beef tacos with a spicy kick.', 'Main Course', 'Mexican', 3, '67fce53e12464_Spicy-Beef-Tacos.jpg', '2025-04-14 17:10:00', '2025-04-14 18:36:46', 3, 3, 0),
 (9, 4, 'Garlic Butter Shrimp', 'Juicy shrimp sautéed in garlic butter sauce.', 'Main Course', 'Japanese', 1, '67fce4663806a_garlic-butter-shrimp.jpg', '2025-04-14 17:15:00', '2025-04-14 18:33:10', 4, 4, 0),
 (10, 5, 'Vegetable Stir Fry', 'A mix of fresh vegetables stir-fried in a savory sauce.', 'Main Course', 'Japanese', 2, '67fce3424df7f_vegetable-stirfry.jpg', '2025-04-14 17:20:00', '2025-04-14 18:28:18', 5, 5, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Recipe_Ingredient`
+--
+
+CREATE TABLE `Recipe_Ingredient` (
+  `recipe_id` int(11) NOT NULL,
+  `ingredient_id` int(11) NOT NULL,
+  `quantity` varchar(50) DEFAULT NULL,
+  `unit` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `Recipe_Ingredient`
+--
 
 INSERT INTO `Recipe_Ingredient` (`recipe_id`, `ingredient_id`, `quantity`, `unit`) VALUES
 (1, 1, '200', 'g'),
@@ -183,6 +191,24 @@ INSERT INTO `Recipe_Ingredient` (`recipe_id`, `ingredient_id`, `quantity`, `unit
 (10, 8, '1', 'piece'),
 (10, 41, '200', 'g');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `Steps`
+--
+
+CREATE TABLE `Steps` (
+  `step_id` int(11) NOT NULL,
+  `recipe_id` int(11) NOT NULL,
+  `step_no` int(11) NOT NULL,
+  `description` text NOT NULL,
+  `image_url` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `Steps`
+--
+
 INSERT INTO `Steps` (`step_id`, `recipe_id`, `step_no`, `description`, `image_url`) VALUES
 (4, 1, 1, 'Boil spaghetti until al dente.', ''),
 (5, 1, 2, 'Fry bacon until crispy.', ''),
@@ -222,7 +248,104 @@ INSERT INTO `Steps` (`step_id`, `recipe_id`, `step_no`, `description`, `image_ur
 (52, 8, 1, 'Cook ground beef with chili flakes and seasoning.', ''),
 (53, 8, 2, 'Assemble beef in taco shells with desired toppings.', '');
 
+--
+-- Indexes for dumped tables
+--
 
+--
+-- Indexes for table `Ingredients`
+--
+ALTER TABLE `Ingredients`
+  ADD PRIMARY KEY (`ingredient_id`),
+  ADD UNIQUE KEY `ingredient_name` (`ingredient_name`);
+
+--
+-- Indexes for table `Nutrition`
+--
+ALTER TABLE `Nutrition`
+  ADD PRIMARY KEY (`nutrition_id`),
+  ADD KEY `recipe_id` (`recipe_id`);
+
+--
+-- Indexes for table `Recipes`
+--
+ALTER TABLE `Recipes`
+  ADD PRIMARY KEY (`recipe_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `created_by` (`created_by`),
+  ADD KEY `updated_by` (`updated_by`);
+
+--
+-- Indexes for table `Recipe_Ingredient`
+--
+ALTER TABLE `Recipe_Ingredient`
+  ADD PRIMARY KEY (`recipe_id`,`ingredient_id`),
+  ADD KEY `ingredient_id` (`ingredient_id`);
+
+--
+-- Indexes for table `Steps`
+--
+ALTER TABLE `Steps`
+  ADD PRIMARY KEY (`step_id`),
+  ADD KEY `recipe_id` (`recipe_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `Ingredients`
+--
+ALTER TABLE `Ingredients`
+  MODIFY `ingredient_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+
+--
+-- AUTO_INCREMENT for table `Nutrition`
+--
+ALTER TABLE `Nutrition`
+  MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `Recipes`
+--
+ALTER TABLE `Recipes`
+  MODIFY `recipe_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `Steps`
+--
+ALTER TABLE `Steps`
+  MODIFY `step_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `Nutrition`
+--
+ALTER TABLE `Nutrition`
+  ADD CONSTRAINT `nutrition_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `Recipes` (`recipe_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `Recipes`
+--
+ALTER TABLE `Recipes`
+  ADD CONSTRAINT `recipes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `usersDB`.`Users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `recipes_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `usersDB`.`Users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `recipes_ibfk_3` FOREIGN KEY (`updated_by`) REFERENCES `usersDB`.`Users` (`user_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `Recipe_Ingredient`
+--
+ALTER TABLE `Recipe_Ingredient`
+  ADD CONSTRAINT `recipe_ingredient_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `Recipes` (`recipe_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `recipe_ingredient_ibfk_2` FOREIGN KEY (`ingredient_id`) REFERENCES `Ingredients` (`ingredient_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `Steps`
+--
+ALTER TABLE `Steps`
+  ADD CONSTRAINT `steps_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `Recipes` (`recipe_id`) ON DELETE CASCADE;
 COMMIT;
-
 
