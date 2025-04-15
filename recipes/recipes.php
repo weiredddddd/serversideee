@@ -219,7 +219,6 @@ $cuisines = $RecipeDB->query("SELECT DISTINCT cuisine_type FROM Recipes WHERE cu
         </div>
     </div>
     <?php include_once '../includes/footer.php'; ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
 </body>
 
