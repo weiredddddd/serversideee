@@ -7,75 +7,50 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 $error = '';
-$username_value = ''; // To repopulate the form after error
-$login_type = 'user'; // Default login type
+$username_value = '';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
-    $login_type = isset($_POST['login_type']) ? trim($_POST['login_type']) : 'user';
-    
-    // Server-side username validation
-    if (empty($username)) {
-        $error = "Username is required.";
-    } 
-    // Username format validation - alphanumeric, underscore, hyphen only
-    else if (!preg_match('/^[a-zA-Z0-9_\-]+$/', $username)) {
-        $error = "Username can only contain letters, numbers, underscores and hyphens.";
-        $username_value = $username; 
-    }
-    // Length validation
-    else if (strlen($username) < 3 || strlen($username) > 20) {
-        $error = "Username must be between 3 and 20 characters.";
-        $username_value = $username; 
-    }
-    else {
-        // First check if the user exists and verify password
-        $stmt = $usersDB->prepare("SELECT * FROM users WHERE username = ?");
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $login_type = $_POST['login_type'] ?? 'user'; // Get login_type from form
+
+    if ($login_type === 'admin') {
+        $stmt = $usersDB->prepare("SELECT * FROM users WHERE username = ? AND is_admin = 1");
         $stmt->execute([$username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($user && password_verify($password, $user['password'])) {
-            // Check if user is admin
-            $is_admin = $user['is_admin'] == 1;
+            // Successful admin login
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['nickname'] = $user['nickname'] ?? $user['username'];
+            $_SESSION['avatar'] = $user['avatar'] ?? 0;
+            $_SESSION['is_admin'] = $user['is_admin'] ?? 0;
 
-            // Proceed with login process based on login type
-            if ($login_type == 'admin') {
-                // Admin login logic - check if the user is actually an admin
-                if ($is_admin) {
-                    $_SESSION['user_id'] = $user['user_id'];
-                    $_SESSION['username'] = $user['username'];
-                    $_SESSION['nickname'] = $user['nickname'] ?? $user['username'];
-                    $_SESSION['avatar'] = $user['avatar'] ?? 0;
-                    $_SESSION['is_admin'] = true; // Mark as admin in session
+            header("Location: ../index.php");
+            exit();
+        } else {
+            $error = "Invalid admin credentials!";
+            $username_value = $username;
+        }
+    } else {
+        // Regular user login logic
+        $stmt = $usersDB->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                    // Redirect to admin dashboard
-                    header("Location: ../admin/index.php");
-                    exit();
-                } else {
-                    $error = "You don't have admin privileges!";
-                    $username_value = $username;
-                }
-            } else {
-                // Regular user login - only non-admin users can log in as regular users
-                if (!$is_admin) {
-                    $_SESSION['user_id'] = $user['user_id'];
-                    $_SESSION['username'] = $user['username'];
-                    $_SESSION['nickname'] = $user['nickname'] ?? $user['username'];
-                    $_SESSION['avatar'] = $user['avatar'] ?? 0;
-                    $_SESSION['is_admin'] = false;
-
-                    // Redirect to homepage
-                    header("Location: ../index.php");
-                    exit();
-                } else {
-                    $error = "Admin users must login using the Admin Panel option.";
-                    $username_value = $username;
-                }
-            }
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['nickname'] = $user['nickname'] ?? $user['username'];
+            $_SESSION['avatar'] = $user['avatar'] ?? 0;
+            $_SESSION['is_admin'] = false;
+            
+            header("Location: ../index.php");
+            exit();
         } else {
             $error = "Invalid username or password!";
-            $username_value = $username; // Save for form repopulation
+            $username_value = $username;
         }
     }
 }
@@ -184,13 +159,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         .login-label {
             display: block;
-            padding: 15px 10px;
+            padding: 15px 20px;
             background-color: #f8f9fa;
             border: 2px solid #dee2e6;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
-            width: 130px;
+            width: 100px;
         }
         
         .login-icon {
@@ -209,6 +184,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #0d6efd;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Client-side validation
         document.getElementById('loginForm').addEventListener('submit', function(event) {
