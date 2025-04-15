@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Get all competitions based on status
 $upcoming_sql = "SELECT * FROM competitions WHERE status = 'upcoming' ORDER BY start_date ASC";
-$active_sql = "SELECT * FROM competitions WHERE status = 'active' OR status = 'voting' ORDER BY end_date ASC";
+$active_sql = "SELECT * FROM competitions WHERE status = 'active' ORDER BY end_date ASC";
 $past_sql = "SELECT * FROM competitions WHERE status = 'completed' ORDER BY end_date DESC";
 
 // Using PDO's fetchAll
@@ -28,8 +28,8 @@ $past_competitions = $past_stmt->fetchAll(PDO::FETCH_ASSOC);
 // Update competition statuses
 $current_date = date('Y-m-d H:i:s');
 $competitionDB->query("UPDATE competitions SET status = 'active' WHERE status = 'upcoming' AND start_date <= '$current_date'");
-$competitionDB->query("UPDATE competitions SET status = 'voting' WHERE status = 'active' AND end_date <= '$current_date' AND voting_end_date > '$current_date'");
-$competitionDB->query("UPDATE competitions SET status = 'completed' WHERE status = 'voting' AND voting_end_date <= '$current_date'");
+//$competitionDB->query("UPDATE competitions SET status = 'voting' WHERE status = 'active' AND end_date <= '$current_date' AND voting_end_date > '$current_date'");
+$competitionDB->query("UPDATE competitions SET status = 'completed' WHERE status = 'active' AND voting_end_date <= '$current_date'");
 
 // Set page title
 $pageTitle = "Competition";

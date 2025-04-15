@@ -113,7 +113,7 @@ $pageTitle = "Competition Details";
                     <div class="timeline-item">
                         <span class="timeline-date">Submission Deadline:</span> <?= date('F j, Y', strtotime($competition['end_date'])) ?>
                     </div>
-                    <?php if ($competition['status'] == 'voting' || $competition['status'] == 'completed'): ?>
+                    <?php if ($competition['status'] == 'active' || $competition['status'] == 'completed'): ?>
                     <div class="timeline-item">
                         <span class="timeline-date">Voting Ends:</span> <?= date('F j, Y', strtotime($competition['voting_end_date'])) ?>
                     </div>
