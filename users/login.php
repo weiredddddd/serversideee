@@ -1,5 +1,4 @@
 <?php
-// filepath: c:\xampp\htdocs\asm\users\login.php
 require_once '../config/session_config.php';
 require_once '../config/db.php'; 
 
@@ -9,10 +8,12 @@ ini_set('display_errors', 1);
 
 $error = '';
 $username_value = ''; // To repopulate the form after error
+$login_type = 'user'; // Default login type
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
+    $login_type = isset($_POST['login_type']) ? trim($_POST['login_type']) : 'user';
     
     // Server-side username validation
     if (empty($username)) {
@@ -21,20 +22,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Username format validation - alphanumeric, underscore, hyphen only
     else if (!preg_match('/^[a-zA-Z0-9_\-]+$/', $username)) {
         $error = "Username can only contain letters, numbers, underscores and hyphens.";
-        $username_value = $username; // Save for form repopulation
+        $username_value = $username; 
     }
     // Length validation
     else if (strlen($username) < 3 || strlen($username) > 20) {
         $error = "Username must be between 3 and 20 characters.";
-        $username_value = $username; // Save for form repopulation
+        $username_value = $username; 
     }
     else {
-        // Proceed with login process
-        // Fetch user data by username
+        // First check if the user exists and verify password
         $stmt = $usersDB->prepare("SELECT * FROM users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
+        
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
@@ -42,10 +42,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['avatar'] = $user['avatar'] ?? 0;
             $_SESSION['is_admin'] = $user['is_admin'] ?? 0; // Add this line
 
-
             // Redirect to homepage
             header("Location: ../index.php");
             exit();
+            // Check if user is admin
+            $is_admin = $user['is_admin'] == 1;
+
+            // Proceed with login process based on login type
+            if ($login_type == 'admin') {
+                // Admin login logic - check if the user is actually an admin
+                if ($is_admin) {
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['nickname'] = $user['nickname'] ?? $user['username']; // Store nickname in session
+                    $_SESSION['avatar'] = $user['avatar'] ?? 0;
+                    $_SESSION['is_admin'] = true; // Mark as admin in session
+
+                    // Redirect to admin dashboard
+                    header("Location: ../admin/index.php");
+                    exit();
+                } else {
+                    $error = "You don't have admin privileges!";
+                    $username_value = $username;
+                }
+            } else {
+                // Regular user login - only non-admin users can log in as regular users
+                if (!$is_admin) {
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['nickname'] = $user['nickname'] ?? $user['username'];
+                    $_SESSION['avatar'] = $user['avatar'] ?? 0;
+                    $_SESSION['is_admin'] = false;
+
+                    // Redirect to homepage
+                    header("Location: ../index.php");
+                    exit();
+                } else {
+                    $error = "Admin users must login using the Admin Panel option.";
+                    $username_value = $username;
+                }
+            }
         } else {
             $error = "Invalid username or password!";
             $username_value = $username; // Save for form repopulation
@@ -87,7 +123,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             Username can only contain letters, numbers, underscores and hyphens (3-20 characters).
                         </div>
                     </div>
-                    <!-- Removed the small text with username rules -->
                 </div>
 
                 <div class="mb-3">
@@ -99,6 +134,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                             <i class="far fa-eye"></i>
                         </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label d-block">Login as:</label>
+                    <div class="login-type-selector d-flex justify-content-center mb-3">
+                        <div class="form-check form-check-inline login-option">
+                            <input class="form-check-input" type="radio" name="login_type" id="userLogin" value="user" checked>
+                            <label class="form-check-label login-label" for="userLogin">
+                                <i class="fas fa-user login-icon"></i>
+                                <span>User</span>
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline login-option">
+                            <input class="form-check-input" type="radio" name="login_type" id="adminLogin" value="admin">
+                            <label class="form-check-label login-label" for="adminLogin">
+                                <i class="fas fa-user-shield login-icon"></i>
+                                <span>Admin</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -120,8 +175,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background: url('../assets/bg/login-bg.jpg') no-repeat center center fixed;
             background-size: cover;
         }
+        
+        /* Login type selector styles */
+        .login-type-selector {
+            gap: 20px;
+        }
+        
+        .login-option {
+            text-align: center;
+            margin: 0;
+        }
+        
+        .login-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .login-label {
+            display: block;
+            padding: 15px 10px;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 130px;
+        }
+        
+        .login-icon {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #6c757d;
+        }
+        
+        .login-option input[type="radio"]:checked + .login-label {
+            border-color: #0d6efd;
+            background-color: #e8f0fe;
+        }
+        
+        .login-option input[type="radio"]:checked + .login-label .login-icon {
+            color: #0d6efd;
+        }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Client-side validation
         document.getElementById('loginForm').addEventListener('submit', function(event) {
