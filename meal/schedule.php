@@ -156,5 +156,7 @@ require '../config/db.php';
     </div>
 
     <script src="schedule.js"></script>
+    <!-- Footer -->                       
+    <?php include_once '../includes/footer.php'; ?>
 </body>
 </html>
