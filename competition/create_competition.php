@@ -3,13 +3,13 @@
 require_once '../config/session_config.php';
 require_once '../config/db.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    $_SESSION['error'] = "You must be logged in to create competitions.";
+
+// Admin check
+if (!isset($_SESSION['user_id']) || ($_SESSION['is_admin'] ?? 0) !== 1) {
+    $_SESSION['error'] = "You must be logged in as admin to create competitions.";
     header("Location: ../users/login.php");
     exit();
 }
-
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate inputs
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } elseif (strtotime($end_date) > strtotime($current_date)) {
             $status = 'active';
         } elseif (strtotime($voting_end_date) > strtotime($current_date)) {
-            $status = 'voting';
+            $status = 'active';
         } else {
             $status = 'completed';
         }

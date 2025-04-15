@@ -43,4 +43,3 @@ INSERT INTO users (username, nickname, email, password, reset_token, reset_token
   ('adminmark', 'Admin Mark', 'adminmark@example.com', '$2a$12$36IMr7adfDbtprnF.E2gq.QYU7vbSyQs7xJN9y9jh3ry7j/6ei9YG', NULL, NULL, 2, '2023-01-02 00:00:00', 1),
   ('superadmin', 'Super Admin', 'superadmin@example.com', '$2a$12$36IMr7adfDbtprnF.E2gq.QYU7vbSyQs7xJN9y9jh3ry7j/6ei9YG', NULL, NULL, 3, '2024-12-21 00:00:00', 1);
 
-
