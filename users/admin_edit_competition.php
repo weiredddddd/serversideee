@@ -45,9 +45,40 @@ try {
         $prize_description = filter_input(INPUT_POST, 'prize_description', FILTER_SANITIZE_STRING);
         $status = filter_input(INPUT_POST, 'status', FILTER_SANITIZE_STRING);
 
+        $errors = [];
+
+        if (empty($title)) {
+            $errors[] = "Title is required.";
+        }
+        
+        if (empty($description)) {
+            $errors[] = "Description is required.";
+        }
+        
+        if (empty($start_date)) {
+            $errors[] = "Start date is required.";
+        }
+        
+        if (empty($end_date)) {
+            $errors[] = "End date is required.";
+        }
+        
+        if (empty($voting_end_date)) {
+            $errors[] = "Voting end date is required.";
+        }
+        
+        // Check if dates are in the correct order
+        if (strtotime($start_date) >= strtotime($end_date)) {
+            $errors[] = "Start date must be before end date.";
+        }
+        
+        if (strtotime($end_date) >= strtotime($voting_end_date)) {
+            $errors[] = "End date must be before voting end date.";
+        }
+
         // Basic validation
-        if (!$title || !$start_date || !$end_date || !$voting_end_date || !$status) {
-            $error = "Please fill in all required fields.";
+        if (!empty($errors)) {
+            $errors[] = "Please fill in all required fields.";
         } else {
             $update_query = "
                 UPDATE competitions 
@@ -75,7 +106,7 @@ try {
         }
     }
 } catch (PDOException $e) {
-    $error = "Error: " . $e->getMessage();
+    $errors[] = "Error: " . $e->getMessage();
 }
 ?>
 
@@ -96,18 +127,27 @@ try {
         <h2 class="mb-4">Edit Competition</h2>
 
         <!-- Error Message -->
-        <?php if (isset($error)): ?>
+        <?php if (!empty($errors) && is_array($errors)): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($error); ?>
+                <ul class="mb-0">
+                    <?php foreach ($errors as $error): ?>
+                        <li><?php echo htmlspecialchars($error); ?></li>
+                    <?php endforeach; ?>
+                </ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
-        <?php if (isset($_SESSION['error'])): ?>
+
+        <?php if (!empty($_SESSION['errors']) && is_array($_SESSION['errors'])): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($_SESSION['error']); ?>
+                <ul class="mb-0">
+                    <?php foreach ($_SESSION['errors'] as $error): ?>
+                        <li><?php echo htmlspecialchars($error); ?></li>
+                    <?php endforeach; ?>
+                </ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <?php unset($_SESSION['error']); ?>
+            <?php unset($_SESSION['errors']); ?>
         <?php endif; ?>
 
         <!-- Back Button -->
