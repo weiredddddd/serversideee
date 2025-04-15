@@ -2,10 +2,6 @@
 session_start();
 include '../config/db.php';
 
-
-error_log("Tracking view for recipe ID: $recipe_id, User ID: $user_id");
-
-
 if (isset($_SESSION['success_message'])) {
     echo '<div class="alert alert-success">' . $_SESSION['success_message'] . '</div>';
     unset($_SESSION['success_message']); // Clear message after displaying
@@ -19,6 +15,9 @@ if (!$recipe_id) {
     header("Location: ../error.php?message=Invalid Recipe ID");
     exit();
 }
+
+$user_id = $_SESSION['user_id'] ?? 'guest';
+error_log("Tracking view for recipe ID: $recipe_id, User ID: $user_id");
 
 if (!isset($RecipeDB)) {
     die("Database connection failed. Check config/db.php.");
@@ -73,13 +72,14 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($recipe['title']) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../recipes/css/recipe.css">
 
 
 </head>
 
 <body>
-    <?php include_once '../includes/navigation.php'; ?> <!-- Include navigation bar -->
+    <?php include_once '../includes/navigation.php'; ?> 
     <div class="container mt-4">
         <h1 class="text-center"><?= htmlspecialchars($recipe['title']) ?></h1>
         <p class="text-center text-muted"><strong>By:</strong> <?= htmlspecialchars($recipe['author']) ?></p>
@@ -265,9 +265,6 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
                 });
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-
 </body>
 
 </html>

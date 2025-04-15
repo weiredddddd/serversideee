@@ -32,7 +32,7 @@ if (!$competition) {
 }
 
 // Get entries with vote counts, ordered by votes (descending)
-$entries_sql = "SELECT ce.entry_id, ce.recipe_id, r.title as recipe_title, u.username,
+$entries_sql = "SELECT ce.entry_id, ce.recipe_id, r.title as recipe_title, u.nickname,
                 COUNT(v.vote_id) as vote_count
                 FROM competition_entries ce 
                 JOIN recipeDB.recipes r ON ce.recipe_id = r.recipe_id 
@@ -119,7 +119,7 @@ $pageTitle = "View Competition Result";
                                 <tr <?= $index === 0 && $competition['status'] === 'completed' ? 'class="table-success"' : '' ?>>
                                     <td><?= $index + 1 ?></td>
                                     <td><?= htmlspecialchars($entry['recipe_title']) ?></td>
-                                    <td><?= htmlspecialchars($entry['username']) ?></td>
+                                    <td><?= htmlspecialchars($entry['nickname']) ?></td>
                                     <td><?= $entry['vote_count'] ?></td>
                                     <td>
                                         <?= $total_votes > 0 ? round(($entry['vote_count'] / $total_votes) * 100, 1) : 0 ?>%
@@ -143,7 +143,7 @@ $pageTitle = "View Competition Result";
                 
                 <?php if (!empty($entries) && $competition['status'] === 'completed'): ?>
                     <div class="alert alert-success mt-4">
-                        <h4 class="alert-heading">Winner: <?= htmlspecialchars($entries[0]['recipe_title']) ?> by <?= htmlspecialchars($entries[0]['username']) ?></h4>
+                        <h4 class="alert-heading">Winner: <?= htmlspecialchars($entries[0]['recipe_title']) ?> by <?= htmlspecialchars($entries[0]['nickname']) ?></h4>
                         <p>Congratulations to our competition winner!</p>
                         <hr>
                         <p class="mb-0">Prize: <?= nl2br(htmlspecialchars($competition['prize_description'])) ?></p>
@@ -159,7 +159,7 @@ $pageTitle = "View Competition Result";
                         $user_rank = 0;
                         
                         foreach ($entries as $index => $entry) {
-                            if ($entry['username'] === $_SESSION['username']) {
+                            if ($entry['nickname'] === $_SESSION['nickname']) {
                                 $user_entry = $entry;
                                 $user_rank = $index + 1;
                                 break;

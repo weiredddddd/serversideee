@@ -43,7 +43,7 @@ $user_entry = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
 // Get all entries for the competition
-$entries_sql = "SELECT ce.*, r.title as recipe_title, u.username, r.image_url 
+$entries_sql = "SELECT ce.*, r.title as recipe_title, u.nickname, r.image_url 
                 FROM competition_entries ce 
                 JOIN recipeDB.recipes r ON ce.recipe_id = r.recipe_id 
                 JOIN usersDB.users u ON ce.user_id = u.user_id 
@@ -189,7 +189,7 @@ $pageTitle = "Competition Details";
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="entry_id" id="entry_<?= $entry['entry_id'] ?>" value="<?= $entry['entry_id'] ?>" required>
                                         <label class="form-check-label" for="entry_<?= $entry['entry_id'] ?>">
-                                            <?= htmlspecialchars($entry['recipe_title']) ?> by <?= htmlspecialchars($entry['username']) ?>
+                                            <?= htmlspecialchars($entry['recipe_title']) ?> by <?= htmlspecialchars($entry['nickname']) ?>
                                         </label>
                                     </div>
                                 <?php endforeach; ?>
@@ -222,7 +222,7 @@ $pageTitle = "Competition Details";
                             </div>
                             <div class="entry-info">
                                 <h5 class="entry-title"><?= htmlspecialchars($entry['recipe_title']) ?></h5>
-                                <p class="entry-author">By <?= htmlspecialchars($entry['username']) ?></p>
+                                <p class="entry-author">By <?= htmlspecialchars($entry['nickname']) ?></p>
                                 <p><small class="text-muted">Submitted on: <?= date('F j, Y', strtotime($entry['submission_date'])) ?></small></p>
                                 <a href="../recipes/view.php?id=<?= $entry['recipe_id'] ?>" class="btn btn-secondary">View Recipe</a>
                             </div>
