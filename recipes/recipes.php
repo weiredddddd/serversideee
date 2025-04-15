@@ -19,8 +19,13 @@ $query = "SELECT r.*, u.nickname AS author, r.view_count, r.spice_level
 $params = [];
 
 if (!empty($search)) {
-    $query .= " AND (title LIKE :search OR description LIKE :search OR ingredients LIKE :search)";
+    $query .= " AND (r.title LIKE :search OR r.description LIKE :search OR r.recipe_id IN (
+        SELECT ri.recipe_id FROM Recipe_Ingredient ri
+        JOIN Ingredients i ON ri.ingredient_id = i.ingredient_id
+        WHERE i.ingredient_name LIKE :ingredient_search
+    ))";
     $params[':search'] = "%$search%";
+    $params[':ingredient_search'] = "%$search%";
 }
 
 if (!empty($category)) {

@@ -31,7 +31,7 @@ try {
     // Fetch entries with recipe and user details
     $query = "
         SELECT ce.entry_id, ce.notes, ce.submission_date, 
-               r.title AS recipe_title, u.username, 
+               r.title AS recipe_title, u.nickname, 
                COUNT(v.vote_id) AS vote_count
         FROM competition_entries ce
         JOIN RecipeDB.Recipes r ON ce.recipe_id = r.recipe_id
@@ -107,7 +107,7 @@ try {
                             <?php foreach ($entries as $entry): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($entry['recipe_title']); ?></td>
-                                    <td><?php echo htmlspecialchars($entry['username']); ?></td>
+                                    <td><?php echo htmlspecialchars($entry['nickname']); ?></td>
                                     <td><?php echo htmlspecialchars($entry['notes'] ?? ''); ?></td>
                                     <td><?php echo date('Y-m-d H:i', strtotime($entry['submission_date'])); ?></td>
                                     <td><?php echo $entry['vote_count']; ?></td>
