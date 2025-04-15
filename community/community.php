@@ -1085,42 +1085,6 @@ $pageTitle = "Community Forum";
                 });
             }
             
-            // Function to render a comment 
-            function renderComment(comment) {
-                var date = new Date(comment.comment_date);
-                // Format date as "April 13, 2025" style
-                var options = { year: 'numeric', month: 'long', day: 'numeric' };
-                var formattedDate = date.toLocaleDateString('en-US', options);
-                
-                // Map avatar number from database (0-5) to avatar filename (avatar1.png - avatar6.png) 
-                var avatarNum = parseInt(comment.avatar);
-                
-                // Convert avatar value (0-5) to avatar filename (avatar1.png - avatar6.png)
-                // In the database: 0 → avatar1.png, 1 → avatar2.png, etc.
-                var avatarFile = 'avatar' + (avatarNum + 1) + '.png';
-                var profileImage = '../assets/avatars/' + avatarFile;
-                
-                var html = '<div class="comment-item mb-2">' +
-                    '<div class="d-flex">' +
-                        '<div class="flex-shrink-0 me-2">' +
-                            '<img src="' + profileImage + '" alt="Profile" class="rounded-circle" ' +
-                            'style="width: 32px; height: 32px; object-fit: cover;" ' +
-                            'onerror="this.onerror=null; this.src=\'../assets/avatars/avatar1.png\';">' +
-                        '</div>' +
-                        '<div class="flex-grow-1">' +
-                            '<div class="bg-light p-2 rounded">' +
-                                '<div class="d-flex justify-content-between">' +
-                                    '<div><strong class="small">' + comment.nickname + '</strong></div>' +
-                                    '<small class="text-muted ms-2" style="font-size:0.7rem;">' + formattedDate + '</small>' +
-                                '</div>' +
-                                '<div class="comment-text">' + comment.comment_text + '</div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                '</div>';
-                
-                return html;
-            }
             
             // Handle comment submission
             $('#comment-form').on('submit', function(e) {
