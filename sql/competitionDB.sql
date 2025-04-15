@@ -60,7 +60,7 @@ VALUES
     'Only one recipe per user.',
     '1st Prize: $100 gift card',
     'active',
-    1
+    8
 ),
 (
     'Extreme Cooking Contest',
@@ -71,7 +71,7 @@ VALUES
     'Let your imaginary run wild.',
     '1st Prize: $50 worth of cooking utensils',
     'completed',
-    6
+    9
 ),
 (
     'Vegetarian Delight',
@@ -82,7 +82,7 @@ VALUES
     'No meat or seafood allowed.',
     'Winner gets featured on the homepage!',
     'upcoming',
-    2
+    10
 );
 
 INSERT INTO competition_entries (
