@@ -371,7 +371,7 @@ $pageTitle = "Community Forum";
                                                     data-author-avatar="<?php echo isset($row['avatar']) ? $row['avatar'] : 0; ?>">
                                                 <i class="fas fa-comment"></i> Comments (<?php echo $row['comment_count']; ?>)
                                             </button>
-                                            <?php if (($_SESSION['is_admin'] ?? 0) === 1): ?>
+                                            <?php if (($_SESSION['is_admin'] ?? 0) === '1'): ?>
                                                 <a href="admin_delete_post.php?post_id=<?= $row['post_id'] ?>" 
                                                     class="btn btn-sm btn-danger ms-2" 
                                                     onclick="return confirm('Are you sure you want to delete this post?')">
@@ -987,7 +987,7 @@ $pageTitle = "Community Forum";
                 }
                 <?php endif; ?>
             });
-            const isAdmin = <?php echo ($_SESSION['is_admin'] ?? 0) === 1 ? 'true' : 'false'; ?>;
+            const isAdmin = <?php echo ($_SESSION['is_admin'] ?? 0) === '1' ? 'true' : 'false'; ?>;
             function renderComment(comment) {
                 // Convert avatar number to filename (0 → avatar1.png, 1 → avatar2.png, etc)
                 const avatarNum = parseInt(comment.avatar);

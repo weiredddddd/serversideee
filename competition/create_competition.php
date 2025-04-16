@@ -5,7 +5,7 @@ require_once '../config/db.php';
 
 
 // Admin check
-if (!isset($_SESSION['user_id']) || ($_SESSION['is_admin'] ?? 0) !== 1) {
+if (!isset($_SESSION['user_id']) || ($_SESSION['is_admin'] ?? 0) !== '1') {
     $_SESSION['error'] = "You must be logged in as admin to create competitions.";
     header("Location: ../users/login.php");
     exit();

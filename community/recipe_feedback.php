@@ -364,7 +364,7 @@ $pageTitle = htmlspecialchars($recipe['title']) . " - Recipe Feedback";
                                     </div>
                                         <small class="text-muted"><?php echo date('M d, Y g:i a', strtotime($comment['comment_date'])); ?></small>
                                     </div>
-                                    <?php if (($_SESSION['is_admin'] ?? 0) === 1): ?>
+                                    <?php if (($_SESSION['is_admin'] ?? 0) === '1'): ?>
                                         <a href="admin_delete_comment.php?comment_id=<?= $comment['comment_id'] ?>&recipe_id=<?= $recipe_id ?>" 
                                             class="btn btn-sm btn-danger ms-2"
                                             onclick="return confirm('Delete this comment permanently?')">

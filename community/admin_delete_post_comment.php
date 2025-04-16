@@ -3,7 +3,7 @@ require_once '../config/session_config.php';
 require_once '../config/db.php';
 
 // Admin check
-if (!isset($_SESSION['user_id']) || ($_SESSION['is_admin'] ?? 0) !== 1) {
+if (!isset($_SESSION['user_id']) || ($_SESSION['is_admin'] ?? 0) !== '1') {
     header("Location: ../users/login.php");
     exit();
 }

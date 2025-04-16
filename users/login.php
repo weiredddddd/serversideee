@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login_type = $_POST['login_type'] ?? 'user'; // Get login_type from form
 
     if ($login_type === 'admin') {
-        $stmt = $usersDB->prepare("SELECT * FROM users WHERE username = ? AND is_admin = 1");
+        $stmt = $usersDB->prepare("SELECT * FROM users WHERE username = ? AND is_admin ='1'");
         $stmt->execute([$username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
