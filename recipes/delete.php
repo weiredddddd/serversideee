@@ -34,6 +34,6 @@ $stmt->execute([$recipe_id, $user_id]);
 
 // Redirect to manage recipes page with success message
 $_SESSION['success_message'] = "Recipe deleted successfully!";
-header("Location: manage_recipes.php");
+header("Location: manage.php");
 exit();
 ?>

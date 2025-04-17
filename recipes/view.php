@@ -79,7 +79,7 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
 </head>
 
 <body>
-    <?php include_once '../includes/navigation.php'; ?> 
+    <?php include_once '../includes/navigation.php'; ?>
     <div class="container mt-4">
         <h1 class="text-center"><?= htmlspecialchars($recipe['title']) ?></h1>
         <p class="text-center text-muted"><strong>By:</strong> <?= htmlspecialchars($recipe['author']) ?></p>
@@ -227,8 +227,8 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
         <!-- Edit Button (for recipe owner) -->
         <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $recipe['user_id']): ?>
             <div class="mt-4 text-center">
-                <a href="edit.php?id=<?= $recipe_id ?>" class="btn btn-primary">Edit Recipe</a>
-                <a href="delete.php?id=<?= $recipe_id ?>" class="btn btn-danger">Delete Recipe</a>
+                <a href="edit.php?id=<?= $recipe_id ?>" class="btn btn-primary btn-sm">Edit Recipe</a>
+                <a href="delete.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete Recipe</a>
             </div>
         <?php endif; ?>
 
