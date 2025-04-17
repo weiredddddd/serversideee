@@ -1001,21 +1001,36 @@ $pageTitle = "Community Forum";
                     day: 'numeric' 
                 });
 
-                // Create delete button HTML if admin
-                let deleteButton = '';
-                if (isAdmin) {
-                    deleteButton = `
+                // Create action buttons based on ownership
+                let actionButtons = '';
+                <?php if ($user_id): ?>
+                // Check if this is the user's own comment or if they're an admin
+                if (comment.user_id == <?php echo $user_id; ?>) {
+                    actionButtons = `
+                        <div class="mt-2 text-end">
+                            <button class="btn btn-sm btn-outline-secondary edit-comment-btn" data-comment-id="${comment.comment_id}" data-comment-text="${encodeURIComponent(comment.comment_text)}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-comment-btn" data-comment-id="${comment.comment_id}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>`;
+                }
+                <?php endif; ?>
+                // Add admin delete button if user is admin
+                <?php if (($_SESSION['is_admin'] ?? 0) === 1): ?>
+                if (comment.user_id != <?php echo $user_id; ?>) {
+                    actionButtons = `
                     <div class="mt-2 text-end">
-                        <a href="admin_delete_post_comment.php?comment_id=${comment.comment_id}&post_id=${comment.post_id}" 
-                        class="btn btn-sm btn-danger"
-                        onclick="return confirm('Delete this comment permanently?')">
-                            <i class="fas fa-trash"></i> Delete
-                        </a>
+                        <button class="btn btn-sm btn-danger admin-delete-btn" data-comment-id="${comment.comment_id}">
+                            <i class="fas fa-trash"></i> Admin Delete
+                        </button>
                     </div>`;
                 }
+                <?php endif; ?>
 
                 return `
-                <div class="comment-item mb-2">
+                <div class="comment-item mb-2" id="comment-${comment.comment_id}">
                     <div class="d-flex">
                         <div class="flex-shrink-0 me-2">
                             <img src="../assets/avatars/${avatarFile}" 
@@ -1029,8 +1044,15 @@ $pageTitle = "Community Forum";
                                     <div><strong>${comment.nickname}</strong></div>
                                     <small class="text-muted">${formattedDate}</small>
                                 </div>
-                                <div class="comment-text">${comment.comment_text}</div>
-                                ${deleteButton}
+                                <div class="comment-text" id="comment-text-${comment.comment_id}">${comment.comment_text}</div>
+                                <div id="edit-form-${comment.comment_id}" style="display:none;" class="mt-2">
+                                    <textarea class="form-control mb-2" id="edit-comment-${comment.comment_id}">${comment.comment_text}</textarea>
+                                    <div class="text-end">
+                                        <button class="btn btn-sm btn-secondary cancel-edit-btn" data-comment-id="${comment.comment_id}">Cancel</button>
+                                        <button class="btn btn-sm btn-primary save-edit-btn" data-comment-id="${comment.comment_id}">Save</button>
+                                    </div>
+                                </div>
+                                ${actionButtons}
                             </div>
                         </div>
                     </div>
@@ -1183,6 +1205,136 @@ $pageTitle = "Community Forum";
             $('#commentModal').on('shown.bs.modal', function() {
                 var formHeight = $('#comment-form-container').outerHeight();
                 $('.modal-scroll-area').css('padding-bottom', (formHeight + 20) + 'px');
+            });
+
+            // Attach event handlers for comment editing and deletion
+            $(document).on('click', '.edit-comment-btn', function() {
+                const commentId = $(this).data('comment-id');
+                // Show the edit form and hide the comment text
+                $(`#comment-text-${commentId}`).hide();
+                $(`#edit-form-${commentId}`).show();
+            });
+
+            // Handle cancel edit button
+            $(document).on('click', '.cancel-edit-btn', function() {
+                const commentId = $(this).data('comment-id');
+                // Hide the edit form and show the comment text again
+                $(`#edit-form-${commentId}`).hide();
+                $(`#comment-text-${commentId}`).show();
+            });
+
+            // Handle save edit button
+            $(document).on('click', '.save-edit-btn', function() {
+                const commentId = $(this).data('comment-id');
+                const newCommentText = $(`#edit-comment-${commentId}`).val().trim();
+                
+                if (newCommentText === '') {
+                    alert('Comment cannot be empty');
+                    return;
+                }
+
+                // Show loading state
+                $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+                $(this).prop('disabled', true);
+                
+                // Send AJAX request to update the comment
+                $.ajax({
+                    url: 'ajax/edit_comment.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        comment_id: commentId,
+                        comment_text: newCommentText
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update comment text display
+                            $(`#comment-text-${commentId}`).html(response.comment.comment_text);
+                            // Hide edit form and show updated text
+                            $(`#edit-form-${commentId}`).hide();
+                            $(`#comment-text-${commentId}`).show();
+                            
+                            // Show success notification
+                            const successDiv = $('<div class="alert alert-success py-1 mb-2">Comment updated successfully</div>');
+                            $(`#comment-${commentId}`).prepend(successDiv);
+                            setTimeout(() => successDiv.fadeOut(function() { $(this).remove(); }), 2000);
+                        } else {
+                            alert('Error updating comment: ' + response.error);
+                        }
+                    },
+                    error: function() {
+                        alert('Error connecting to server. Please try again.');
+                    },
+                    complete: function() {
+                        // Reset button state
+                        $(`.save-edit-btn[data-comment-id="${commentId}"]`).html('Save');
+                        $(`.save-edit-btn[data-comment-id="${commentId}"]`).prop('disabled', false);
+                    }
+                });
+            });
+
+            // Handle comment deletion
+            $(document).on('click', '.delete-comment-btn, .admin-delete-btn', function() {
+                if (!confirm('Are you sure you want to delete this comment?')) {
+                    return;
+                }
+                
+                const commentId = $(this).data('comment-id');
+                const isAdmin = $(this).hasClass('admin-delete-btn');
+                const commentElement = $(`#comment-${commentId}`);
+                const postId = $('#comment-post-id').val();
+                
+                // Show loading state
+                $(this).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+                $(this).prop('disabled', true);
+                
+                $.ajax({
+                    url: 'ajax/delete_comment.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        comment_id: commentId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Remove the comment with animation
+                            commentElement.fadeOut(function() {
+                                $(this).remove();
+                                
+                                // Update comment count in the modal
+                                $('#modal-comment-count').text(response.comment_count);
+                                
+                                // Update comment count in the main page button
+                                $(`.comment-btn[data-post-id="${postId}"]`).html(
+                                    `<i class="fas fa-comment"></i> Comments (${response.comment_count})`
+                                );
+                                
+                                // Show empty state if all comments are deleted
+                                if (response.comment_count === 0) {
+                                    $('#comments-container').html('<div class="alert alert-light text-center">No comments yet. Be the first to comment!</div>');
+                                }
+                            });
+                            
+                            // Show temporary success message
+                            const successDiv = $('<div class="alert alert-success">Comment deleted successfully</div>');
+                            $('#comments-container').prepend(successDiv);
+                            setTimeout(() => successDiv.fadeOut(function() { $(this).remove(); }), 2000);
+                        } else {
+                            alert('Error deleting comment: ' + response.error);
+                        }
+                    },
+                    error: function() {
+                        alert('Error connecting to server. Please try again.');
+                    },
+                    complete: function() {
+                        // Reset button state (though the button will likely be removed)
+                        const button = isAdmin ? '.admin-delete-btn' : '.delete-comment-btn';
+                        $(`${button}[data-comment-id="${commentId}"]`).html(
+                            isAdmin ? '<i class="fas fa-trash"></i> Admin Delete' : '<i class="fas fa-trash"></i> Delete'
+                        );
+                        $(`${button}[data-comment-id="${commentId}"]`).prop('disabled', false);
+                    }
+                });
             });
         });
     </script>
