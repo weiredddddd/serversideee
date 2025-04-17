@@ -228,7 +228,7 @@ $nutrition = $nutrition_stmt->fetch(PDO::FETCH_ASSOC);
         <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $recipe['user_id']): ?>
             <div class="mt-4 text-center">
                 <a href="edit.php?id=<?= $recipe_id ?>" class="btn btn-primary">Edit Recipe</a>
-                <a href="delete.php?id=<?= $recipe_id ?>" class="btn btn-danger">Delete Recipe</a>
+                <a href="delete.php?id=<?= $recipe['recipe_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
             </div>
         <?php endif; ?>
 
