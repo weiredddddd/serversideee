@@ -138,12 +138,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Update nutrition facts
     if (!empty($_POST['nutrition'])) {
         $nutrition = $_POST['nutrition'];
-// Validate nutrition values
-foreach (['calories', 'fat', 'carbs', 'protein'] as $field) {
-    if (isset($nutrition[$field]) && !is_numeric($nutrition[$field])) {
-        $errors[] = "Nutrition $field must be a number";
-    }
-}
+        // Validate nutrition values
+        foreach (['calories', 'fat', 'carbs', 'protein'] as $field) {
+            if (isset($nutrition[$field]) && !is_numeric($nutrition[$field])) {
+                $errors[] = "Nutrition $field must be a number";
+            }
+        }
         if ($existing_nutrition) {
             // Update existing nutrition data
             $stmt = $RecipeDB->prepare("UPDATE Nutrition SET 
@@ -261,7 +261,7 @@ foreach (['calories', 'fat', 'carbs', 'protein'] as $field) {
 </head>
 
 <body>
-<?php include_once '../includes/navigation.php'; ?> <!-- Include navigation bar -->
+    <?php include_once '../includes/navigation.php'; ?> <!-- Include navigation bar -->
 
     <div class="container mt-5">
         <h2>Edit Recipe</h2>
@@ -357,7 +357,7 @@ foreach (['calories', 'fat', 'carbs', 'protein'] as $field) {
                         <div class="col-md-3">
                             <label class="form-label">Unit</label>
                             <select name="ingredients[<?= $index ?>][unit]" class="form-control">
-                                <?php foreach (['g', 'kg', 'ml', 'L', 'tsp', 'tbsp', 'cup', 'pinch', 'piece'] as $unit): ?>
+                                <?php foreach (['g', 'kg', 'ml', 'L', 'tsp', 'tbsp', 'cup', 'pinch', 'piece','oz','lb','clove','slice','can','bottle'] as $unit): ?>
                                     <option value="<?= $unit ?>" <?= $ing['unit'] === $unit ? 'selected' : '' ?>>
                                         <?= $unit ?>
                                     </option>
@@ -365,8 +365,8 @@ foreach (['calories', 'fat', 'carbs', 'protein'] as $field) {
                             </select>
                         </div>
                         <div class="col-md-1 d-flex align-items-end">
-                        <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
-                    </div>
+                            <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -389,38 +389,38 @@ foreach (['calories', 'fat', 'carbs', 'protein'] as $field) {
                                 <?php endif; ?>
                             </div>
                             <div class="col-md-1 d-flex align-items-end">
-                        <span class="remove-btn" onclick="removeStep(this)">✕</span>
-                    </div>
+                                <span class="remove-btn" onclick="removeStep(this)">✕</span>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
             </div>
             <button type="button" id="add-step" class="btn btn-secondary mb-4">Add Step</button>
-                        <h4>Nutrition Facts</h4>
+            <h4>Nutrition Facts</h4>
             <div class="row">
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Calories</label>
-                    <input type="number" name="nutrition[calories]" class="form-control" 
-                           value="<?= htmlspecialchars($existing_nutrition['calories'] ?? '') ?>" 
-                           placeholder="e.g., 200">
+                    <input type="number" name="nutrition[calories]" class="form-control"
+                        value="<?= htmlspecialchars($existing_nutrition['calories'] ?? '') ?>"
+                        placeholder="e.g., 200">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Fat (g)</label>
-                    <input type="number" step="0.1" name="nutrition[fat]" class="form-control" 
-                           value="<?= htmlspecialchars($existing_nutrition['fat'] ?? '') ?>" 
-                           placeholder="e.g., 10.5">
+                    <input type="number" step="0.1" name="nutrition[fat]" class="form-control"
+                        value="<?= htmlspecialchars($existing_nutrition['fat'] ?? '') ?>"
+                        placeholder="e.g., 10.5">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Carbs (g)</label>
-                    <input type="number" step="0.1" name="nutrition[carbs]" class="form-control" 
-                           value="<?= htmlspecialchars($existing_nutrition['carbs'] ?? '') ?>" 
-                           placeholder="e.g., 30.2">
+                    <input type="number" step="0.1" name="nutrition[carbs]" class="form-control"
+                        value="<?= htmlspecialchars($existing_nutrition['carbs'] ?? '') ?>"
+                        placeholder="e.g., 30.2">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label class="form-label">Protein (g)</label>
-                    <input type="number" step="0.1" name="nutrition[protein]" class="form-control" 
-                           value="<?= htmlspecialchars($existing_nutrition['protein'] ?? '') ?>" 
-                           placeholder="e.g., 15.8">
+                    <input type="number" step="0.1" name="nutrition[protein]" class="form-control"
+                        value="<?= htmlspecialchars($existing_nutrition['protein'] ?? '') ?>"
+                        placeholder="e.g., 15.8">
                 </div>
             </div>
             <div class="mt-3">
@@ -431,75 +431,92 @@ foreach (['calories', 'fat', 'carbs', 'protein'] as $field) {
     </div>
 
     <script>
-        // Ingredients functionality
-        let ingredientCount = <?= count($existing_ingredients) ?>;
-        document.getElementById("add-ingredient").addEventListener("click", function() {
-            ingredientCount++;
-            const ingredientDiv = document.createElement("div");
-            ingredientDiv.classList.add("ingredient-group", "row");
-            ingredientDiv.innerHTML = `
-                <div class="col-md-5">
-                    <label class="form-label">Ingredient Name</label>
-                    <input type="text" name="ingredients[${ingredientCount}][name]" class="form-control" required>
+        
+    // Ingredients functionality
+    let ingredientCount = <?= count($existing_ingredients) ?>;
+    document.getElementById("add-ingredient").addEventListener("click", function() {
+        ingredientCount++;
+        const ingredientDiv = document.createElement("div");
+        ingredientDiv.classList.add("ingredient-group", "row", "mb-3");
+        ingredientDiv.setAttribute('data-index', ingredientCount);
+        ingredientDiv.innerHTML = `
+            <div class="col-md-5">
+                <label class="form-label">Ingredient Name</label>
+                <input type="text" name="ingredients[${ingredientCount}][name]" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Quantity</label>
+                <input type="text" name="ingredients[${ingredientCount}][quantity]" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Unit</label>
+                <select name="ingredients[${ingredientCount}][unit]" class="form-control">
+                    <option value="g">g</option>
+            <option value="kg">kg</option>
+            <option value="ml">ml</option>
+            <option value="L">L</option>
+            <option value="tsp">tsp</option>
+            <option value="tbsp">tbsp</option>
+            <option value="cup">cup</option>
+            <option value="pinch">pinch</option>
+            <option value="piece">piece</option>
+            <option value="oz">oz</option>
+            <option value="lb">lb</option>
+            <option value="clove">clove</option>
+            <option value="slice">slice</option>
+            <option value="can">can</option>
+            <option value="bottle">bottle</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+            </div>
+        `;
+        document.getElementById("ingredients-container").appendChild(ingredientDiv);
+    });
+
+    // Steps functionality
+    let stepCount = <?= count($existing_steps) ?>;
+    document.getElementById("add-step").addEventListener("click", function() {
+        stepCount++;
+        const stepDiv = document.createElement("div");
+        stepDiv.classList.add("step-group", "mb-3");
+        stepDiv.setAttribute('data-index', stepCount);
+        stepDiv.innerHTML = `
+            <div class="row">
+                <div class="col-md-11">
+                    <label class="form-label">Step ${stepCount}</label>
+                    <textarea name="steps[${stepCount}]" class="form-control" rows="2" required></textarea>
+                    <label class="form-label mt-2">Step Image</label>
+                    <input type="file" name="step_images[${stepCount}]" class="form-control mb-2">
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Quantity</label>
-                    <input type="text" name="ingredients[${ingredientCount}][quantity]" class="form-control" required>
+                <div class="col-md-1 d-flex align-items-end">
+                    <span class="remove-btn" onclick="removeStep(this)">✕</span>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Unit</label>
-                    <select name="ingredients[${ingredientCount}][unit]" class="form-control">
-                        <option value="g">g</option>
-                        <option value="kg">kg</option>
-                        <option value="ml">ml</option>
-                        <option value="L">L</option>
-                        <option value="tsp">tsp</option>
-                        <option value="tbsp">tbsp</option>
-                        <option value="cup">cup</option>
-                        <option value="pinch">pinch</option>
-                        <option value="piece">piece</option>
-                    </select>
-                </div>
-               <div class="col-md-1 d-flex align-items-end">
-                        <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
-                    </div>
-            `;
-            document.getElementById("ingredients-container").appendChild(ingredientDiv);
-        });
+            </div>
+        `;
+        document.getElementById("steps-container").appendChild(stepDiv);
+    });
 
-        /let stepCount = <?= count($existing_steps) ?>;
-        document.getElementById("add-step").addEventListener("click", function() {
-            stepCount++;
-            const stepDiv = document.createElement("div");
-            stepDiv.classList.add("step-group", "mb-3", "row");
-            stepDiv.innerHTML = `
-        <div class="col-md-11">
-            <label class="form-label">Step ${stepCount}</label>
-            <textarea name="steps[${stepCount}]" class="form-control" rows="2" required></textarea>
-            <label class="form-label mt-2">Step Image</label>
-            <input type="file" name="step_images[${stepCount}]" class="form-control mb-2">
-        </div>
-       <div class="col-md-1 d-flex align-items-end">
-                        <span class="remove-btn" onclick="removeStep(this)">✕</span>
-                    </div>
-    `;
-            document.getElementById("steps-container").appendChild(stepDiv);
-        });
-
-
-
-
-
-        function removeIngredient(element) {
-            element.closest('.ingredient-group').remove();
+    // Function to remove an ingredient
+    function removeIngredient(button) {
+        const ingredientGroup = button.closest('.ingredient-group');
+        if (ingredientGroup) {
+            ingredientGroup.remove();
         }
-        // Function to remove a step
-        function removeStep(element) {
-            element.closest('.step-group').remove();
-        }
-    </script>
+    }
 
-    
+    // Function to remove a step
+    function removeStep(button) {
+        const stepGroup = button.closest('.step-group');
+        if (stepGroup) {
+            stepGroup.remove();
+        }
+    }
+</script>
+   
+
+
     <?php include_once '../includes/footer.php'; ?>
 </body>
 

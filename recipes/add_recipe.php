@@ -163,12 +163,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if (!in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
                         $errors[] = "Only JPG, PNG, and GIF files are allowed for the step image.";
                     }
-        
+
                     $max_file_size = 10 * 1024 * 1024;
                     if ($_FILES['image']['size'] > $max_file_size) {
                         $errors[] = "File size exceeds the maximum allowed size of 10 MB.";
                     }
-        
+
 
                     if (empty($errors)) {
                         if (!move_uploaded_file($_FILES["step_images"]["tmp_name"][$index], $target_file)) {
@@ -182,7 +182,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $step_stmt->execute([$recipe_id, $index + 1, $step_desc, $step_image_url]);
             }
         }
-        
+
         if (!empty($_POST['nutrition'])) {
             $nutrition = $_POST['nutrition'];
 
@@ -334,6 +334,17 @@ ob_end_flush(); // Flush output buffer to prevent header issues
                                     <option value="kg" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'kg') ? 'selected' : '' ?>>kg</option>
                                     <option value="ml" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'ml') ? 'selected' : '' ?>>ml</option>
                                     <option value="L" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'L') ? 'selected' : '' ?>>L</option>
+                                    <option value="tsp" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'tsp') ? 'selected' : '' ?>>tsp</option>
+                                    <option value="tbsp" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'tbsp') ? 'selected' : '' ?>>tbsp</option>
+                                    <option value="cup" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'cup') ? 'selected' : '' ?>>cup</option>
+                                    <option value="pinch" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'pinch') ? 'selected' : '' ?>>pinch</option>
+                                    <option value="piece" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'piece') ? 'selected' : '' ?>>piece</option>
+                                    <option value="oz" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'oz') ? 'selected' : '' ?>>oz</option>
+                                    <option value="lb" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'lb') ? 'selected' : '' ?>>lb</option>
+                                    <option value="clove" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'clove') ? 'selected' : '' ?>>clove</option>
+                                    <option value="slice" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'slice') ? 'selected' : '' ?>>slice</option>
+                                    <option value="can" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'can') ? 'selected' : '' ?>>can</option>
+                                    <option value="bottle" <?= (isset($ingredient['unit']) && $ingredient['unit'] === 'bottle') ? 'selected' : '' ?>>bottle</option>
                                 </select>
                             </div>
                         </div>
@@ -356,8 +367,22 @@ ob_end_flush(); // Flush output buffer to prevent header issues
                                 <option value="kg">kg</option>
                                 <option value="ml">ml</option>
                                 <option value="L">L</option>
+                                <option value="tsp">tsp</option>
+                                <option value="tbsp">tbsp</option>
+                                <option value="cup">cup</option>
+                                <option value="pinch">pinch</option>
+                                <option value="piece">piece</option>
+                                <option value="oz">oz</option>
+                                <option value="lb">lb</option>
+                                <option value="clove">clove</option>
+                                <option value="slice">slice</option>
+                                <option value="can">can</option>
+                                <option value="bottle">bottle</option>
                             </select>
                         </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeIngredient(this)">✕</span>
+                    </div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -391,9 +416,13 @@ ob_end_flush(); // Flush output buffer to prevent header issues
                             <label class="form-label mt-2">Step 1 Image</label>
                             <input type="file" name="step_images[]" class="form-control">
                         </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                        <span class="remove-btn" onclick="removeStep(this)">✕</span>
+                    </div>
                     </div>
                 <?php endif; ?>
             </div>
+            
             <button type="button" id="add-step" class="btn btn-secondary">Add Step</button>
 
 
@@ -442,15 +471,21 @@ ob_end_flush(); // Flush output buffer to prevent header issues
                 <div class="col-md-3">
                     <label class="form-label">Unit</label>
                     <select name="ingredients[${ingredientCount}][unit]" class="form-control">
-                        <option value="g">g</option>
-                        <option value="kg">kg</option>
-                        <option value="ml">ml</option>
-                        <option value="L">L</option>
-                        <option value="tsp">tsp</option>
-                        <option value="tbsp">tbsp</option>
-                        <option value="cup">cup</option>
-                        <option value="pinch">pinch</option>
-                        <option value="piece">piece</option>
+                       <option value="g">g</option>
+    <option value="kg">kg</option>
+    <option value="ml">ml</option>
+    <option value="L">L</option>
+    <option value="tsp">tsp</option>
+    <option value="tbsp">tbsp</option>
+    <option value="cup">cup</option>
+    <option value="pinch">pinch</option>
+    <option value="piece">piece</option>
+    <option value="oz">oz</option>
+    <option value="lb">lb</option>
+    <option value="clove">clove</option>
+    <option value="slice">slice</option>
+    <option value="can">can</option>
+    <option value="bottle">bottle</option>
                     </select>
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
@@ -461,8 +496,14 @@ ob_end_flush(); // Flush output buffer to prevent header issues
         });
 
         function removeIngredient(element) {
-            element.closest('.ingredient-group').remove();
-        }
+    const container = document.getElementById("ingredients-container");
+    const groups = container.querySelectorAll('.ingredient-group');
+    if (groups.length > 1) {
+        element.closest('.ingredient-group').remove();
+    } else {
+        alert("You must have at least one ingredient. Add a new one first if you want to replace this.");
+    }
+}
 
         // Steps functionality
         let stepCount = document.querySelectorAll("#steps-container .step-group").length;
@@ -486,8 +527,20 @@ ob_end_flush(); // Flush output buffer to prevent header issues
 
         // Function to remove a step
         function removeStep(element) {
-            element.closest('.step-group').remove();
-        }
+    const container = document.getElementById("steps-container");
+    const groups = container.querySelectorAll('.step-group');
+    if (groups.length > 1) {
+        element.closest('.step-group').remove();
+        // Renumber remaining steps
+        const remainingSteps = container.querySelectorAll('.step-group');
+        remainingSteps.forEach((group, index) => {
+            group.querySelector('label').textContent = `Step ${index + 1}`;
+        });
+        stepCount = remainingSteps.length;
+    } else {
+        alert("You must have at least one step. Add a new one first if you want to replace this.");
+    }
+}
     </script>
     <?php include_once '../includes/footer.php'; ?>
 </body>
