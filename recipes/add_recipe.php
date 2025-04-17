@@ -15,7 +15,8 @@ require '../config/db.php';
 
 
 $errors = [];
-
+$upload_dir = "../uploads/recipe/"; // Define this early
+$final_upload_dir = "../uploads/recipe/"; // Same directory now
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $title = trim($_POST['title']);
@@ -59,160 +60,166 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Handle main recipe image upload
     $image_url = "";
-    if (!empty($_FILES['image']['name'])) {
-        $upload_dir = "../uploads/recipe/";
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
-        }
-
-        $image_url = uniqid() . "_" . basename($_FILES["image"]["name"]);
-        $target_file = $upload_dir . $image_url;
-
-        if ($_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-            $errors[] = "File upload error: " . $_FILES['image']['error'];
-        } else {
-            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-            $file_type = mime_content_type($_FILES['image']['tmp_name']);
-            if (!in_array($file_type, $allowed_types)) {
-                $errors[] = "Only JPG, PNG, and GIF files are allowed for the main image.";
-            }
-
-            $file_extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-            if (!in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
-                $errors[] = "Only JPG, PNG, and GIF files are allowed for the main image.";
-            }
-
-            $max_file_size = 10 * 1024 * 1024;
-            if ($_FILES['image']['size'] > $max_file_size) {
-                $errors[] = "File size exceeds the maximum allowed size of 10 MB.";
-            }
-
-            if (empty($errors)) {
-                if (!move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-                    $errors[] = "Failed to upload the main image. Check file permissions or path.";
-                    error_log("Upload error: " . print_r($_FILES, true));
-                }
-            }
-        }
-    } else {
-        $errors[] = "Main recipe image is required.";
-    }
-
-    // Insert recipe into database if no errors
     if (empty($errors)) {
-        $stmt = $RecipeDB->prepare("INSERT INTO Recipes (title, description, category, cuisine_type, spice_level, image_url, user_id) 
-                               VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $description, $category, $cuisine_type, $spice_level, $image_url, $user_id]);
-
-        $recipe_id = $RecipeDB->lastInsertId();
-
-        // Insert ingredients
-        if (!empty($_POST['ingredients'])) {
-            foreach ($_POST['ingredients'] as $ingredient) {
-                if (!empty($ingredient['name']) && !empty($ingredient['quantity'])) {
-                    try {
-                        // Check if ingredient exists
-                        $stmt = $RecipeDB->prepare("SELECT ingredient_id FROM Ingredients WHERE ingredient_name = ?");
-                        $stmt->execute([$ingredient['name']]);
-                        $existing = $stmt->fetch();
-
-                        if ($existing) {
-                            $ingredient_id = $existing['ingredient_id'];
-                        } else {
-                            // Insert new ingredient
-                            $stmt = $RecipeDB->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
-                            $stmt->execute([$ingredient['name']]);
-                            $ingredient_id = $RecipeDB->lastInsertId();
-                        }
-
-                        // Link to recipe
-                        $stmt = $RecipeDB->prepare("INSERT INTO Recipe_Ingredient 
-                                     (recipe_id, ingredient_id, quantity, unit) 
-                                     VALUES (?, ?, ?, ?)");
-                        $stmt->execute([
-                            $recipe_id,
-                            $ingredient_id,
-                            $ingredient['quantity'],
-                            $ingredient['unit'] ?? 'g' // Default to grams
-                        ]);
-                    } catch (PDOException $e) {
-                        $errors[] = "Error processing ingredient: " . $ingredient['name'] . ". " . $e->getMessage();
-                        error_log("Ingredient processing error: " . $e->getMessage());
-                        continue;
-                    }
-                }
+        if (empty($_FILES['image']['name'])) {
+            $errors[] = "Main recipe image is required.";
+        } else {
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
             }
-        }
+            $image_url = uniqid() . "_" . basename($_FILES["image"]["name"]);
+            $target_file = $upload_dir . $image_url;
 
-        // Insert steps with images
-        $step_images = [];
-        foreach ($_POST['steps'] as $index => $step_desc) {
-            if (!empty($step_desc)) {
-                $step_image_url = "";
-                if (!empty($_FILES['step_images']['name'][$index])) {
-                    $upload_dir = "../uploads/recipe/";
-                    $step_image_url = uniqid() . "_" . basename($_FILES["step_images"]["name"][$index]);
-                    $target_file = $upload_dir . $step_image_url;
-
-                    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-                    $file_type = mime_content_type($_FILES['step_images']['tmp_name'][$index]);
-                    if (!in_array($file_type, $allowed_types)) {
-                        $errors[] = "Only JPG, PNG, and GIF files are allowed for step images.";
-                    }
-                    $file_extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-                    if (!in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
-                        $errors[] = "Only JPG, PNG, and GIF files are allowed for the step image.";
-                    }
-        
-                    $max_file_size = 10 * 1024 * 1024;
-                    if ($_FILES['image']['size'] > $max_file_size) {
-                        $errors[] = "File size exceeds the maximum allowed size of 10 MB.";
-                    }
-        
-
-                    if (empty($errors)) {
-                        if (!move_uploaded_file($_FILES["step_images"]["tmp_name"][$index], $target_file)) {
-                            $errors[] = "Failed to upload step image for step " . ($index + 1) . ".";
-                        }
-                    }
-                }
-                $step_images[] = $step_image_url;
-                $step_stmt = $RecipeDB->prepare("INSERT INTO Steps (recipe_id, step_no, description, image_url) 
-                                            VALUES (?, ?, ?, ?)");
-                $step_stmt->execute([$recipe_id, $index + 1, $step_desc, $step_image_url]);
-            }
-        }
-        
-        if (!empty($_POST['nutrition'])) {
-            $nutrition = $_POST['nutrition'];
-
-            // Validate that all nutrition fields are filled and numeric
-            if (
-                empty($nutrition['calories']) || !is_numeric($nutrition['calories']) ||
-                empty($nutrition['fat']) || !is_numeric($nutrition['fat']) ||
-                empty($nutrition['carbs']) || !is_numeric($nutrition['carbs']) ||
-                empty($nutrition['protein']) || !is_numeric($nutrition['protein'])
-            ) {
-                $errors[] = "All nutrition fields (calories, fat, carbs, protein) are required and must be numeric.";
+            if ($_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+                $errors[] = "File upload error: " . $_FILES['image']['error'];
             } else {
-                $stmt = $RecipeDB->prepare("INSERT INTO Nutrition (recipe_id, calories, fat, carbs, protein) 
-                                            VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([
-                    $recipe_id,
-                    $nutrition['calories'],
-                    $nutrition['fat'],
-                    $nutrition['carbs'],
-                    $nutrition['protein']
-                ]);
+                $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+                $file_type = mime_content_type($_FILES['image']['tmp_name']);
+                if (!in_array($file_type, $allowed_types)) {
+                    $errors[] = "Only JPG, PNG, and GIF files are allowed for the main image.";
+                }
+
+                $file_extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+                if (!in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                    $errors[] = "Only JPG, PNG, and GIF files are allowed for the main image.";
+                }
+
+                $max_file_size = 10 * 1024 * 1024;
+                if ($_FILES['image']['size'] > $max_file_size) {
+                    $errors[] = "File size exceeds the maximum allowed size of 10 MB.";
+                }
+
+                if (empty($errors)) {
+                    if (!move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+                        $errors[] = "Failed to upload the main image. Check file permissions or path.";
+                        error_log("Upload error: " . print_r($_FILES, true));
+                    }
+                }
             }
-        }
-        if (empty($errors)) {
-            $_SESSION['success_message'] = "Recipe posted successfully!";
-            header("Location: ../recipes/view.php?id=" . $recipe_id);
-            exit();
         }
     }
 }
+if (!empty($errors) && !empty($image_url) && file_exists($upload_dir . $image_url)) {
+    unlink($upload_dir . $image_url); // Remove the uploaded image
+}
+
+// Insert recipe into database if no errors
+if (empty($errors)) {
+    $stmt = $RecipeDB->prepare("INSERT INTO Recipes (title, description, category, cuisine_type, spice_level, image_url, user_id) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$title, $description, $category, $cuisine_type, $spice_level, $image_url, $user_id]);
+
+    $recipe_id = $RecipeDB->lastInsertId();
+
+    // Insert ingredients
+    if (!empty($_POST['ingredients'])) {
+        foreach ($_POST['ingredients'] as $ingredient) {
+            if (!empty($ingredient['name']) && !empty($ingredient['quantity'])) {
+                try {
+                    // Check if ingredient exists
+                    $stmt = $RecipeDB->prepare("SELECT ingredient_id FROM Ingredients WHERE ingredient_name = ?");
+                    $stmt->execute([$ingredient['name']]);
+                    $existing = $stmt->fetch();
+
+                    if ($existing) {
+                        $ingredient_id = $existing['ingredient_id'];
+                    } else {
+                        // Insert new ingredient
+                        $stmt = $RecipeDB->prepare("INSERT INTO Ingredients (ingredient_name) VALUES (?)");
+                        $stmt->execute([$ingredient['name']]);
+                        $ingredient_id = $RecipeDB->lastInsertId();
+                    }
+
+                    // Link to recipe
+                    $stmt = $RecipeDB->prepare("INSERT INTO Recipe_Ingredient 
+                                     (recipe_id, ingredient_id, quantity, unit) 
+                                     VALUES (?, ?, ?, ?)");
+                    $stmt->execute([
+                        $recipe_id,
+                        $ingredient_id,
+                        $ingredient['quantity'],
+                        $ingredient['unit'] ?? 'g' // Default to grams
+                    ]);
+                } catch (PDOException $e) {
+                    $errors[] = "Error processing ingredient: " . $ingredient['name'] . ". " . $e->getMessage();
+                    error_log("Ingredient processing error: " . $e->getMessage());
+                    continue;
+                }
+            }
+        }
+    }
+
+    // Insert steps with images
+    $step_images = [];
+    foreach ($_POST['steps'] as $index => $step_desc) {
+        if (!empty($step_desc)) {
+            $step_image_url = "";
+            if (!empty($_FILES['step_images']['name'][$index])) {
+
+                $step_image_url = uniqid() . "_" . basename($_FILES["step_images"]["name"][$index]);
+                $target_file = $upload_dir . $step_image_url;
+
+                $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+                $file_type = mime_content_type($_FILES['step_images']['tmp_name'][$index]);
+                if (!in_array($file_type, $allowed_types)) {
+                    $errors[] = "Only JPG, PNG, and GIF files are allowed for step images.";
+                }
+
+                $file_extension = strtolower(pathinfo($_FILES['step_images']['name'][$index], PATHINFO_EXTENSION));
+                if (!in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                    $errors[] = "Only JPG, PNG, and GIF files are allowed for the step image.";
+                }
+
+                $max_file_size = 10 * 1024 * 1024;
+                if ($_FILES['step_images']['size'][$index] > $max_file_size) {
+                    $errors[] = "File size exceeds the maximum allowed size of 10 MB.";
+                }
+
+
+                if (empty($errors)) {
+                    if (!move_uploaded_file($_FILES["step_images"]["tmp_name"][$index], $target_file)) {
+                        $errors[] = "Failed to upload step image for step " . ($index + 1) . ".";
+                    }
+                }
+            }
+            $step_images[] = $step_image_url;
+            $step_stmt = $RecipeDB->prepare("INSERT INTO Steps (recipe_id, step_no, description, image_url) 
+                                            VALUES (?, ?, ?, ?)");
+            $step_stmt->execute([$recipe_id, $index + 1, $step_desc, $step_image_url]);
+        }
+    }
+
+    if (!empty($_POST['nutrition'])) {
+        $nutrition = $_POST['nutrition'];
+
+        // Validate that all nutrition fields are filled and numeric
+        if (
+            empty($nutrition['calories']) || !is_numeric($nutrition['calories']) ||
+            empty($nutrition['fat']) || !is_numeric($nutrition['fat']) ||
+            empty($nutrition['carbs']) || !is_numeric($nutrition['carbs']) ||
+            empty($nutrition['protein']) || !is_numeric($nutrition['protein'])
+        ) {
+            $errors[] = "All nutrition fields (calories, fat, carbs, protein) are required and must be numeric.";
+        } else {
+            $stmt = $RecipeDB->prepare("INSERT INTO Nutrition (recipe_id, calories, fat, carbs, protein) 
+                                            VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $recipe_id,
+                $nutrition['calories'],
+                $nutrition['fat'],
+                $nutrition['carbs'],
+                $nutrition['protein']
+            ]);
+        }
+    }
+
+    if (empty($errors)) {
+        $_SESSION['success_message'] = "Recipe posted successfully!";
+        header("Location: ../recipes/view.php?id=" . $recipe_id);
+        exit();
+    }
+}
+
 ob_end_flush(); // Flush output buffer to prevent header issues
 ?>
 
